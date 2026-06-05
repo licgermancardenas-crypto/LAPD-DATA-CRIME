@@ -125,7 +125,7 @@ function Tab({ label, active, onClick, icon }) {
 export default function Home() {
   const [data,      setData]      = useState(null);
   const [activeNav, setActiveNav] = useState('overview');
-  const [geoView,   setGeoView]   = useState('ranking'); // 'map' | 'ranking'
+  const [geoView,   setGeoView]   = useState('map'); // 'map' | 'ranking'
   const [showTop,   setShowTop]   = useState(false);
 
   // Load all JSON data

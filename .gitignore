@@ -6,6 +6,7 @@ data/external/*.shp
 data/external/*.dbf
 data/external/*.prj
 data/external/*.shx
+data/external/*.zip
 *.csv
 *.parquet
 *.feather

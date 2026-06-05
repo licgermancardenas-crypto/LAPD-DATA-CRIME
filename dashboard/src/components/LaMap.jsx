@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import 'leaflet/dist/leaflet.css';
 
 // Crime intensity color scale: dark navy -> blue -> orange -> red
 const STOPS = [

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd dashboard && npm install && npm run build",
+  "buildCommand": "cd dashboard && npm install && NODE_OPTIONS='--max-old-space-size=4096' npm run build",
   "outputDirectory": "dashboard/out",
   "installCommand": "echo skip"
 }

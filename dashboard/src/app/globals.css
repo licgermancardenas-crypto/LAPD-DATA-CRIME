@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #0f1117;
+  color: #e8eaf0;
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f1117; }
+::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4f8ef7; }
+
+/* Recharts tooltip */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #1a1d27 !important;
+  border: 1px solid #2a2d3a !important;
+  border-radius: 8px !important;
+  color: #e8eaf0 !important;
+}
+
+.recharts-cartesian-axis-tick-value { fill: #7b82a0 !important; font-size: 11px; }
+.recharts-legend-item-text { color: #7b82a0 !important; font-size: 12px !important; }
+
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-xl p-5;
+  }
+  .section-title {
+    @apply text-lg font-semibold text-text mb-1;
+  }
+  .section-sub {
+    @apply text-sm text-muted mb-4;
+  }
+  .badge {
+    @apply text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+}

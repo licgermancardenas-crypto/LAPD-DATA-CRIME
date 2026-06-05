@@ -1,0 +1,16 @@
+data/
+outputs/
+notebooks/
+src/
+docs/
+*.parquet
+*.csv
+*.ipynb
+*.py
+*.joblib
+*.zip
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg

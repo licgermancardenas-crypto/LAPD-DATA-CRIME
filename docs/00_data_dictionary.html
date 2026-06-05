@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Dictionary — LAPD Crime Data 2020–2024</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e334d;
+      --accent: #4f8ef7;
+      --accent2: #7c5cbf;
+      --warn: #e0883a;
+      --ok: #3ecf8e;
+      --danger: #e05252;
+      --text: #e4e6f0;
+      --muted: #7b82a0;
+      --tag-bg: #1e2540;
+      --code-bg: #141720;
+      --radius: 8px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono: 'Consolas', 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 40px 24px 80px;
+    }
+
+    .page { max-width: 1100px; margin: 0 auto; }
+
+    /* ── HEADER ── */
+    .header {
+      border-left: 4px solid var(--accent);
+      padding: 20px 28px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      margin-bottom: 36px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .header .subtitle { color: var(--muted); font-size: 13px; }
+    .header .meta { margin-top: 16px; display: flex; gap: 24px; flex-wrap: wrap; }
+    .header .meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .header .meta-item span:first-child { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .header .meta-item span:last-child { font-weight: 600; color: var(--accent); }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin: 36px 0 16px;
+    }
+
+    /* ── CONTEXT BOX ── */
+    .context-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 8px;
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .context-box h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+    .context-box p + p { margin-top: 8px; }
+
+    /* ── GROUP HEADER ── */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 32px 0 12px;
+    }
+    .group-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .group-label { font-size: 13px; font-weight: 700; color: #fff; }
+    .group-count { font-size: 11px; color: var(--muted); }
+
+    /* ── FIELD CARD ── */
+    .field-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .field-card:hover { border-color: #3d4466; }
+
+    .field-top {
+      display: grid;
+      grid-template-columns: 200px 90px 80px 80px 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      align-items: stretch;
+    }
+
+    .field-name {
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      border-right: 1px solid var(--border);
+      word-break: break-all;
+    }
+
+    .field-cell {
+      padding: 12px 12px;
+      font-size: 12px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .field-cell:last-child { border-right: none; }
+    .field-cell .label { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 3px; }
+    .field-cell .value { font-weight: 600; color: var(--text); }
+
+    .null-bar-wrap { margin-top: 5px; background: var(--border); border-radius: 3px; height: 4px; width: 100%; }
+    .null-bar { height: 4px; border-radius: 3px; }
+
+    .field-body { padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .field-desc h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+    .field-desc p { font-size: 13px; color: var(--text); line-height: 1.65; }
+
+    .field-values h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+
+    .values-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .val-tag {
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11.5px;
+      font-family: var(--mono);
+      color: var(--text);
+    }
+    .val-tag .val-code { color: var(--ok); font-weight: 700; }
+    .val-tag .val-label { color: var(--muted); margin-left: 4px; }
+
+    .note-box {
+      margin-top: 10px;
+      background: var(--code-bg);
+      border-left: 3px solid var(--warn);
+      border-radius: 0 4px 4px 0;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .note-box strong { color: var(--warn); }
+
+    /* NULL % coloring */
+    .null-0   { color: var(--ok); }
+    .null-low { color: var(--text); }
+    .null-mid { color: var(--warn); }
+    .null-high{ color: var(--danger); }
+    .bar-0    { background: var(--ok); }
+    .bar-low  { background: #6ea8f0; }
+    .bar-mid  { background: var(--warn); }
+    .bar-high { background: var(--danger); }
+
+    /* TYPE badges */
+    .type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 700;
+    }
+    .type-int    { background: #1a2e52; color: #6ea8f0; }
+    .type-str    { background: #1e2e1e; color: #3ecf8e; }
+    .type-float  { background: #2a1e3a; color: #b07ef7; }
+    .type-date   { background: #2a2218; color: #e0c066; }
+
+    /* ── ENCODING TABLES ── */
+    .enc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+    .enc-table th { background: var(--surface2); color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 6px 10px; text-align: left; }
+    .enc-table td { padding: 5px 10px; border-top: 1px solid var(--border); }
+    .enc-table tr:hover td { background: var(--surface2); }
+    .enc-table td:first-child { font-family: var(--mono); color: var(--accent); font-weight: 700; }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 56px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 760px) {
+      .field-top { grid-template-columns: 1fr 1fr; }
+      .field-body { grid-template-columns: 1fr; }
+      .field-name { grid-column: 1 / -1; border-right: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <h1>Data Dictionary — LAPD Crime Data 2020–2024</h1>
+    <div class="subtitle">Field-level reference for the Los Angeles Police Department public crime dataset</div>
+    <div class="meta">
+      <div class="meta-item"><span>Source</span><span>data.lacity.org — LAPD Open Data Portal</span></div>
+      <div class="meta-item"><span>Records</span><span>1,004,894 incidents</span></div>
+      <div class="meta-item"><span>Columns</span><span>28 fields</span></div>
+      <div class="meta-item"><span>Period</span><span>Jan 1, 2020 → Dec 30, 2024</span></div>
+      <div class="meta-item"><span>Reporting Standard</span><span>UCR (Uniform Crime Reporting) — FBI</span></div>
+      <div class="meta-item"><span>Last Updated</span><span>June 2026</span></div>
+    </div>
+  </div>
+
+  <!-- ══ CONTEXT ══ -->
+  <div class="section-title">Dataset Context</div>
+
+  <div class="context-box">
+    <h3>What is this dataset?</h3>
+    <p>This dataset contains every crime incident reported to the <strong>Los Angeles Police Department (LAPD)</strong> between January 2020 and December 2024. Each row represents a single crime report — not necessarily a conviction or confirmed crime — as logged by LAPD officers in the <strong>Records Management System (RMS)</strong>. The data is transcribed from original paper crime reports, so minor typographical inconsistencies may exist.</p>
+    <p>The dataset is published under the <strong>City of Los Angeles Open Data initiative</strong> and is refreshed periodically. It covers all 21 LAPD geographic divisions (known as "areas" or "bureaus"), spanning the entire city of Los Angeles.</p>
+  </div>
+
+  <div class="context-box">
+    <h3>UCR Classification System (FBI)</h3>
+    <p>Crime codes follow the <strong>Uniform Crime Reporting (UCR)</strong> standard defined by the FBI, which allows comparisons across U.S. jurisdictions. Under UCR, crimes are divided into two categories: <strong>Part 1</strong> (serious crimes tracked nationally: homicide, rape, robbery, aggravated assault, burglary, larceny-theft, motor vehicle theft, arson) and <strong>Part 2</strong> (all other less-serious offenses). This classification drives the <code>Part 1-2</code> field in this dataset.</p>
+  </div>
+
+  <div class="context-box">
+    <h3>Important caveats before analysis</h3>
+    <p><strong>Dark figure of crime:</strong> This dataset only captures <em>reported</em> crimes. Research consistently shows that many crimes — especially sexual assault, domestic violence, and petty theft — go unreported. Numbers here represent a lower bound on actual crime.</p>
+    <p><strong>Date lag:</strong> <code>DATE OCC</code> (when the crime happened) and <code>Date Rptd</code> (when it was reported) are often different. Identity theft, for example, may be discovered weeks or months after the fact. Analysis of crime trends should use <code>DATE OCC</code> as the canonical date.</p>
+    <p><strong>Location anonymization:</strong> Street addresses are rounded to the nearest hundred block to protect victim privacy. Coordinates (LAT/LON) reflect this block-level approximation, not the exact incident location.</p>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 1: IDENTIFICATION                      -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#4f8ef7"></div>
+    <div class="group-label">Group 1 — Case Identification</div>
+    <div class="group-count">1 field</div>
+  </div>
+
+  <!-- DR_NO -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">DR_NO</div>
+      <div class="field-cell">
+        <div class="label">Type</div>
+        <div class="value"><span class="type-badge type-int">INTEGER</span></div>
+      </div>
+      <div class="field-cell">
+        <div class="label">Nulls</div>
+        <div class="value null-0">0.0%</div>
+        <div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div>
+      </div>
+      <div class="field-cell">
+        <div class="label">Unique</div>
+        <div class="value">~1M</div>
+      </div>
+      <div class="field-cell">
+        <div class="label">Human-readable name</div>
+        <div class="value">Division Record Number</div>
+      </div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The unique identifier for each crime report in the LAPD Records Management System. It is assigned at the moment a report is filed and never changes. This is the primary key of the dataset — no two rows share the same DR_NO.</p>
+        <div class="note-box"><strong>Format:</strong> The number encodes metadata: the first 2 digits are the year the report was filed, the next 2 digits are the LAPD area code (01–21), and the remaining digits are a sequential counter. Example: <code>211507896</code> = filed in 2021, Area 15 (N Hollywood).</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">211507896</span>
+          <span class="val-tag">201516622</span>
+          <span class="val-tag">240913563</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 2: DATE & TIME                         -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#e0c066"></div>
+    <div class="group-label">Group 2 — Date &amp; Time</div>
+    <div class="group-count">3 fields</div>
+  </div>
+
+  <!-- Date Rptd -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Date Rptd</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-date">DATETIME</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Format</div><div class="value">MM/DD/YYYY</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Date Reported</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The date on which the crime was <strong>officially reported to LAPD</strong> — meaning a victim, witness, or officer filed a report. This is when the event enters the LAPD system. It is always on or after <code>DATE OCC</code> and reflects administrative processing, not the actual crime occurrence.</p>
+        <div class="note-box"><strong>Analysis note:</strong> Use <code>DATE OCC</code> for trend analysis, not this field. Spikes in <code>Date Rptd</code> can reflect processing delays or batch entries, not actual crime events.</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">04/11/2021 12:00:00 AM</span>
+          <span class="val-tag">10/21/2020 12:00:00 AM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATE OCC -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">DATE OCC</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-date">DATETIME</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Range</div><div class="value">2020–2024</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Date of Occurrence</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The date on which the crime <strong>actually occurred</strong>. This is the canonical date for temporal analysis and should be the primary date dimension in any dashboard or model. When the exact date is unknown (e.g., a burglary discovered after days away), LAPD uses the earliest plausible date.</p>
+        <div class="note-box"><strong>Key insight:</strong> The gap between <code>DATE OCC</code> and <code>Date Rptd</code> (reporting lag) reveals victim behavior patterns. Identity theft averages 30+ days lag; violent crimes are typically reported same-day.</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">11/07/2020 12:00:00 AM</span>
+          <span class="val-tag">12/24/2020 12:00:00 AM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIME OCC -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">TIME OCC</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-int">INTEGER</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Range</div><div class="value">0001–2359</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Time of Occurrence</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The time at which the crime occurred, stored as a 4-digit integer in <strong>24-hour (military) format without a colon</strong>. The value must be parsed: divide by 100 for hours, modulo 100 for minutes. When exact time is unknown, LAPD typically records <code>1200</code> (noon) as a placeholder.</p>
+        <div class="note-box"><strong>Parsing:</strong> <code>845</code> → 08:45 AM &nbsp;|&nbsp; <code>1845</code> → 06:45 PM &nbsp;|&nbsp; <code>1</code> → 00:01 AM. Values of 1200 may indicate unknown time (treat with caution in hourly analysis).</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">845 → 08:45</span>
+          <span class="val-tag">1845 → 18:45</span>
+          <span class="val-tag">1240 → 12:40</span>
+          <span class="val-tag">0 → 00:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 3: GEOGRAPHY                           -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#3ecf8e"></div>
+    <div class="group-label">Group 3 — Geographic Location</div>
+    <div class="group-count">6 fields</div>
+  </div>
+
+  <!-- AREA -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">AREA</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-int">INTEGER</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Values</div><div class="value">1 – 21</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">LAPD Geographic Area Code</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>A numeric code (1–21) identifying the <strong>LAPD Geographic Area</strong> (also called "division" or "bureau area") where the crime occurred. Los Angeles is divided into 21 policing divisions, each with its own station, command staff, and patrol officers. This is the primary administrative unit for LAPD resource allocation.</p>
+      </div>
+      <div class="field-values">
+        <h4>All 21 LAPD Areas</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Division Name</th><th>Code</th><th>Division Name</th></tr>
+          <tr><td>1</td><td>Central</td><td>12</td><td>77th Street</td></tr>
+          <tr><td>2</td><td>Rampart</td><td>13</td><td>Newton</td></tr>
+          <tr><td>3</td><td>Southwest</td><td>14</td><td>Pacific</td></tr>
+          <tr><td>4</td><td>Hollenbeck</td><td>15</td><td>N Hollywood</td></tr>
+          <tr><td>5</td><td>Harbor</td><td>16</td><td>Foothill</td></tr>
+          <tr><td>6</td><td>Hollywood</td><td>17</td><td>Devonshire</td></tr>
+          <tr><td>7</td><td>Wilshire</td><td>18</td><td>Southeast</td></tr>
+          <tr><td>8</td><td>West LA</td><td>19</td><td>Mission</td></tr>
+          <tr><td>9</td><td>Van Nuys</td><td>20</td><td>Olympic</td></tr>
+          <tr><td>10</td><td>West Valley</td><td>21</td><td>Topanga</td></tr>
+          <tr><td>11</td><td>Northeast</td><td></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- AREA NAME -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">AREA NAME</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">21</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">LAPD Division Name</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The text name of the LAPD Geographic Area — the human-readable counterpart to the numeric <code>AREA</code> field. These names correspond to neighborhoods or geographic zones in Los Angeles. Use this field for labeling in visualizations.</p>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">Central</span><span class="val-tag">Hollywood</span><span class="val-tag">Van Nuys</span><span class="val-tag">77th Street</span><span class="val-tag">Pacific</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rpt Dist No -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Rpt Dist No</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-int">INTEGER</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">~1,199</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Reporting District Number</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>A finer geographic subdivision within each LAPD area. Each of the 21 areas is subdivided into multiple <strong>Reporting Districts (RDs)</strong> — roughly the size of several city blocks — used for patrol assignment and statistical reporting. The first 1–2 digits of the RD number correspond to the area code.</p>
+        <div class="note-box"><strong>Granularity:</strong> With ~1,200 unique districts across the city, this is the most granular geographic identifier in the dataset. Useful for hyper-local hotspot analysis when combined with coordinates.</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">1502 (Area 15)</span><span class="val-tag">0782 (Area 7)</span><span class="val-tag">0933 (Area 9)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOCATION -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">LOCATION</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Privacy</div><div class="value">Block-level</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Street Address (Anonymized)</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The street address where the crime occurred, <strong>truncated to the nearest hundred block</strong> (e.g., 7800 block of Beeman Ave) to protect victim and witness privacy. Exact house numbers are never published. The field often includes heavy whitespace padding from the original RMS export.</p>
+        <div class="note-box"><strong>Data quality:</strong> Clean with <code>.strip()</code> before use — the raw values contain many trailing spaces from fixed-width RMS fields.</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">7800 BEEMAN AV</span><span class="val-tag">14600 SYLVAN ST</span><span class="val-tag">6000 COMEY AV</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cross Street -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Cross Street</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-high">84.7%</div><div class="null-bar-wrap"><div class="null-bar bar-high" style="width:84.7%"></div></div></div>
+      <div class="field-cell"><div class="label">~850k null</div><div class="value">Expected</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Cross Street / Nearest Intersection</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The nearest intersecting street when the crime occurred at or near a corner. Only populated when the officer recorded an intersection rather than a specific block address. The <strong>85% null rate is expected and not a data quality issue</strong> — most crime locations are mid-block addresses, not intersections.</p>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">N GAULT</span><span class="val-tag">AVALON AV</span><span class="val-tag">INGLEWOOD BL</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAT / LON -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">LAT &amp; LON</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-float">FLOAT</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">CRS</div><div class="value">WGS 84</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Geographic Coordinates (Lat / Lon)</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>Geographic coordinates (latitude and longitude) of the crime location in <strong>WGS 84 decimal degrees</strong> (EPSG:4326), the same standard used by GPS systems and web maps. These coordinates correspond to the anonymized block-level address in <code>LOCATION</code>, not the exact incident point. Negative LON values are expected for Los Angeles (western hemisphere).</p>
+        <div class="note-box"><strong>Watch for:</strong> Some records have LAT=0, LON=0 (null island) — these are geocoding failures. Filter them out before mapping. Valid bbox: LAT 33.7–34.4, LON −119.0 to −118.1.</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">34.2124, −118.4092</span>
+          <span class="val-tag">34.0339, −118.3747</span>
+          <span class="val-tag">33.9812, −118.2741</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 4: CRIME CLASSIFICATION                -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#e05252"></div>
+    <div class="group-label">Group 4 — Crime Classification</div>
+    <div class="group-count">6 fields</div>
+  </div>
+
+  <!-- Part 1-2 -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Part 1-2</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-int">INTEGER</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Values</div><div class="value">1 or 2</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">UCR Crime Severity Class</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>Classifies each crime under the FBI's <strong>Uniform Crime Reporting (UCR) program</strong> into one of two severity tiers. This classification is used by law enforcement agencies across the U.S. to produce standardized crime statistics and enables national comparisons. In this dataset: <strong>60% are Part 1</strong> (600k) and <strong>40% are Part 2</strong> (400k).</p>
+      </div>
+      <div class="field-values">
+        <h4>Values</h4>
+        <table class="enc-table">
+          <tr><th>Value</th><th>Meaning</th><th>Examples</th></tr>
+          <tr><td>1</td><td>Part 1 — Serious / Index crimes. Tracked nationally by FBI.</td><td>Homicide, rape, robbery, aggravated assault, burglary, larceny-theft, auto theft, arson</td></tr>
+          <tr><td>2</td><td>Part 2 — All other offenses reported to LAPD.</td><td>Simple assault, fraud, drug offenses, vandalism, DUI, disorderly conduct</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crm Cd -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Crm Cd</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-int">INTEGER</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">~140 codes</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Primary Crime Code</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The <strong>primary LAPD crime code</strong> identifying the most serious offense in the incident. Based on the UCR hierarchy rule: when multiple crimes occur in one incident, only the most serious is coded as the primary charge. This is the main field for crime type classification and is always populated.</p>
+        <div class="note-box"><strong>Relationship:</strong> <code>Crm Cd</code> and <code>Crm Cd 1</code> should be identical (they generally are). <code>Crm Cd 2–4</code> capture additional charges from the same incident.</div>
+      </div>
+      <div class="field-values">
+        <h4>Top Crime Codes (by volume)</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Description</th><th>Count</th></tr>
+          <tr><td>510</td><td>Vehicle — Stolen</td><td>115,184</td></tr>
+          <tr><td>624</td><td>Battery — Simple Assault</td><td>74,821</td></tr>
+          <tr><td>330</td><td>Burglary from Vehicle</td><td>63,515</td></tr>
+          <tr><td>354</td><td>Theft of Identity</td><td>62,536</td></tr>
+          <tr><td>740</td><td>Vandalism — Felony</td><td>61,086</td></tr>
+          <tr><td>310</td><td>Burglary</td><td>57,871</td></tr>
+          <tr><td>230</td><td>Assault with Deadly Weapon</td><td>53,523</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crm Cd Desc -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Crm Cd Desc</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">~140</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Primary Crime Description</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>Full text description of the primary crime code — the human-readable label for <code>Crm Cd</code>. These descriptions follow LAPD/UCR terminology and may include dollar thresholds (e.g., petty theft &lt;$950 vs. grand theft &gt;$950.01) which are defined by California Penal Code.</p>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">THEFT OF IDENTITY</span>
+          <span class="val-tag">VEHICLE - STOLEN</span>
+          <span class="val-tag">BURGLARY FROM VEHICLE</span>
+          <span class="val-tag">ASSAULT WITH DEADLY WEAPON, AGGRAVATED ASSAULT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mocodes -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Mocodes</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-mid">15.1%</div><div class="null-bar-wrap"><div class="null-bar bar-mid" style="width:15.1%"></div></div></div>
+      <div class="field-cell"><div class="label">Format</div><div class="value">Space-sep list</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Modus Operandi Codes</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p><em>Modus Operandi</em> (Latin: "method of operation") codes describe <strong>how the crime was committed</strong>. Each record may have multiple space-separated codes. They are LAPD-internal numeric codes capturing tactical details: whether a vehicle was used, if a suspect wore a mask, the type of entry method for a burglary, how a victim was approached, etc. These codes are crucial for linking related crimes (serial offenders often share the same M.O.).</p>
+        <div class="note-box"><strong>Multi-value field:</strong> Must be split on space before analysis. Example: <code>"0416 0334 2004 1822"</code> represents 4 separate M.O. codes. A full Mocode reference table is available from the LAPD.</div>
+      </div>
+      <div class="field-values">
+        <h4>Sample Values</h4>
+        <div class="values-list">
+          <span class="val-tag">0377 (victim contacted via phone)</span>
+          <span class="val-tag">0344 (vehicle used)</span>
+          <span class="val-tag">0416 (force used)</span>
+          <span class="val-tag">1300 (point of entry: window)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crm Cd 1-4 -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Crm Cd 1 / 2 / 3 / 4</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-float">FLOAT</span></div></div>
+      <div class="field-cell"><div class="label">Nulls Cd2</div><div class="value null-high">93.1%</div><div class="null-bar-wrap"><div class="null-bar bar-high" style="width:93.1%"></div></div></div>
+      <div class="field-cell"><div class="label">Nulls Cd3</div><div class="value null-high">99.8%</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Additional Crime Codes (1st–4th charge)</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>These four fields capture up to four crime codes for incidents involving <strong>multiple offenses</strong>. <code>Crm Cd 1</code> is the primary charge (mirrors <code>Crm Cd</code>), while codes 2, 3, and 4 are secondary, tertiary, and quaternary charges. For most crimes, only one charge is recorded. The escalating null rates (0% → 93% → 99.8% → 100%) reflect that multi-charge incidents are uncommon.</p>
+        <div class="note-box"><strong>Use case:</strong> When a robbery also involves assault and weapon charges, all three codes appear here. These fields are valuable for analyzing crime complexity and co-occurrence patterns.</div>
+      </div>
+      <div class="field-values">
+        <h4>Null Rates by Field</h4>
+        <table class="enc-table">
+          <tr><th>Field</th><th>Null %</th><th>Interpretation</th></tr>
+          <tr><td>Crm Cd 1</td><td>0.0%</td><td>Always present — same as Crm Cd</td></tr>
+          <tr><td>Crm Cd 2</td><td>93.1%</td><td>Only 7% of incidents have a 2nd charge</td></tr>
+          <tr><td>Crm Cd 3</td><td>99.8%</td><td>Very rare 3rd charge</td></tr>
+          <tr><td>Crm Cd 4</td><td>100.0%</td><td>Essentially never used in this dataset</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 5: VICTIM                              -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#b07ef7"></div>
+    <div class="group-label">Group 5 — Victim Demographics</div>
+    <div class="group-count">3 fields</div>
+  </div>
+
+  <!-- Vict Age -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Vict Age</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-int">INTEGER</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Range</div><div class="value">0 – 99+</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Victim Age</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The age of the victim in years at the time of the crime. While the field shows 0% nulls, the value <strong>0 is used as a placeholder</strong> for unknown age or non-individual victims (e.g., crimes against businesses, vehicles, or property with no identified personal victim). Values above 99 should be treated as data entry errors.</p>
+        <div class="note-box"><strong>Filter for personal crimes:</strong> When analyzing victim demographics, filter out <code>Vict Age == 0</code> as these represent cases where no individual victim age was recorded (businesses, unknown victims).</div>
+      </div>
+      <div class="field-values">
+        <h4>Age Distribution Notes</h4>
+        <div class="values-list">
+          <span class="val-tag">0 = Unknown / Non-personal victim</span>
+          <span class="val-tag">Peak range: 25–45 years</span>
+          <span class="val-tag">Values &gt;99: likely data errors</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vict Sex -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Vict Sex</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-mid">14.4%</div><div class="null-bar-wrap"><div class="null-bar bar-mid" style="width:14.4%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">5 codes</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Victim Sex</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>The sex of the victim as recorded by the reporting officer. The <strong>14.4% null rate</strong> corresponds to incidents where no individual victim was involved (e.g., vehicle theft, vandalism) or where sex was not recorded.</p>
+      </div>
+      <div class="field-values">
+        <h4>Values</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Meaning</th><th>Count</th></tr>
+          <tr><td>M</td><td>Male</td><td>403,842</td></tr>
+          <tr><td>F</td><td>Female</td><td>358,553</td></tr>
+          <tr><td>X</td><td>Unknown / Not stated</td><td>97,753</td></tr>
+          <tr><td>H</td><td>Data entry anomaly (rare)</td><td>114</td></tr>
+          <tr><td>-</td><td>Not applicable</td><td>1</td></tr>
+          <tr><td>NULL</td><td>No personal victim (property crime, etc.)</td><td>144,631</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vict Descent -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Vict Descent</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-mid">14.4%</div><div class="null-bar-wrap"><div class="null-bar bar-mid" style="width:14.4%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">19 codes</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Victim Descent / Ethnicity</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>A single-letter code representing the victim's racial/ethnic descent, as recorded by the reporting officer (not self-reported by the victim). LAPD uses its own coding system, which predates modern demographic standards. This field is important for equity analysis but must be interpreted carefully: it reflects officer perception, may not align with victim self-identification, and is absent for non-personal crimes.</p>
+      </div>
+      <div class="field-values">
+        <h4>Full Code Reference</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Descent</th><th>Count</th><th>Code</th><th>Descent</th></tr>
+          <tr><td>H</td><td>Hispanic / Latino / Mexican</td><td>296,370</td><td>L</td><td>Laotian</td></tr>
+          <tr><td>W</td><td>White</td><td>201,429</td><td>P</td><td>Pacific Islander</td></tr>
+          <tr><td>B</td><td>Black</td><td>135,809</td><td>S</td><td>Samoan</td></tr>
+          <tr><td>X</td><td>Unknown</td><td>106,661</td><td>U</td><td>Hawaiian</td></tr>
+          <tr><td>O</td><td>Other</td><td>78,001</td><td>V</td><td>Vietnamese</td></tr>
+          <tr><td>A</td><td>Other Asian</td><td>21,338</td><td>Z</td><td>Asian Indian</td></tr>
+          <tr><td>K</td><td>Korean</td><td>5,990</td><td>I</td><td>American Indian / Alaskan Native</td></tr>
+          <tr><td>F</td><td>Filipino</td><td>4,838</td><td>D</td><td>Cambodian</td></tr>
+          <tr><td>C</td><td>Chinese</td><td>4,631</td><td>G</td><td>Guamanian</td></tr>
+          <tr><td>J</td><td>Japanese</td><td>1,586</td><td></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 6: PREMISES & WEAPON                   -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#e0883a"></div>
+    <div class="group-label">Group 6 — Premises &amp; Weapon</div>
+    <div class="group-count">4 fields</div>
+  </div>
+
+  <!-- Premis Cd / Desc -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Premis Cd / Premis Desc</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-float">FLOAT</span> / <span class="type-badge type-str">STR</span></div></div>
+      <div class="field-cell"><div class="label">Nulls Cd</div><div class="value null-0">0.01%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0.01%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">~298 types</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Premises Type (Code + Description)</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>Identifies <strong>what type of location</strong> the crime occurred in or at. The code (<code>Premis Cd</code>) is a LAPD numeric identifier; <code>Premis Desc</code> is its text label. This field is critical for contextualizing crime: a robbery at a bank, a residence, or a parking lot each carries different implications and prevention strategies.</p>
+      </div>
+      <div class="field-values">
+        <h4>Most Common Premises</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Description</th></tr>
+          <tr><td>101</td><td>Street</td></tr>
+          <tr><td>501</td><td>Single Family Dwelling</td></tr>
+          <tr><td>102</td><td>Sidewalk</td></tr>
+          <tr><td>108</td><td>Parking Lot</td></tr>
+          <tr><td>502</td><td>Multi-Unit Dwelling (Apartment/Condo)</td></tr>
+          <tr><td>103</td><td>Alley</td></tr>
+          <tr><td>404</td><td>Vehicle, Passenger / Truck</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weapon Used Cd / Desc -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Weapon Used Cd / Weapon Desc</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-float">FLOAT</span> / <span class="type-badge type-str">STR</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-high">67.4%</div><div class="null-bar-wrap"><div class="null-bar bar-high" style="width:67.4%"></div></div></div>
+      <div class="field-cell"><div class="label">~677k null</div><div class="value">No weapon</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Weapon Used (Code + Description)</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>Identifies the weapon used in the crime, if any. The <strong>67.4% null rate is semantically meaningful</strong>: it does not indicate missing data but rather that no weapon was used or no weapon was applicable (e.g., identity theft, vehicle theft). When populated, it describes the weapon type via a LAPD code and text label. For analysis, nulls should be recoded as "No Weapon / Not Applicable."</p>
+      </div>
+      <div class="field-values">
+        <h4>Sample Weapon Types</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Description</th></tr>
+          <tr><td>400</td><td>Strong-Arm (Hands, Fist, Feet, Body Force)</td></tr>
+          <tr><td>200</td><td>Knife / Blade (6 inches or less)</td></tr>
+          <tr><td>102</td><td>Hand Gun</td></tr>
+          <tr><td>104</td><td>Semi-Automatic Pistol</td></tr>
+          <tr><td>500</td><td>Unknown Weapon / Other Weapon</td></tr>
+          <tr><td>114</td><td>Air Pistol / BB Gun</td></tr>
+          <tr><td>NULL</td><td>No weapon involved</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- GROUP 7: CASE STATUS                         -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-dot" style="background:#6ea8f0"></div>
+    <div class="group-label">Group 7 — Case Status</div>
+    <div class="group-count">2 fields</div>
+  </div>
+
+  <!-- Status / Status Desc -->
+  <div class="field-card">
+    <div class="field-top">
+      <div class="field-name">Status / Status Desc</div>
+      <div class="field-cell"><div class="label">Type</div><div class="value"><span class="type-badge type-str">STRING</span></div></div>
+      <div class="field-cell"><div class="label">Nulls</div><div class="value null-0">~0.0%</div><div class="null-bar-wrap"><div class="null-bar bar-0" style="width:0%"></div></div></div>
+      <div class="field-cell"><div class="label">Unique</div><div class="value">6 statuses</div></div>
+      <div class="field-cell"><div class="label">Human-readable name</div><div class="value">Investigation / Disposition Status</div></div>
+    </div>
+    <div class="field-body">
+      <div class="field-desc">
+        <h4>Description</h4>
+        <p>Indicates the <strong>current disposition or resolution status</strong> of the criminal case. This is a snapshot at time of data export — statuses can change over time as investigations progress. The dominant status (<strong>80% "Invest Cont"</strong>) reflects the reality that most reported crimes in any major city do not result in an arrest. This metric — the clearance rate — is a standard measure of police effectiveness used nationally.</p>
+        <div class="note-box"><strong>Clearance rate analysis:</strong> Divide (AA + AO + JA + JO) by total cases to compute the clearance rate. Nationally, clearance rates average ~50% for violent crimes and ~20% for property crimes. Compare LAPD's rates by crime type and area against these benchmarks.</div>
+      </div>
+      <div class="field-values">
+        <h4>Status Codes</h4>
+        <table class="enc-table">
+          <tr><th>Code</th><th>Full Name</th><th>Meaning</th><th>Count</th></tr>
+          <tr><td>IC</td><td>Invest Cont</td><td>Investigation Continued — case open, no arrest yet</td><td>802,772</td></tr>
+          <tr><td>AO</td><td>Adult Other</td><td>Adult suspect handled via non-arrest disposition (e.g., cited, referred)</td><td>109,799</td></tr>
+          <tr><td>AA</td><td>Adult Arrest</td><td>Adult suspect arrested</td><td>87,152</td></tr>
+          <tr><td>JA</td><td>Juv Arrest</td><td>Juvenile suspect arrested</td><td>3,285</td></tr>
+          <tr><td>JO</td><td>Juv Other</td><td>Juvenile handled via non-arrest disposition</td><td>1,879</td></tr>
+          <tr><td>UNK</td><td>Unknown</td><td>Status not recorded</td><td>7</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUMMARY TABLE ══ -->
+  <div class="section-title">Quick Reference — All 28 Fields</div>
+  <table class="enc-table" style="width:100%">
+    <tr>
+      <th>#</th><th>Field Name</th><th>Type</th><th>Nulls %</th><th>Group</th><th>Key Note</th>
+    </tr>
+    <tr><td>1</td><td>DR_NO</td><td>INTEGER</td><td>0%</td><td>Identification</td><td>Primary key; encodes year + area + sequence</td></tr>
+    <tr><td>2</td><td>Date Rptd</td><td>DATETIME</td><td>0%</td><td>Date &amp; Time</td><td>When reported to LAPD; not when it happened</td></tr>
+    <tr><td>3</td><td>DATE OCC</td><td>DATETIME</td><td>0%</td><td>Date &amp; Time</td><td>When crime occurred — use this for trend analysis</td></tr>
+    <tr><td>4</td><td>TIME OCC</td><td>INTEGER</td><td>0%</td><td>Date &amp; Time</td><td>HHMM format; 1200 may mean "unknown"</td></tr>
+    <tr><td>5</td><td>AREA</td><td>INTEGER</td><td>0%</td><td>Geography</td><td>LAPD division code (1–21)</td></tr>
+    <tr><td>6</td><td>AREA NAME</td><td>STRING</td><td>0%</td><td>Geography</td><td>Text name of LAPD division</td></tr>
+    <tr><td>7</td><td>Rpt Dist No</td><td>INTEGER</td><td>0%</td><td>Geography</td><td>Sub-district (~block cluster); ~1,200 unique</td></tr>
+    <tr><td>8</td><td>Part 1-2</td><td>INTEGER</td><td>0%</td><td>Crime Class</td><td>1=serious, 2=minor (FBI UCR classification)</td></tr>
+    <tr><td>9</td><td>Crm Cd</td><td>INTEGER</td><td>0%</td><td>Crime Class</td><td>Primary LAPD crime code</td></tr>
+    <tr><td>10</td><td>Crm Cd Desc</td><td>STRING</td><td>0%</td><td>Crime Class</td><td>Text label for Crm Cd</td></tr>
+    <tr><td>11</td><td>Mocodes</td><td>STRING</td><td>15.1%</td><td>Crime Class</td><td>Space-separated M.O. codes; must be split for analysis</td></tr>
+    <tr><td>12</td><td>Vict Age</td><td>INTEGER</td><td>0%*</td><td>Victim</td><td>0 = unknown/non-personal victim; filter before analysis</td></tr>
+    <tr><td>13</td><td>Vict Sex</td><td>STRING</td><td>14.4%</td><td>Victim</td><td>M/F/X; null = no personal victim</td></tr>
+    <tr><td>14</td><td>Vict Descent</td><td>STRING</td><td>14.4%</td><td>Victim</td><td>19-code LAPD ethnicity system; officer-recorded</td></tr>
+    <tr><td>15</td><td>Premis Cd</td><td>FLOAT</td><td>0.01%</td><td>Premises</td><td>Location type code (~298 types)</td></tr>
+    <tr><td>16</td><td>Premis Desc</td><td>STRING</td><td>0.06%</td><td>Premises</td><td>Text description of premises type</td></tr>
+    <tr><td>17</td><td>Weapon Used Cd</td><td>FLOAT</td><td>67.4%</td><td>Weapon</td><td>Null = no weapon; not missing data</td></tr>
+    <tr><td>18</td><td>Weapon Desc</td><td>STRING</td><td>67.4%</td><td>Weapon</td><td>Text label for weapon code</td></tr>
+    <tr><td>19</td><td>Status</td><td>STRING</td><td>~0%</td><td>Status</td><td>Short code: IC/AA/AO/JA/JO/UNK</td></tr>
+    <tr><td>20</td><td>Status Desc</td><td>STRING</td><td>0%</td><td>Status</td><td>Full text of status; 80% "Invest Cont" (open)</td></tr>
+    <tr><td>21</td><td>Crm Cd 1</td><td>FLOAT</td><td>0%</td><td>Crime Class</td><td>Same as Crm Cd (primary charge)</td></tr>
+    <tr><td>22</td><td>Crm Cd 2</td><td>FLOAT</td><td>93.1%</td><td>Crime Class</td><td>Secondary charge; only 7% of incidents</td></tr>
+    <tr><td>23</td><td>Crm Cd 3</td><td>FLOAT</td><td>99.8%</td><td>Crime Class</td><td>Tertiary charge; very rare</td></tr>
+    <tr><td>24</td><td>Crm Cd 4</td><td>FLOAT</td><td>100%</td><td>Crime Class</td><td>Practically unused in this dataset</td></tr>
+    <tr><td>25</td><td>LOCATION</td><td>STRING</td><td>0%</td><td>Geography</td><td>Block-level address; strip whitespace before use</td></tr>
+    <tr><td>26</td><td>Cross Street</td><td>STRING</td><td>84.7%</td><td>Geography</td><td>Intersection name; null = mid-block (expected)</td></tr>
+    <tr><td>27</td><td>LAT</td><td>FLOAT</td><td>0%*</td><td>Geography</td><td>WGS84 lat; filter LAT=0 (geocoding failure)</td></tr>
+    <tr><td>28</td><td>LON</td><td>FLOAT</td><td>0%*</td><td>Geography</td><td>WGS84 lon; negative = western hemisphere (expected)</td></tr>
+  </table>
+
+  <!-- ══ FOOTER ══ -->
+  <div class="footer">
+    <span>LAPD Crime Data 2020–2024 | 1,004,894 records | 28 fields | Project: LAPD Crime Analysis</span>
+    <span>data.lacity.org — Los Angeles Open Data Portal | UCR Standard: FBI</span>
+  </div>
+
+</div>
+</body>
+</html>

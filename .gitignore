@@ -1,0 +1,76 @@
+# ── DATA (never commit raw or processed data files) ──────────────────────────
+data/raw/
+data/processed/
+data/external/*.csv
+data/external/*.shp
+data/external/*.dbf
+data/external/*.prj
+data/external/*.shx
+*.csv
+*.parquet
+*.feather
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+
+# ── MODELS ───────────────────────────────────────────────────────────────────
+outputs/models/
+*.joblib
+*.model
+
+# ── PYTHON ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.mypy_cache/
+.ruff_cache/
+
+# ── JUPYTER ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ── NODE / DASHBOARD ─────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+*.tsbuildinfo
+
+# ── ENV & SECRETS ─────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets.json
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# ── IDE ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── OUTPUTS (figures and reports ARE committed; large binaries are not) ───────
+outputs/figures/*.png
+outputs/figures/*.pdf
+!outputs/figures/.gitkeep
+outputs/reports/*.html
+!outputs/reports/.gitkeep

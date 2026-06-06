@@ -22,11 +22,24 @@ const MAPS = [
     icon: '👥',
     src: '/maps/tract-choropleth.html',
     title: 'Relative Crime Risk by Census Tract',
-    badge: '~2,300 Tracts',
+    badge: '~2,500 Tracts',
     insight: [
       { icon: '🔎', text: 'Normalising by population exposes true hotspots: some tracts with low absolute crime numbers have very high per-capita risk due to sparse population.' },
       { icon: '📍', text: 'Downtown and South LA tracts show the highest density, but certain industrial/commercial tracts with near-zero residents show extreme ratios — a data artefact worth noting.' },
       { icon: '🏘️', text: 'This layer enables equity analysis: identifying communities that disproportionately bear crime risk relative to their size.' },
+    ],
+  },
+  {
+    id: 'vulnerability',
+    label: 'Vulnerability Index',
+    icon: '⚠️',
+    src: '/maps/vulnerability-choropleth.html',
+    title: 'Socioeconomic Vulnerability by Census Tract',
+    badge: 'Poverty + Income + Crime',
+    insight: [
+      { icon: '📊', text: 'Composite index combining crime rate (40%), poverty rate (35%) and inverse median income (25%). Use the toolbar buttons inside the map to explore each dimension individually.' },
+      { icon: '🔴', text: 'Very High vulnerability tracts concentrate in South LA, East LA and parts of the San Fernando Valley — areas where high crime, high poverty and low income overlap.' },
+      { icon: '💡', text: 'Comparing this layer with the Crime/1,000 map reveals tracts where poverty is high but crime is suppressed — and vice versa — informing targeted policy interventions.' },
     ],
   },
 ];

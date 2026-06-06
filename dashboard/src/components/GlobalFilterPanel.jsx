@@ -18,7 +18,7 @@ const FILTER_META = {
 // ── Scope badges (which charts each filter affects) ──────────────────────────
 const SCOPE = {
   part:     ['Tendencia', 'Divisiones', 'Categorías', 'Locales'],
-  category: ['Divisiones', 'Víctimas'],
+  category: ['Mapa', 'Divisiones', 'Víctimas'],
   area:     ['Categorías', 'Víctimas'],
   interactive: ['Categorías', 'Divisiones', 'Víctimas'],
 };

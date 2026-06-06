@@ -855,6 +855,15 @@ fetch('/data/hourly_dow.json')
   .catch(function() {
     document.getElementById('hc-label').innerHTML = 'Hourly data<small>unavailable</small>';
   });
+
+// ── Cross-filter bridge: receive category from parent React app ────────────
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'SET_CATEGORY') return;
+  var cat = e.data.category || '';
+  var sel = document.getElementById('cat-select');
+  if (sel) sel.value = cat;
+  applyCatFilter(cat);
+});
 </script>
 </body>
 </html>

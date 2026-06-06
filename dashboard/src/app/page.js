@@ -333,7 +333,7 @@ export default function Home() {
           </div>
           {geoView === 'map' ? (
             <div>
-              <LaMap />
+              <LaMap category={filters.category} />
               <p style={{ fontSize: 12, color: '#7b82a0', marginTop: 10, textAlign: 'center' }}>
                 Division boundaries from LAPD GeoHub · Crime stats from LAPD Open Data 2020-2024
               </p>

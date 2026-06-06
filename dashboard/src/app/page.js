@@ -12,6 +12,7 @@ import WeatherChart       from '@/components/WeatherChart';
 import UnemploymentChart  from '@/components/UnemploymentChart';
 import ReportingLagChart  from '@/components/ReportingLagChart';
 import VictimChart        from '@/components/VictimChart';
+import PremiseChart       from '@/components/PremiseChart';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
 
@@ -103,6 +104,7 @@ export default function Home() {
   const [activeNav,  setActiveNav]  = useState('overview');
   const [geoView,    setGeoView]    = useState('map');
   const [showTop,    setShowTop]    = useState(false);
+  const [activePart, setActivePart] = useState('all');
 
   useEffect(() => {
     const b = '/data';
@@ -114,8 +116,9 @@ export default function Home() {
       fetch(`${b}/categories.json`).then(r => r.json()),
       fetch(`${b}/weather_daily.json`).then(r => r.json()),
       fetch(`${b}/victims.json`).then(r => r.json()),
-    ]).then(([summary, monthly, hourly, division, categories, weather, victims]) => {
-      setData({ summary, monthly, hourly, division, categories, weather, victims });
+      fetch(`${b}/premises.json`).then(r => r.json()),
+    ]).then(([summary, monthly, hourly, division, categories, weather, victims, premises]) => {
+      setData({ summary, monthly, hourly, division, categories, weather, victims, premises });
     }).catch(() => setData('error'));
   }, []);
 
@@ -149,7 +152,7 @@ export default function Home() {
     </Shell>
   );
 
-  const { summary, monthly, hourly, division, categories, weather, victims } = data;
+  const { summary, monthly, hourly, division, categories, weather, victims, premises } = data;
   const clrColor = summary.clearance_rate >= 20 ? '#3ecf8e'
                  : summary.clearance_rate >= 12 ? '#e0c066' : '#e05252';
 
@@ -184,6 +187,43 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── Part 1/2 global filter strip ────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '12px 32px', background: '#0c0e1a',
+        borderBottom: '1px solid #1e2030', flexWrap: 'wrap',
+      }}>
+        <span style={{ fontSize: 11, color: '#7b82a0', fontWeight: 600, letterSpacing: '.06em' }}>
+          FILTRO FBI UCR:
+        </span>
+        {[
+          { v: 'all', label: 'Todos los delitos',        color: '#e8eaf0', bg: 'rgba(255,255,255,.06)', border: 'rgba(255,255,255,.15)' },
+          { v: 'p1',  label: 'Part 1 — Delitos Graves',  color: '#e0883a', bg: 'rgba(224,136,58,.1)',   border: 'rgba(224,136,58,.4)'  },
+          { v: 'p2',  label: 'Part 2 — Delitos Menores', color: '#4f8ef7', bg: 'rgba(79,142,247,.1)',   border: 'rgba(79,142,247,.4)'  },
+        ].map(o => (
+          <button key={o.v} onClick={() => setActivePart(o.v)} style={{
+            padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: activePart === o.v ? 700 : 400,
+            border:  `1px solid ${activePart === o.v ? o.border : '#2a2d3a'}`,
+            background: activePart === o.v ? o.bg : 'transparent',
+            color:   activePart === o.v ? o.color : '#7b82a0',
+            cursor: 'pointer', transition: 'all .15s',
+          }}>
+            {o.label}
+            {o.v !== 'all' && activePart === o.v && (
+              <span style={{ marginLeft: 6, opacity: .7 }}>
+                {o.v === 'p1'
+                  ? `${((summary.crimes_p1 / summary.total_crimes) * 100).toFixed(0)}%`
+                  : `${((summary.crimes_p2 / summary.total_crimes) * 100).toFixed(0)}%`
+                } del total
+              </span>
+            )}
+          </button>
+        ))}
+        <span style={{ fontSize: 11, color: '#3a3f55', marginLeft: 4 }}>
+          Afecta: tendencia mensual · divisiones · categorías · lugares
+        </span>
       </div>
 
       {/* ── Thin section tab nav ─────────────────────────────────────────── */}
@@ -253,7 +293,7 @@ export default function Home() {
             <KpiCard label="2024 vs 2023"    value={summary.crimes_2024.toLocaleString()} trend={summary.yoy_2024_vs_2023} sub="Year-over-year change" color="#e0883a" icon="📈" />
             <KpiCard label="Reporting Lag"   value={`${summary.avg_reporting_lag}d`} sub="Avg days: crime occurred → report filed" color="#a78bfa" icon="🕐" />
           </div>
-          <MonthlyTrend data={monthly} />
+          <MonthlyTrend data={monthly} activePart={activePart} />
           <div style={{ marginTop: 20 }}>
             <ReportingLagChart data={monthly} />
           </div>
@@ -274,7 +314,7 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <DivisionBar data={division} />
+            <DivisionBar data={division} activePart={activePart} />
           )}
         </Section>
 
@@ -286,8 +326,15 @@ export default function Home() {
 
         {/* CATEGORIES */}
         <Section id="categories">
-          <SectionHeader title="Crime Categories" sub="UCR Part 1 & 2 classification — 18 categories · red bars indicate violent crime" badge="18 categories" />
-          <CategoryChart data={categories} />
+          <SectionHeader
+            title="Categorías de Crimen"
+            sub="Clasificación UCR Part 1 (graves FBI) y Part 2 (menores) — 18 categorías · el toggle global filtra todo el dashboard"
+            badge="18 categorías"
+          />
+          <CategoryChart data={categories} activePart={activePart} />
+          <div style={{ marginTop: 20 }}>
+            <PremiseChart data={premises} activePart={activePart} />
+          </div>
         </Section>
 
         {/* VICTIMS */}

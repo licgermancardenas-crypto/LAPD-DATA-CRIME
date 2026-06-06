@@ -3,126 +3,210 @@
     "name": "Central",
     "crimes": 69668,
     "clearance_rate": 14.3,
-    "violent_pct": 28.6
+    "violent_pct": 28.6,
+    "crimes_p1": 39842,
+    "clearance_rate_p1": 9.0,
+    "crimes_p2": 29826,
+    "clearance_rate_p2": 21.4
   },
   {
     "name": "77Th Street",
     "crimes": 61756,
     "clearance_rate": 24.1,
-    "violent_pct": 37.9
+    "violent_pct": 37.9,
+    "crimes_p1": 31576,
+    "clearance_rate_p1": 14.6,
+    "crimes_p2": 30180,
+    "clearance_rate_p2": 34.0
   },
   {
     "name": "Pacific",
     "crimes": 59513,
     "clearance_rate": 12.8,
-    "violent_pct": 17.3
+    "violent_pct": 17.3,
+    "crimes_p1": 35767,
+    "clearance_rate_p1": 8.6,
+    "crimes_p2": 23746,
+    "clearance_rate_p2": 19.0
   },
   {
     "name": "Southwest",
     "crimes": 57434,
     "clearance_rate": 19.0,
-    "violent_pct": 29.0
+    "violent_pct": 29.0,
+    "crimes_p1": 28608,
+    "clearance_rate_p1": 14.7,
+    "crimes_p2": 28826,
+    "clearance_rate_p2": 23.3
   },
   {
     "name": "Hollywood",
     "crimes": 52429,
     "clearance_rate": 15.7,
-    "violent_pct": 27.3
+    "violent_pct": 27.3,
+    "crimes_p1": 29396,
+    "clearance_rate_p1": 10.3,
+    "crimes_p2": 23033,
+    "clearance_rate_p2": 22.6
   },
   {
     "name": "N Hollywood",
     "crimes": 51106,
     "clearance_rate": 25.4,
-    "violent_pct": 22.2
+    "violent_pct": 22.2,
+    "crimes_p1": 28616,
+    "clearance_rate_p1": 14.6,
+    "crimes_p2": 22490,
+    "clearance_rate_p2": 39.0
   },
   {
     "name": "Olympic",
     "crimes": 50070,
     "clearance_rate": 20.4,
-    "violent_pct": 28.4
+    "violent_pct": 28.4,
+    "crimes_p1": 27723,
+    "clearance_rate_p1": 10.0,
+    "crimes_p2": 22347,
+    "clearance_rate_p2": 33.4
   },
   {
     "name": "Southeast",
     "crimes": 49929,
     "clearance_rate": 16.3,
-    "violent_pct": 37.4
+    "violent_pct": 37.4,
+    "crimes_p1": 25202,
+    "clearance_rate_p1": 12.4,
+    "crimes_p2": 24727,
+    "clearance_rate_p2": 20.3
   },
   {
     "name": "Newton",
     "crimes": 49173,
     "clearance_rate": 15.7,
-    "violent_pct": 31.4
+    "violent_pct": 31.4,
+    "crimes_p1": 28241,
+    "clearance_rate_p1": 10.3,
+    "crimes_p2": 20932,
+    "clearance_rate_p2": 23.0
   },
   {
     "name": "Wilshire",
     "crimes": 48237,
     "clearance_rate": 16.0,
-    "violent_pct": 21.2
+    "violent_pct": 21.2,
+    "crimes_p1": 29243,
+    "clearance_rate_p1": 10.2,
+    "crimes_p2": 18994,
+    "clearance_rate_p2": 24.8
   },
   {
     "name": "Rampart",
     "crimes": 46824,
     "clearance_rate": 22.8,
-    "violent_pct": 31.0
+    "violent_pct": 31.0,
+    "crimes_p1": 25445,
+    "clearance_rate_p1": 15.8,
+    "crimes_p2": 21379,
+    "clearance_rate_p2": 31.1
   },
   {
     "name": "West La",
     "crimes": 45725,
     "clearance_rate": 15.4,
-    "violent_pct": 15.6
+    "violent_pct": 15.6,
+    "crimes_p1": 26847,
+    "clearance_rate_p1": 9.6,
+    "crimes_p2": 18878,
+    "clearance_rate_p2": 23.8
   },
   {
     "name": "Northeast",
     "crimes": 42951,
     "clearance_rate": 19.6,
-    "violent_pct": 19.9
+    "violent_pct": 19.9,
+    "crimes_p1": 25339,
+    "clearance_rate_p1": 9.5,
+    "crimes_p2": 17612,
+    "clearance_rate_p2": 34.2
   },
   {
     "name": "Van Nuys",
     "crimes": 42881,
     "clearance_rate": 23.9,
-    "violent_pct": 22.1
+    "violent_pct": 22.1,
+    "crimes_p1": 24062,
+    "clearance_rate_p1": 13.5,
+    "crimes_p2": 18819,
+    "clearance_rate_p2": 37.4
   },
   {
     "name": "West Valley",
     "crimes": 42146,
     "clearance_rate": 26.6,
-    "violent_pct": 23.8
+    "violent_pct": 23.8,
+    "crimes_p1": 22869,
+    "clearance_rate_p1": 14.8,
+    "crimes_p2": 19277,
+    "clearance_rate_p2": 40.5
   },
   {
     "name": "Devonshire",
     "crimes": 41743,
     "clearance_rate": 20.4,
-    "violent_pct": 21.0
+    "violent_pct": 21.0,
+    "crimes_p1": 23803,
+    "clearance_rate_p1": 10.1,
+    "crimes_p2": 17940,
+    "clearance_rate_p2": 34.1
   },
   {
     "name": "Harbor",
     "crimes": 41392,
     "clearance_rate": 25.5,
-    "violent_pct": 27.5
+    "violent_pct": 27.5,
+    "crimes_p1": 21667,
+    "clearance_rate_p1": 14.1,
+    "crimes_p2": 19725,
+    "clearance_rate_p2": 37.9
   },
   {
     "name": "Topanga",
     "crimes": 41365,
     "clearance_rate": 25.8,
-    "violent_pct": 22.4
+    "violent_pct": 22.4,
+    "crimes_p1": 23425,
+    "clearance_rate_p1": 15.2,
+    "crimes_p2": 17940,
+    "clearance_rate_p2": 39.6
   },
   {
     "name": "Mission",
     "crimes": 40342,
     "clearance_rate": 26.5,
-    "violent_pct": 26.9
+    "violent_pct": 26.9,
+    "crimes_p1": 21213,
+    "clearance_rate_p1": 13.5,
+    "crimes_p2": 19129,
+    "clearance_rate_p2": 41.0
   },
   {
     "name": "Hollenbeck",
     "crimes": 37081,
     "clearance_rate": 19.4,
-    "violent_pct": 27.8
+    "violent_pct": 27.8,
+    "crimes_p1": 20407,
+    "clearance_rate_p1": 9.5,
+    "crimes_p2": 16674,
+    "clearance_rate_p2": 31.4
   },
   {
     "name": "Foothill",
     "crimes": 33129,
     "clearance_rate": 25.5,
-    "violent_pct": 25.7
+    "violent_pct": 25.7,
+    "crimes_p1": 17378,
+    "clearance_rate_p1": 12.7,
+    "crimes_p2": 15751,
+    "clearance_rate_p2": 39.7
   }
 ]

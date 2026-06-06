@@ -1,0 +1,47 @@
+[
+  {
+    "premise": "Via Publica",
+    "premise_en": "Public / Open Space",
+    "crimes": 413548,
+    "p1": 298461,
+    "p2": 115087,
+    "share_pct": 41.2,
+    "p1_pct": 72.2
+  },
+  {
+    "premise": "Residencial",
+    "premise_en": "Residential",
+    "crimes": 345691,
+    "p1": 126497,
+    "p2": 219194,
+    "share_pct": 34.4,
+    "p1_pct": 36.6
+  },
+  {
+    "premise": "Comercial",
+    "premise_en": "Commercial",
+    "crimes": 139328,
+    "p1": 90518,
+    "p2": 48810,
+    "share_pct": 13.9,
+    "p1_pct": 65.0
+  },
+  {
+    "premise": "Otros",
+    "premise_en": "Other",
+    "crimes": 69860,
+    "p1": 34316,
+    "p2": 35544,
+    "share_pct": 7.0,
+    "p1_pct": 49.1
+  },
+  {
+    "premise": "Transporte",
+    "premise_en": "Vehicle",
+    "crimes": 36467,
+    "p1": 6877,
+    "p2": 29590,
+    "share_pct": 3.6,
+    "p1_pct": 18.9
+  }
+]

@@ -20,45 +20,49 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function MonthlyTrend({ data }) {
+export default function MonthlyTrend({ data, activePart = 'all' }) {
   if (!data?.length) return null;
 
   const ticks = data.filter(d => d.month === 1).map(d => d.period);
 
+  const avgKey     = activePart === 'p1' ? 'daily_avg_p1'  : activePart === 'p2' ? 'daily_avg_p2'  : 'daily_avg';
+  const rollKey    = activePart === 'p1' ? 'rolling3_p1'   : activePart === 'p2' ? 'rolling3_p2'   : 'rolling3_daily';
+  const barColor   = activePart === 'p1' ? '#e0883a'        : activePart === 'p2' ? '#4f8ef7'        : '#4f8ef7';
+  const partLabel  = activePart === 'p1' ? 'Part 1 – Graves' : activePart === 'p2' ? 'Part 2 – Menores' : 'Todos';
+
   return (
     <div className="card">
-      <p className="section-title">Daily Average Crime Rate — 2020-2024</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+        <p className="section-title">Promedio Diario de Delitos — 2020-2024</p>
+        {activePart !== 'all' && (
+          <span style={{
+            fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 700,
+            background: activePart === 'p1' ? 'rgba(224,136,58,.12)' : 'rgba(79,142,247,.12)',
+            color:      activePart === 'p1' ? '#e0883a'               : '#4f8ef7',
+            border:     activePart === 'p1' ? '1px solid rgba(224,136,58,.3)' : '1px solid rgba(79,142,247,.3)',
+          }}>{partLabel}</span>
+        )}
+      </div>
       <p className="section-sub">
-        Crimes per day (normalized by month length) · eliminates the Feb/March calendar bias
+        Crímenes/día (normalizado por días del mes) · elimina el sesgo calendario feb/mar
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <ComposedChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-          <XAxis
-            dataKey="period"
-            ticks={ticks}
-            tickFormatter={v => v.slice(0, 4)}
-            tick={{ fill: '#7b82a0', fontSize: 11 }}
-            axisLine={{ stroke: '#2a2d3a' }}
-            tickLine={false}
-          />
-          <YAxis
-            yAxisId="left"
-            domain={['auto', 'auto']}
-            tick={{ fill: '#7b82a0', fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={v => `${v.toFixed(0)}`}
-            label={{ value: 'crimes/day', angle: -90, position: 'insideLeft', fill: '#7b82a0', fontSize: 10, dx: -4 }}
-          />
+          <XAxis dataKey="period" ticks={ticks} tickFormatter={v => v.slice(0, 4)}
+            tick={{ fill: '#7b82a0', fontSize: 11 }} axisLine={{ stroke: '#2a2d3a' }} tickLine={false} />
+          <YAxis yAxisId="left" domain={['auto', 'auto']} tick={{ fill: '#7b82a0', fontSize: 11 }}
+            axisLine={false} tickLine={false} tickFormatter={v => v.toFixed(0)}
+            label={{ value: 'delitos/día', angle: -90, position: 'insideLeft', fill: '#7b82a0', fontSize: 10, dx: -4 }} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: 12, fontSize: 12, color: '#7b82a0' }} />
-
-          <ReferenceLine yAxisId="left" x="2020-04" stroke="#7c5cbf" strokeDasharray="4 4" label={{ value: 'COVID', fill: '#7c5cbf', fontSize: 10 }} />
-
-          <Bar yAxisId="left" dataKey="daily_avg"     name="Total crimes/day"   fill="#4f8ef7" opacity={0.6} radius={[2, 2, 0, 0]} />
-          <Bar yAxisId="left" dataKey="daily_violent" name="Violent crimes/day" fill="#e05252" opacity={0.8} radius={[2, 2, 0, 0]} />
-          <Line yAxisId="left" dataKey="rolling3_daily" name="3M Rolling Avg"   stroke="#e0c066" strokeWidth={2} dot={false} />
+          <ReferenceLine yAxisId="left" x="2020-04" stroke="#7c5cbf" strokeDasharray="4 4"
+            label={{ value: 'COVID', fill: '#7c5cbf', fontSize: 10 }} />
+          <Bar  yAxisId="left" dataKey={avgKey}  name="Delitos/día"  fill={barColor} opacity={0.6} radius={[2,2,0,0]} />
+          {activePart === 'all' && (
+            <Bar yAxisId="left" dataKey="daily_violent" name="Violentos/día" fill="#e05252" opacity={0.8} radius={[2,2,0,0]} />
+          )}
+          <Line yAxisId="left" dataKey={rollKey} name="Media 3M" stroke="#e0c066" strokeWidth={2} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

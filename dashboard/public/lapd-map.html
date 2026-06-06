@@ -52,12 +52,15 @@
   .mb.on{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
   .mb:hover:not(.on){color:var(--text)}
 
-  /* ── Theme toggle (top-right) ── */
-  #tt{position:fixed;top:12px;right:12px;z-index:1000;width:34px;height:34px;
-      border-radius:8px;border:1px solid var(--border);background:var(--surface-s);
-      color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;
-      justify-content:center;transition:all .15s}
-  #tt:hover{opacity:.75}
+  /* ── Top-right controls ── */
+  #top-right{position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:6px;align-items:center}
+  #tt,#nb-btn{height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);
+      color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:all .15s}
+  #tt{width:34px;font-size:15px}
+  #tt:hover,#nb-btn:hover{opacity:.8}
+  #nb-btn{padding:0 11px;font-size:11px;font-weight:600;color:var(--muted);gap:6px;white-space:nowrap}
+  #nb-btn.on{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.45);color:#4f8ef7}
 
   /* ── Legend (bottom-right) ── */
   #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);
@@ -81,7 +84,12 @@
   <button class="mb"    data-m="clearance">Clearance Rate</button>
 </div>
 
-<button id="tt" title="Toggle dark / light mode">🌙</button>
+<div id="top-right">
+  <button id="nb-btn" title="Toggle neighborhood boundaries">
+    <span>⬡</span> Neighborhoods
+  </button>
+  <button id="tt" title="Toggle dark / light mode">🌙</button>
+</div>
 
 <div id="legend">
   <p id="leg-title">CRIME VOLUME 2020-24</p>
@@ -131,8 +139,8 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 
 var tOpts = {subdomains:'abcd',maxZoom:19,
   attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
-var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', tOpts);
-var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', tOpts);
 tDark.addTo(map);
 
 // ── Theme toggle ───────────────────────────────────────────────────────────
@@ -221,6 +229,50 @@ fetch('/data/lapd_divisions_crimes.geojson')
     }).addTo(map);
   })
   .catch(function(e){ console.error('GeoJSON error:',e); });
+
+// ── Neighborhood boundary overlay ─────────────────────────────────────────
+var nbLayer = null, nbVisible = false;
+
+function nbStyle() {
+  return {
+    fillOpacity: 0,
+    color: '#4f8ef7',
+    opacity: dark ? 0.28 : 0.22,
+    weight: 0.9,
+    dashArray: '4 3',
+  };
+}
+
+function loadNbLayer(cb) {
+  if (nbLayer) { cb && cb(); return; }
+  fetch('/data/neighborhood_crimes.geojson')
+    .then(function(r){ return r.json(); })
+    .then(function(gj){
+      nbLayer = L.geoJSON(gj, {
+        style: nbStyle,
+        interactive: false,
+      });
+      cb && cb();
+    })
+    .catch(function(e){ console.warn('Neighborhood overlay error:', e); });
+}
+
+document.getElementById('nb-btn').addEventListener('click', function() {
+  nbVisible = !nbVisible;
+  this.classList.toggle('on', nbVisible);
+  if (nbVisible) {
+    loadNbLayer(function(){ nbLayer && nbLayer.addTo(map); });
+  } else {
+    if (nbLayer) map.removeLayer(nbLayer);
+  }
+});
+
+// Update overlay opacity on theme switch
+document.getElementById('tt').addEventListener('click', function() {
+  if (nbLayer && nbVisible) {
+    nbLayer.setStyle(nbStyle());
+  }
+});
 </script>
 </body>
 </html>

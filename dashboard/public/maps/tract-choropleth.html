@@ -166,6 +166,30 @@ fetch('/data/tract_crimes_per_1000.geojson')
     document.getElementById('loading').innerHTML =
       '<p style="color:#e05252;text-align:center;padding:24px">'+e.message+'</p>';
   });
+
+// ── LAPD Division boundaries — orientation context layer ───────────────────
+fetch('/data/lapd_divisions_crimes.geojson')
+  .then(function(r){ return r.json(); })
+  .then(function(gj){
+    L.geoJSON(gj, {
+      style: function(){
+        return {
+          fillOpacity: 0,
+          color: '#4f8ef7',
+          weight: 0.8,
+          opacity: 0.25,
+        };
+      },
+      interactive: false,
+      onEachFeature: function(feat, layer){
+        layer.bindTooltip(
+          '<b>'+feat.properties.name+' Division</b>',
+          {sticky:true, direction:'top', className:'nb-tip', opacity:1}
+        );
+      },
+    }).addTo(map);
+  })
+  .catch(function(){});
 </script>
 </body>
 </html>

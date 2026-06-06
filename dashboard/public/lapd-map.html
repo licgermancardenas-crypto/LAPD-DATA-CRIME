@@ -319,7 +319,7 @@ fetch('/data/lapd_divisions_crimes.geojson')
   .catch(function(e){ console.error('GeoJSON error:',e); });
 
 // ── Neighborhood boundary overlay ─────────────────────────────────────────
-var nbLayer = null, nbVisible = false;
+var nbLayer = null, nbVisible = true;   // default ON
 
 function nbStyle() {
   return {
@@ -344,6 +344,13 @@ function loadNbLayer(cb) {
     })
     .catch(function(e){ console.warn('Neighborhood overlay error:', e); });
 }
+
+// Auto-load neighborhood overlay on startup (default ON)
+(function() {
+  var btn = document.getElementById('nb-btn');
+  btn.classList.add('on');
+  loadNbLayer(function(){ nbLayer && nbLayer.addTo(map); });
+})();
 
 document.getElementById('nb-btn').addEventListener('click', function() {
   nbVisible = !nbVisible;

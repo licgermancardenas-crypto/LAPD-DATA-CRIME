@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import KpiCard           from '@/components/KpiCard';
 import MonthlyTrend      from '@/components/MonthlyTrend';
 import DivisionBar       from '@/components/DivisionBar';
@@ -209,7 +210,15 @@ export default function Home() {
             </div>
 
             {/* Nav links */}
-            <nav style={{ display: 'flex', gap: 2 }}>
+            <nav style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Link href="/geo" style={{
+                fontSize: 13, fontWeight: 600, color: '#4f8ef7',
+                padding: '6px 13px', borderRadius: 7,
+                border: '1px solid rgba(79,142,247,.3)',
+                background: 'rgba(79,142,247,.08)',
+                textDecoration: 'none', marginRight: 6,
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}>🗺️ Geo Analysis</Link>
               {NAV.map(item => (
                 <a
                   key={item.id}

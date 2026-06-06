@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<style>
+  :root{--bg:#0a0c12;--surface:rgba(10,12,18,.92);--surface-s:#1a1d27;--border:#2a2d3a;--text:#e8eaf0;--muted:#7b82a0;--popup-bg:rgba(10,12,18,.97);--outline:#0a0c12}
+  .lm{--bg:#eef0f4;--surface:rgba(255,255,255,.95);--surface-s:#fff;--border:#d4d8e2;--text:#1a1d27;--muted:#6b7280;--popup-bg:rgba(255,255,255,.98);--outline:#c8ccd6}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);transition:background .25s}
+  #map{position:absolute;top:0;left:0;right:0;bottom:0}
+
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2)!important}
+  .leaflet-control-attribution{background:var(--surface)!important;color:var(--muted)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:#4f8ef7!important}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;border:1px solid var(--border)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.25)!important;color:var(--text)!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important}
+  .leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;padding:6px 8px!important}
+  .leaflet-popup-close-button:hover{color:var(--text)!important;background:none!important}
+  .leaflet-popup-content{margin:14px 16px!important;min-width:210px}
+
+  .t-name{font-weight:700;font-size:14px;color:var(--text);margin-bottom:8px}
+  .risk-badge{display:inline-block;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-bottom:10px}
+  .stat-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+  .stat-label{font-size:11px;color:var(--muted)}
+  .stat-val{font-size:13px;font-weight:600}
+  .stat-sep{height:1px;background:var(--border);margin:6px 0}
+  .mini-bar-bg{height:4px;border-radius:2px;background:var(--surface-s);overflow:hidden;margin-top:10px}
+  .mini-bar-fill{height:100%;border-radius:2px}
+
+  #tt{position:fixed;top:12px;right:12px;z-index:1000;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  #tt:hover{opacity:.75}
+
+  #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;z-index:1000}
+  #legend p{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;width:140px}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+
+  #hint{position:fixed;bottom:36px;left:12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:11px;color:var(--muted);z-index:1000}
+
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2000}
+  #loading p{color:var(--muted);font-size:13px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="loading"><div class="spinner"></div><p>Loading census tract data…</p></div>
+<button id="tt" title="Toggle dark / light mode">🌙</button>
+<div id="legend">
+  <p>CRIMES PER 1,000 INHABITANTS</p>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span>0</span><span>High risk</span></div>
+</div>
+<div id="hint">Click a census tract to explore</div>
+
+<script>
+// ── Color scale: green → yellow → red ─────────────────────────────────────
+var STOPS = [[40,160,100],[79,207,142],[224,192,102],[224,136,58],[224,82,82]];
+function lerp(t) {
+  t = Math.max(0, Math.min(1, t));
+  var n = STOPS.length-1, s=t*n, i=Math.min(Math.floor(s),n-1), f=s-i;
+  var a=STOPS[i], b=STOPS[i+1]||STOPS[n];
+  return 'rgb('+Math.round(a[0]+f*(b[0]-a[0]))+','+Math.round(a[1]+f*(b[1]-a[1]))+','+Math.round(a[2]+f*(b[2]-a[2]))+')';
+}
+
+// Legend gradient
+var lb = document.getElementById('leg-bar');
+for (var k=0;k<24;k++){var d=document.createElement('div');d.style.flex='1';d.style.background=lerp(k/23);lb.appendChild(d);}
+
+// ── State ──────────────────────────────────────────────────────────────────
+var dark = true, geoLayer, maxVal = 100;
+
+// ── Map ────────────────────────────────────────────────────────────────────
+var map = L.map('map',{center:[34.02,-118.35],zoom:10,zoomControl:false,attributionControl:true});
+setTimeout(function(){map.invalidateSize();},100);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+var tOpts={subdomains:'abcd',maxZoom:19,attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+// ── Theme toggle ───────────────────────────────────────────────────────────
+document.getElementById('tt').addEventListener('click', function(){
+  dark=!dark;
+  document.body.classList.toggle('lm',!dark);
+  this.textContent=dark?'🌙':'☀️';
+  if(dark){map.removeLayer(tLight);tDark.addTo(map);}
+  else{map.removeLayer(tDark);tLight.addTo(map);}
+  if(geoLayer) geoLayer.setStyle(fStyle);
+});
+
+// ── Style ──────────────────────────────────────────────────────────────────
+function fStyle(f){
+  var n = f.properties.norm||0;
+  return{fillColor:lerp(n),fillOpacity:0.70,color:dark?'#0a0c12':'#c8ccd6',weight:0.5,opacity:0.8};
+}
+
+// ── Risk colors ─────────────────────────────────────────────────────────────
+var riskColors={'No data':'#3a3d50','Low':'#3ecf8e','Moderate':'#e0c066','High':'#e0883a','Very High':'#e05252'};
+
+// ── Load data ──────────────────────────────────────────────────────────────
+fetch('/data/tract_crimes_per_1000.geojson')
+  .then(function(r){
+    if(!r.ok) throw new Error('Data not found – run scripts/generate_tract_data.py first');
+    return r.json();
+  })
+  .then(function(gj){
+    document.getElementById('loading').style.display='none';
+
+    // Compute maxVal for legend label
+    var vals = gj.features.map(function(f){return f.properties.crimes_per_1000||0;});
+    maxVal = Math.round(vals.sort(function(a,b){return b-a;})[Math.floor(vals.length*0.01)]);
+    document.querySelector('#leg-labs span:last-child').textContent = maxVal+'+';
+
+    geoLayer = L.geoJSON(gj,{
+      style: fStyle,
+      onEachFeature: function(feat,layer){
+        var p = feat.properties;
+        var rc = riskColors[p.risk]||'#7b82a0';
+        var html =
+          '<div class="t-name">Census Tract '+p.tract6+'</div>'+
+          '<span class="risk-badge" style="background:'+rc+'22;color:'+rc+';border:1px solid '+rc+'44">'+p.risk+' Risk</span>'+
+          '<div class="stat-row"><span class="stat-label">Crimes / 1,000 inhab.</span>'+
+            '<span class="stat-val" style="color:'+rc+'">'+p.crimes_per_1000+'</span></div>'+
+          '<div class="stat-row"><span class="stat-label">Total Crimes</span>'+
+            '<span class="stat-val" style="color:#4f8ef7">'+(p.crime_count||0).toLocaleString()+'</span></div>'+
+          '<div class="stat-row"><span class="stat-label">Population</span>'+
+            '<span class="stat-val" style="color:var(--text)">'+(p.population||0).toLocaleString()+'</span></div>'+
+          '<div class="stat-sep"></div>'+
+          '<div class="stat-row"><span class="stat-label">Tract ID (GEOID)</span>'+
+            '<span class="stat-val" style="color:var(--muted);font-size:11px">'+p.GEOID+'</span></div>'+
+          '<div class="mini-bar-bg"><div class="mini-bar-fill" style="width:'+(p.norm*100)+'%;background:'+lerp(p.norm||0)+'"></div></div>';
+
+        layer.bindPopup(html,{maxWidth:280,closeButton:true});
+        layer.on({
+          mouseover: function(e){e.target.setStyle({fillOpacity:0.90,weight:1.5,color:'#4f8ef7'});e.target.bringToFront();},
+          mouseout:  function(e){geoLayer.resetStyle(e.target);},
+          click:     function(){document.getElementById('hint').style.display='none';}
+        });
+      }
+    }).addTo(map);
+  })
+  .catch(function(e){
+    document.getElementById('loading').innerHTML =
+      '<p style="color:#e05252;text-align:center;padding:24px">'+e.message+'</p>';
+  });
+</script>
+</body>
+</html>

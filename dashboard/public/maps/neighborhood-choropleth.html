@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<style>
+  :root{--bg:#0a0c12;--surface:rgba(10,12,18,.92);--surface-s:#1a1d27;--border:#2a2d3a;--text:#e8eaf0;--muted:#7b82a0;--popup-bg:rgba(10,12,18,.97);--div-line:#4f8ef7}
+  .lm{--bg:#eef0f4;--surface:rgba(255,255,255,.95);--surface-s:#fff;--border:#d4d8e2;--text:#1a1d27;--muted:#6b7280;--popup-bg:rgba(255,255,255,.98);--div-line:#1a56db}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);transition:background .25s}
+  #map{position:absolute;top:0;left:0;right:0;bottom:0}
+
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2)!important}
+  .leaflet-control-attribution{background:var(--surface)!important;color:var(--muted)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:#4f8ef7!important}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;border:1px solid var(--border)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.3)!important;color:var(--text)!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important}
+  .leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;padding:6px 8px!important}
+  .leaflet-popup-content{margin:14px 16px!important;min-width:240px}
+
+  /* Popup */
+  .p-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .p-title{font-weight:700;font-size:15px;color:var(--text);flex:1}
+  .p-rank{font-size:10px;font-weight:700;color:#4f8ef7;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3);border-radius:5px;padding:2px 7px;white-space:nowrap}
+  .p-badge{display:inline-block;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-bottom:10px}
+  .p-div-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .p-chip{font-size:10px;color:var(--muted);background:var(--surface-s);border:1px solid var(--border);border-radius:5px;padding:2px 8px}
+  .p-chip b{color:var(--text)}
+  .p-section{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;margin:10px 0 5px;text-transform:uppercase}
+  .p-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+  .p-label{font-size:11px;color:var(--muted)}
+  .p-val{font-size:12px;font-weight:600}
+  .p-sep{height:1px;background:var(--border);margin:8px 0}
+  .p-bar-bg{height:4px;border-radius:2px;background:var(--surface-s);overflow:hidden;margin-top:2px}
+  .p-bar-fill{height:100%;border-radius:2px;transition:width .3s}
+
+  /* Station popup */
+  .stn-title{font-weight:700;font-size:13px;margin-bottom:4px;color:var(--text)}
+  .stn-sub{font-size:11px;color:var(--muted)}
+
+  /* Metric toolbar */
+  #toolbar{position:fixed;top:12px;left:12px;z-index:1000;display:flex;flex-direction:column;gap:5px}
+  .metric-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;white-space:nowrap}
+  .metric-btn.active{border-color:rgba(79,142,247,.5);background:rgba(79,142,247,.12);color:#4f8ef7;font-weight:600}
+
+  /* Right controls */
+  #controls{position:fixed;top:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  .ctrl-btn{padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .ctrl-btn.on{border-color:rgba(79,142,247,.4);color:#4f8ef7;background:rgba(79,142,247,.08)}
+  #tt{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0}
+
+  /* Legend */
+  #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;z-index:1000;min-width:160px}
+  #leg-title{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+
+  /* Station icon */
+  .stn-icon{background:#4f8ef7;border-radius:50%;border:2px solid rgba(255,255,255,.9);width:10px;height:10px;box-shadow:0 0 6px rgba(79,142,247,.6)}
+
+  /* Loading */
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2000}
+  #loading p{color:var(--muted);font-size:13px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="loading"><div class="spinner"></div><p>Loading neighborhood data...</p></div>
+
+<div id="toolbar">
+  <button class="metric-btn active" data-metric="crime_abs">Total Crimes</button>
+  <button class="metric-btn" data-metric="crime_rate">Crimes / 1,000</button>
+  <button class="metric-btn" data-metric="poverty">Poverty Rate</button>
+  <button class="metric-btn" data-metric="vulnerability">Vulnerability</button>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="tt" title="Toggle dark/light mode">🌙</button>
+  <button class="ctrl-btn on" id="stn-toggle" title="Show/hide police stations">🏢 Stations</button>
+  <button class="ctrl-btn on" id="div-toggle" title="Show/hide division borders">〰️ Divisions</button>
+</div>
+
+<div id="legend">
+  <div id="leg-title">TOTAL CRIMES</div>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span>Low</span><span>High</span></div>
+</div>
+
+<script>
+// ── Color scales ───────────────────────────────────────────────────────────
+var S_RISK   = [[40,200,120],[79,207,142],[224,200,90],[224,120,50],[200,50,50]];
+var S_INCOME = [[200,50,50],[224,120,50],[224,200,90],[79,207,142],[40,200,120]];
+
+function lerp(stops, t) {
+  t = Math.max(0, Math.min(1, t));
+  var n = stops.length-1, s=t*n, i=Math.min(Math.floor(s),n-1), f=s-i;
+  var a=stops[i], b=stops[i+1]||stops[n];
+  return 'rgb('+Math.round(a[0]+f*(b[0]-a[0]))+','+Math.round(a[1]+f*(b[1]-a[1]))+','+Math.round(a[2]+f*(b[2]-a[2]))+')';
+}
+
+// ── Metric config ──────────────────────────────────────────────────────────
+var METRICS = {
+  crime_abs:     { label:'TOTAL CRIMES',          normKey:'norm_crime_abs',    scale:S_RISK },
+  crime_rate:    { label:'CRIMES PER 1,000 INHAB.',normKey:'norm_crime_rate',   scale:S_RISK },
+  poverty:       { label:'POVERTY RATE',           normKey:'norm_poverty',      scale:S_RISK },
+  vulnerability: { label:'VULNERABILITY INDEX',    normKey:'norm_vulnerability',scale:S_RISK },
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+var metric = 'crime_abs';
+var dark = true;
+var geoLayer, stnLayer, divLayer;
+var showStations = true, showDivisions = true;
+
+// ── Map ────────────────────────────────────────────────────────────────────
+var map = L.map('map',{center:[34.05,-118.35],zoom:11,zoomControl:false,attributionControl:true});
+setTimeout(function(){map.invalidateSize();},100);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+var tOpts={subdomains:'abcd',maxZoom:19,attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+// ── Legend ─────────────────────────────────────────────────────────────────
+function buildLegend(m) {
+  var cfg = METRICS[m];
+  var lb = document.getElementById('leg-bar');
+  lb.innerHTML = '';
+  for (var k=0;k<28;k++){
+    var d=document.createElement('div');d.style.flex='1';
+    d.style.background=lerp(cfg.scale,k/27);lb.appendChild(d);
+  }
+  document.getElementById('leg-title').textContent = cfg.label;
+}
+buildLegend(metric);
+
+// ── Style ──────────────────────────────────────────────────────────────────
+function fStyle(f) {
+  var p = f.properties, cfg = METRICS[metric];
+  var t = p[cfg.normKey] || 0;
+  return {
+    fillColor: lerp(cfg.scale, t),
+    fillOpacity: 0.72,
+    color: dark ? '#0a0c12' : '#b0b6c8',
+    weight: 0.8,
+    opacity: 0.9
+  };
+}
+
+// ── Badge colors ───────────────────────────────────────────────────────────
+var VUL_C = {Low:'#28c77a',Moderate:'#e0c044',High:'#e07830','Very High':'#e04040'};
+
+function fmtNum(v, d) { return Number(v||0).toFixed(d!=null?d:0); }
+function fmtUSD(v) { return '$'+Number(v||0).toLocaleString('en-US'); }
+function bar(pct, color) {
+  return '<div class="p-bar-bg"><div class="p-bar-fill" style="width:'+Math.min(pct||0,100)+'%;background:'+color+'"></div></div>';
+}
+
+function buildPopup(p) {
+  var vc = VUL_C[p.vulnerability_label] || '#7b82a0';
+  var crimeC = lerp(S_RISK, p.norm_crime_abs||0);
+  var rateC  = lerp(S_RISK, p.norm_crime_rate||0);
+  var povC   = lerp(S_RISK, p.norm_poverty||0);
+
+  return (
+    '<div class="p-head">'+
+      '<span class="p-title">'+p.name+'</span>'+
+      '<span class="p-rank">#'+p.crime_rank+' of 114</span>'+
+    '</div>'+
+    '<span class="p-badge" style="background:'+vc+'22;color:'+vc+';border:1px solid '+vc+'44">'+
+      p.vulnerability_label+' Vulnerability</span>'+
+
+    '<div class="p-div-row">'+
+      '<span class="p-chip">Division: <b>'+(p.division||'N/A')+'</b></span>'+
+      '<span class="p-chip">Clearance: <b>'+fmtNum(p.div_clearance,1)+'%</b></span>'+
+      '<span class="p-chip">Top crime: <b>'+(p.div_top_category||'N/A')+'</b></span>'+
+    '</div>'+
+
+    '<div class="p-section">Crime</div>'+
+    '<div class="p-row"><span class="p-label">Total crimes (2020-2024)</span>'+
+      '<span class="p-val" style="color:'+crimeC+'">'+Number(p.crime_count||0).toLocaleString()+'</span></div>'+
+    bar((p.norm_crime_abs||0)*100, crimeC)+
+    '<div class="p-row" style="margin-top:6px"><span class="p-label">Crimes per 1,000 inhabitants</span>'+
+      '<span class="p-val" style="color:'+rateC+'">'+fmtNum(p.crimes_per_1000,1)+'</span></div>'+
+    bar((p.norm_crime_rate||0)*100, rateC)+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Socioeconomic</div>'+
+    '<div class="p-row"><span class="p-label">Poverty rate</span>'+
+      '<span class="p-val" style="color:'+povC+'">'+fmtNum(p.poverty_rate,1)+'%</span></div>'+
+    bar((p.norm_poverty||0)*100, povC)+
+    '<div class="p-row" style="margin-top:6px"><span class="p-label">Median household income</span>'+
+      '<span class="p-val">'+fmtUSD(p.median_income)+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Population</span>'+
+      '<span class="p-val">'+Number(p.population||0).toLocaleString()+'</span></div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Demographics</div>'+
+    '<div class="p-row"><span class="p-label">Hispanic / Latino</span><span class="p-val">'+fmtNum(p.pct_hispanic,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">Black / African American</span><span class="p-val">'+fmtNum(p.pct_black,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">Asian</span><span class="p-val">'+fmtNum(p.pct_asian,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">White (non-Hispanic)</span><span class="p-val">'+fmtNum(p.pct_white,1)+'%</span></div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Community Indicators</div>'+
+    '<div class="p-row"><span class="p-label">No high school diploma</span><span class="p-val">'+fmtNum(p.pct_no_hs,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">Limited English</span><span class="p-val">'+fmtNum(p.pct_limited_eng,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">No internet access</span><span class="p-val">'+fmtNum(p.pct_no_internet,1)+'%</span></div>'
+  );
+}
+
+// ── Toolbar ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.metric-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    metric = this.dataset.metric;
+    document.querySelectorAll('.metric-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    buildLegend(metric);
+    if (geoLayer) geoLayer.setStyle(fStyle);
+  });
+});
+
+// ── Theme toggle ───────────────────────────────────────────────────────────
+document.getElementById('tt').addEventListener('click', function(){
+  dark=!dark;
+  document.body.classList.toggle('lm',!dark);
+  this.textContent=dark?'🌙':'☀️';
+  if(dark){map.removeLayer(tLight);tDark.addTo(map);}
+  else{map.removeLayer(tDark);tLight.addTo(map);}
+  if(geoLayer) geoLayer.setStyle(fStyle);
+  if(divLayer) divLayer.setStyle(divStyle());
+});
+
+// ── Station toggle ─────────────────────────────────────────────────────────
+document.getElementById('stn-toggle').addEventListener('click', function(){
+  showStations = !showStations;
+  this.classList.toggle('on', showStations);
+  if (!stnLayer) return;
+  if (showStations) stnLayer.addTo(map); else map.removeLayer(stnLayer);
+});
+
+// ── Division toggle ────────────────────────────────────────────────────────
+document.getElementById('div-toggle').addEventListener('click', function(){
+  showDivisions = !showDivisions;
+  this.classList.toggle('on', showDivisions);
+  if (!divLayer) return;
+  if (showDivisions) divLayer.addTo(map); else map.removeLayer(divLayer);
+});
+
+// ── Division border style ──────────────────────────────────────────────────
+function divStyle() {
+  return {fillOpacity:0, color: dark?'rgba(79,142,247,.55)':'rgba(26,86,219,.55)', weight:2, opacity:1, dashArray:'5,4'};
+}
+
+// ── Station icon ───────────────────────────────────────────────────────────
+var stnIconHtml = '<div style="width:12px;height:12px;background:#4f8ef7;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 8px rgba(79,142,247,.7)"></div>';
+var stnIcon = L.divIcon({html:stnIconHtml, className:'', iconSize:[12,12], iconAnchor:[6,6]});
+
+// ── Load data ──────────────────────────────────────────────────────────────
+var loaded = 0;
+function onAllLoaded() {
+  loaded++;
+  if (loaded === 3) document.getElementById('loading').style.display = 'none';
+}
+
+// Neighborhoods
+fetch('/data/neighborhood_crimes.geojson')
+  .then(function(r){ if(!r.ok) throw new Error('Neighborhood data not found'); return r.json(); })
+  .then(function(gj){
+    geoLayer = L.geoJSON(gj, {
+      style: fStyle,
+      onEachFeature: function(feat, layer){
+        var p = feat.properties;
+        layer.bindPopup(buildPopup(p), {maxWidth:320, closeButton:true});
+        layer.on({
+          mouseover: function(e){e.target.setStyle({fillOpacity:.90,weight:2,color:'#4f8ef7'});e.target.bringToFront();},
+          mouseout:  function(e){geoLayer.resetStyle(e.target);}
+        });
+      }
+    }).addTo(map);
+    onAllLoaded();
+  })
+  .catch(function(e){
+    document.getElementById('loading').innerHTML='<p style="color:#e05252;text-align:center;padding:24px">'+e.message+'</p>';
+  });
+
+// Division borders
+fetch('/data/lapd_divisions_crimes.geojson')
+  .then(function(r){ return r.json(); })
+  .then(function(gj){
+    divLayer = L.geoJSON(gj, {
+      style: divStyle,
+      onEachFeature: function(feat, layer){
+        var p = feat.properties;
+        layer.bindTooltip(
+          '<b>'+p.name+' DIVISION</b><br>'+
+          Number(p.total_crimes).toLocaleString()+' total crimes &nbsp;|&nbsp; '+
+          p.clearance+'% clearance<br>Top: '+p.top_category,
+          {sticky:true, direction:'top', className:''}
+        );
+      }
+    });
+    if (showDivisions) divLayer.addTo(map);
+    onAllLoaded();
+  })
+  .catch(function(){ onAllLoaded(); });
+
+// Stations
+fetch('/data/lapd_stations.geojson')
+  .then(function(r){ return r.json(); })
+  .then(function(gj){
+    stnLayer = L.geoJSON(gj, {
+      pointToLayer: function(feat, latlng){
+        return L.marker(latlng, {icon: stnIcon, zIndexOffset:1000});
+      },
+      onEachFeature: function(feat, layer){
+        var p = feat.properties;
+        layer.bindPopup(
+          '<div class="stn-title">'+p.division+' Division</div>'+
+          '<div class="stn-sub">'+p.address+'</div>',
+          {maxWidth:220}
+        );
+      }
+    });
+    if (showStations) stnLayer.addTo(map);
+    onAllLoaded();
+  })
+  .catch(function(){ onAllLoaded(); });
+</script>
+</body>
+</html>

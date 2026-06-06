@@ -1,0 +1,28 @@
+{
+"type": "FeatureCollection",
+"name": "lapd_stations",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "division": "HARBOR", "address": "2175 John S. Gibson Blvd.", "prec": 5 }, "geometry": { "type": "Point", "coordinates": [ -118.289241552969003, 33.7576608965812 ] } },
+{ "type": "Feature", "properties": { "division": "SOUTHEAST", "address": "145 W. 108Th St.", "prec": 18 }, "geometry": { "type": "Point", "coordinates": [ -118.275394206380994, 33.938627379638 ] } },
+{ "type": "Feature", "properties": { "division": "77TH STREET", "address": "7600 S. Broadway", "prec": 12 }, "geometry": { "type": "Point", "coordinates": [ -118.277669655284996, 33.970307379862099 ] } },
+{ "type": "Feature", "properties": { "division": "PACIFIC", "address": "12312 Culver Blvd.", "prec": 14 }, "geometry": { "type": "Point", "coordinates": [ -118.419841575706997, 33.991655320747597 ] } },
+{ "type": "Feature", "properties": { "division": "SOUTHWEST", "address": "1546 Martin Luther King Jr. Blvd.", "prec": 3 }, "geometry": { "type": "Point", "coordinates": [ -118.305141562955001, 34.010575340364099 ] } },
+{ "type": "Feature", "properties": { "division": "NEWTON", "address": "3400 S. Central Ave.", "prec": 13 }, "geometry": { "type": "Point", "coordinates": [ -118.256118890755999, 34.012355904594102 ] } },
+{ "type": "Feature", "properties": { "division": "CENTRAL", "address": "251 E. 6Th St.", "prec": 1 }, "geometry": { "type": "Point", "coordinates": [ -118.247294122979, 34.044019499827598 ] } },
+{ "type": "Feature", "properties": { "division": "WEST LOS ANGELES", "address": "1663 Butler Ave.", "prec": 8 }, "geometry": { "type": "Point", "coordinates": [ -118.450779541204, 34.043777411946699 ] } },
+{ "type": "Feature", "properties": { "division": "HOLLENBECK", "address": "2111 E. 1St St.", "prec": 4 }, "geometry": { "type": "Point", "coordinates": [ -118.213067956401005, 34.045008769454697 ] } },
+{ "type": "Feature", "properties": { "division": "WILSHIRE", "address": "4861 Venice Blvd.", "prec": 7 }, "geometry": { "type": "Point", "coordinates": [ -118.342829525040997, 34.046747681962998 ] } },
+{ "type": "Feature", "properties": { "division": "OLYMPIC", "address": "1130 S. Vermont Ave.", "prec": 20 }, "geometry": { "type": "Point", "coordinates": [ -118.291175911045997, 34.050208529000898 ] } },
+{ "type": "Feature", "properties": { "division": "RAMPART", "address": "1401 W. 6Th St.", "prec": 2 }, "geometry": { "type": "Point", "coordinates": [ -118.266979648729006, 34.056690436784201 ] } },
+{ "type": "Feature", "properties": { "division": "HOLLYWOOD", "address": "1358 N. Wilcox Ave.", "prec": 6 }, "geometry": { "type": "Point", "coordinates": [ -118.330669310076999, 34.095833225199797 ] } },
+{ "type": "Feature", "properties": { "division": "NORTHEAST", "address": "3353 San Fernando Rd.", "prec": 11 }, "geometry": { "type": "Point", "coordinates": [ -118.249414483888998, 34.1192006656212 ] } },
+{ "type": "Feature", "properties": { "division": "NORTH HOLLYWOOD", "address": "11640 Burbank Blvd.", "prec": 15 }, "geometry": { "type": "Point", "coordinates": [ -118.385859348324999, 34.171693930357399 ] } },
+{ "type": "Feature", "properties": { "division": "VAN NUYS", "address": " 6240 Sylmar Ave.", "prec": 9 }, "geometry": { "type": "Point", "coordinates": [ -118.445225708769001, 34.1837432726009 ] } },
+{ "type": "Feature", "properties": { "division": "WEST VALLEY", "address": "19020 Vanowen St.", "prec": 10 }, "geometry": { "type": "Point", "coordinates": [ -118.547454437935002, 34.1933972273591 ] } },
+{ "type": "Feature", "properties": { "division": "TOPANGA", "address": "21501 Schoenborn St.", "prec": 21 }, "geometry": { "type": "Point", "coordinates": [ -118.599636541863006, 34.221376653670902 ] } },
+{ "type": "Feature", "properties": { "division": "FOOTHILL", "address": "12760 Osborne St.", "prec": 16 }, "geometry": { "type": "Point", "coordinates": [ -118.410417182670997, 34.253091221538497 ] } },
+{ "type": "Feature", "properties": { "division": "DEVONSHIRE", "address": "10250 Etiwanda Ave.", "prec": 17 }, "geometry": { "type": "Point", "coordinates": [ -118.531373362660005, 34.256969059252903 ] } },
+{ "type": "Feature", "properties": { "division": "MISSION", "address": "11121 N. Sepulveda Blvd.", "prec": 19 }, "geometry": { "type": "Point", "coordinates": [ -118.468197807891002, 34.272979397398601 ] } }
+]
+}

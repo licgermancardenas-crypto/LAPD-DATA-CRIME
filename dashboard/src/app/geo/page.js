@@ -42,6 +42,19 @@ const MAPS = [
       { icon: '💡', text: 'Comparing this layer with the Crime/1,000 map reveals tracts where poverty is high but crime is suppressed — and vice versa — informing targeted policy interventions.' },
     ],
   },
+  {
+    id: 'neighborhoods',
+    label: 'Neighborhood Spotlight',
+    icon: '🏘️',
+    src: '/maps/neighborhood-choropleth.html',
+    title: '114 LA Times Neighborhoods — Crime & Socioeconomics',
+    badge: '114 Neighborhoods',
+    insight: [
+      { icon: '🏙️', text: 'Downtown leads with 71,808 crimes (2020–2024) — over 1,000 per 1,000 inhabitants. Hollywood, Westlake and Koreatown follow. Toggle "Crimes/1,000" to see relative risk independent of neighborhood size.' },
+      { icon: '🏢', text: 'Blue dots mark the 21 LAPD station locations. Dashed blue lines show division boundaries. Both overlays can be toggled with the controls in the top-right corner.' },
+      { icon: '🔗', text: 'Each neighborhood popup cross-references its LAPD division clearance rate and top crime category — linking street-level geography to operational police data.' },
+    ],
+  },
 ];
 
 const S = {

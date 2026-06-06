@@ -15,6 +15,7 @@ import VictimChart        from '@/components/VictimChart';
 import PremiseChart       from '@/components/PremiseChart';
 import FilterBar          from '@/components/FilterBar';
 import ChartSkeleton      from '@/components/ChartSkeleton';
+import ExecutiveInsights  from '@/components/ExecutiveInsights';
 import { computeCategories, computeDivisions, computeVictims } from '@/lib/filterUtils';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
@@ -344,6 +345,7 @@ export default function Home() {
             <KpiCard label="2024 vs 2023"    value={summary.crimes_2024.toLocaleString()} trend={summary.yoy_2024_vs_2023} sub="Year-over-year change" color="#e0883a" icon="📈" />
             <KpiCard label="Reporting Lag"   value={`${summary.avg_reporting_lag}d`} sub="Avg days: crime occurred → report filed" color="#a78bfa" icon="🕐" />
           </div>
+          <ExecutiveInsights />
           <ChartWrapper pending={isFiltering} minHeight={280}>
             <MonthlyTrend data={monthly} activePart={activePart} />
           </ChartWrapper>

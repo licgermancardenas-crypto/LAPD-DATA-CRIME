@@ -100,8 +100,8 @@ export default function HourHeatmap({ data, filters, onFilter }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <p className="section-title">Crime Frequency by Hour & Day of Week</p>
-          <p className="section-sub">Total crimes 2020–2024 · intensity = relative volume</p>
+          <p className="section-title">¿A Qué Hora Atacan?</p>
+          <p className="section-sub">Intensidad relativa hora × día — las celdas en rojo marcan los picos críticos de actividad · clic para cross-filtrar el dashboard</p>
         </div>
 
         {/* Controls */}

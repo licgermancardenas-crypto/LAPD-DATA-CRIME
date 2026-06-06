@@ -33,7 +33,7 @@ export default function MonthlyTrend({ data, activePart = 'all' }) {
   return (
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-        <p className="section-title">Promedio Diario de Delitos — 2020-2024</p>
+        <p className="section-title">Evolución Anual del Crimen</p>
         {activePart !== 'all' && (
           <span style={{
             fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 700,
@@ -44,7 +44,7 @@ export default function MonthlyTrend({ data, activePart = 'all' }) {
         )}
       </div>
       <p className="section-sub">
-        Crímenes/día (normalizado por días del mes) · elimina el sesgo calendario feb/mar
+        Fluctuación mensual del promedio diario — normalizado por días del mes para eliminar el sesgo feb/mar · línea dorada = media móvil 3 meses
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <ComposedChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>

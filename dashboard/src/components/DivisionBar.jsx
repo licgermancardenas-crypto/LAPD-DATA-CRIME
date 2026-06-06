@@ -61,11 +61,11 @@ export default function DivisionBar({ data, activePart = 'all', filters, onFilte
 
   return (
     <div className="card">
-      <p className="section-title">Crímenes por División LAPD</p>
+      <p className="section-title">¿Qué División Concentra el Problema?</p>
       <p className="section-sub">
-        Total 2020-2024 {partSub} · color = tasa de esclarecimiento (verde &ge; 20%, amarillo 10-20%, rojo &lt; 10%)
-        {isFiltered && <span style={{ color: '#4f8ef7' }}> · Filtrado por categoría seleccionada</span>}
-        {onFilter && <span style={{ color: '#7c5cbf' }}> · Click en barra para filtrar</span>}
+        Ranking por volumen 2020-2024 {partSub} · el color revela la tasa de esclarecimiento: verde ≥ 20 %, ámbar 10-20 %, rojo &lt; 10 %
+        {isFiltered && <span style={{ color: '#4cc9f0' }}> · Filtrado por categoría</span>}
+        {onFilter && <span style={{ color: '#7b82a0' }}> · Clic para cross-filtrar</span>}
       </p>
       <ResponsiveContainer width="100%" height={420}>
         <BarChart

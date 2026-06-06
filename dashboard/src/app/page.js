@@ -74,7 +74,7 @@ function ChartWrapper({ pending, minHeight = 240, children }) {
 }
 
 function Section({ id, children }) {
-  return <section id={id} style={{ scrollMarginTop: 24, marginBottom: 52 }}>{children}</section>;
+  return <section id={id} style={{ scrollMarginTop: 24, marginBottom: 68 }}>{children}</section>;
 }
 
 function SectionHeader({ title, sub, badge }) {
@@ -284,10 +284,10 @@ export default function Home() {
       </div>
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
-      <main style={{ flex: 1, padding: '36px 32px 80px', maxWidth: 1160, width: '100%' }}>
+      <main style={{ flex: 1, padding: '44px 40px 80px', maxWidth: 1160, width: '100%' }}>
 
         {/* Annual mini cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginBottom: 44 }}>
           {summary.by_year.map(yr => (
             <div key={yr.year} style={{
               background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 10,
@@ -307,8 +307,8 @@ export default function Home() {
 
         {/* OVERVIEW */}
         <Section id="overview">
-          <SectionHeader title="Executive Overview" sub="Key performance indicators across the full 5-year period" badge="1,004,894 records" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14, marginBottom: 24 }}>
+          <SectionHeader title="Macro Tendencia" sub="¿Está mejorando o empeorando la seguridad? Indicadores del período 2020-2024 — evolución anual del clearance rate, violencia y volumen total." badge="1 004 894 registros" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 18, marginBottom: 28 }}>
             <KpiCard label="Total Crimes"    value={summary.total_crimes.toLocaleString()} sub="2020-2024 cumulative" color="#4f8ef7" icon="📋" />
             <KpiCard label="Clearance Rate"  value={`${summary.clearance_rate}%`} sub="Cases with arrest or exceptional clearance" color={clrColor} icon="✅" />
             <KpiCard label="Violent Share"   value={`${summary.violent_pct}%`} sub={`${summary.violent_crimes.toLocaleString()} violent incidents`} color="#e05252" icon="⚡" />
@@ -326,7 +326,7 @@ export default function Home() {
 
         {/* GEOGRAPHIC */}
         <Section id="geographic">
-          <SectionHeader title="Geographic Distribution" sub="Crime volume and clearance rates across the 21 LAPD patrol divisions" badge="21 Divisions" />
+          <SectionHeader title="¿Dónde Ocurre el Crimen?" sub="Distribución geográfica por división policial. El color combina volumen y eficacia: donde hay más crimen y menos resolución está el problema real no resuelto." badge="21 Divisiones" />
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <ViewTab label="Interactive Map"    icon="🗺️" active={geoView === 'map'}     onClick={() => setGeoView('map')} />
             <ViewTab label="Division Rankings"  icon="📊" active={geoView === 'ranking'} onClick={() => setGeoView('ranking')} />
@@ -352,7 +352,7 @@ export default function Home() {
 
         {/* TEMPORAL */}
         <Section id="temporal">
-          <SectionHeader title="Temporal Patterns" sub="When do crimes occur? Hour of day vs day of week — all 5 years combined" badge="168 cells" />
+          <SectionHeader title="¿Cuándo Atacan?" sub="Matriz de intensidad hora × día de semana — 168 celdas que mapean los picos de actividad criminal. Rojo = máximo. Clic en celda para cross-filtrar." badge="168 celdas" />
           <ChartWrapper pending={isFiltering} minHeight={320}>
             <HourHeatmap data={hourly} filters={filters} onFilter={handleFilter} />
           </ChartWrapper>
@@ -361,8 +361,8 @@ export default function Home() {
         {/* CATEGORIES */}
         <Section id="categories">
           <SectionHeader
-            title="Categorías de Crimen"
-            sub="Clasificación UCR Part 1 (graves FBI) y Part 2 (menores) — 18 categorías · click en barra para cross-filtrar el dashboard"
+            title="¿Qué Delitos Predominan?"
+            sub="Ranking de las 18 categorías criminales de mayor a menor frecuencia. El delito #1 resalta en cian. Clic en barra para sincronizar el mapa geográfico."
             badge="18 categorías"
           />
           <ChartWrapper pending={isFiltering} minHeight={340}>
@@ -383,9 +383,9 @@ export default function Home() {
         {/* VICTIMS */}
         <Section id="victims">
           <SectionHeader
-            title="Victim Demographics"
-            sub="Who gets victimized? Age, gender, and ethnic breakdown — cross-filterable by crime category and age group"
-            badge="735k victims"
+            title="¿Quiénes Son las Víctimas?"
+            sub="Perfil demográfico completo: edad, género y origen étnico. Los segmentos más oscuros revelan los grupos más expuestos — y los más invisibilizados en los datos."
+            badge="735k víctimas"
           />
           <ChartWrapper pending={isFiltering} minHeight={460}>
             <VictimChart
@@ -398,7 +398,7 @@ export default function Home() {
 
         {/* CONTEXT */}
         <Section id="external">
-          <SectionHeader title="Weather & Economic Context" sub="Temperature and unemployment correlations — LA-Long Beach-Anaheim MSA" />
+          <SectionHeader title="Contexto Externo" sub="¿Influye el calor o el desempleo en el crimen? Correlaciones con temperatura diaria y tasa de desempleo mensual en el área metropolitana de Los Ángeles." />
           <div style={{ display: 'grid', gap: 20 }}>
             <WeatherChart data={weather} />
             <UnemploymentChart data={monthly} />

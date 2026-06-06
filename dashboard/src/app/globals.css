@@ -83,7 +83,7 @@ select:focus, input:focus {
 
 @layer components {
   .card {
-    @apply bg-surface border border-border rounded-xl p-5;
+    @apply bg-surface border border-border rounded-xl p-6;
   }
   .section-title {
     @apply text-lg font-semibold text-text mb-1;

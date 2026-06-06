@@ -6,10 +6,12 @@ import {
   Tooltip, Cell, ResponsiveContainer,
 } from 'recharts';
 
-const PART_COLORS = {
-  p1: { violent: '#e05252', nonViolent: '#e0883a' },
-  p2: { violent: '#7c5cbf', nonViolent: '#4f8ef7' },
-};
+function getCategoryColor(index, total) {
+  if (index === 0) return '#4cc9f0'; // Top crime: cyan accent
+  // Bright violet (#8b5cf6) → deep indigo (#3d2a6b) as rank descends
+  const t = total > 2 ? (index - 1) / (total - 2) : 0;
+  return `rgb(${Math.round(139+(61-139)*t)},${Math.round(92+(42-92)*t)},${Math.round(246+(107-246)*t)})`;
+}
 
 function PartToggle({ value, onChange }) {
   const opts = [
@@ -84,35 +86,29 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
     <div className="card">
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <p className="section-title">Crímenes por Categoría</p>
+          <p className="section-title">Ranking de Delitos por Categoría</p>
           <p className="section-sub">
-            {p1count} Part 1 (graves FBI) · {p2count} Part 2 (menores)
-            {isFiltered && <span style={{ color: '#4f8ef7' }}> · Filtrado por área seleccionada</span>}
-            {onFilter && <span style={{ color: '#7c5cbf' }}> · Click en barra para filtrar</span>}
+            {p1count} Part 1 (graves) · {p2count} Part 2 (menores) — de mayor a menor frecuencia · cian = top delito
+            {isFiltered && <span style={{ color: '#4cc9f0' }}> · Filtrado por área</span>}
           </p>
         </div>
         {externalPart === undefined && <PartToggle value={localPart} onChange={setLocalPart} />}
       </div>
 
-      {/* Part legend */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 10, flexWrap: 'wrap' }}>
-        {activePart !== 'p2' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#7b82a0' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e05252' }} />Part 1 Violento
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e0883a', marginLeft: 6 }} />Part 1 No-Violento
-          </div>
-        )}
-        {activePart !== 'p1' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#7b82a0' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c5cbf' }} />Part 2 Violento
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4f8ef7', marginLeft: 6 }} />Part 2 No-Violento
-          </div>
-        )}
+      {/* Color legend */}
+      <div style={{ display: 'flex', gap: 16, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#7b82a0' }}>
+          <div style={{ width: 10, height: 3, borderRadius: 2, background: '#4cc9f0' }} />
+          <span>Top delito</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#7b82a0' }}>
+          <div style={{ width: 22, height: 3, borderRadius: 2, background: 'linear-gradient(to right, #8b5cf6, #3d2a6b)' }} />
+          <span>Resto — degradado violeta por rango</span>
+        </div>
         {activeCategory && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c5cbf' }} />
-            <span style={{ fontSize: 11, color: '#7c5cbf' }}>Seleccionado: <strong>{activeCategory}</strong></span>
-          </div>
+          <span style={{ fontSize: 10, color: '#9098b8' }}>
+            Activo: <strong style={{ color: '#4cc9f0' }}>{activeCategory}</strong>
+          </span>
         )}
       </div>
 
@@ -127,15 +123,14 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="crimes" radius={[0, 4, 4, 0]} cursor={onFilter ? 'pointer' : 'default'}>
             {sorted.map((entry, i) => {
-              const pc = PART_COLORS[entry.part] ?? { violent: '#e05252', nonViolent: '#4f8ef7' };
-              const base = entry.is_violent ? pc.violent : pc.nonViolent;
+              const base = getCategoryColor(i, sorted.length);
               const isActive = activeCategory === entry.category;
               const isDimmed = activeCategory && !isActive;
               return (
                 <Cell
                   key={i}
                   fill={base}
-                  opacity={isDimmed ? 0.25 : 0.85}
+                  opacity={isDimmed ? 0.18 : isActive ? 1 : i === 0 ? 1 : 0.85}
                   stroke={isActive ? '#fff' : 'none'}
                   strokeWidth={isActive ? 1.5 : 0}
                 />

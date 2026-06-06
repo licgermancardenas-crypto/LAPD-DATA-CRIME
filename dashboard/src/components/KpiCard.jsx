@@ -5,20 +5,38 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
   const trendSign  = trend > 0 ? '+' : '';
 
   return (
-    <div className="card flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted uppercase tracking-wider">{label}</span>
-        {icon && <span className="text-lg">{icon}</span>}
+    <div style={{
+      background: 'rgba(30, 34, 48, 0.45)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255, 255, 255, 0.05)',
+      borderRadius: 14,
+      padding: 24,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 8,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: '#5a6070', textTransform: 'uppercase', letterSpacing: '.09em' }}>
+          {label}
+        </span>
+        {icon && <span style={{ fontSize: 18, opacity: 0.75 }}>{icon}</span>}
       </div>
-      <div className="flex items-end gap-3">
-        <span className="text-3xl font-bold" style={{ color }}>{value}</span>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+        <span style={{
+          fontSize: 34, fontWeight: 700, color, lineHeight: 1,
+          textShadow: `0 0 24px ${color}55, 0 0 48px ${color}22`,
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {value}
+        </span>
         {trend !== undefined && trend !== null && (
-          <span className="text-sm font-medium mb-1" style={{ color: trendColor }}>
+          <span style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: trendColor }}>
             {trendSign}{trend}%
           </span>
         )}
       </div>
-      {sub && <span className="text-xs text-muted">{sub}</span>}
+      {sub && <span style={{ fontSize: 11, color: '#5a6070', lineHeight: 1.45 }}>{sub}</span>}
     </div>
   );
 }

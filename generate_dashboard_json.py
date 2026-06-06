@@ -266,6 +266,112 @@ for _, r in merged.iterrows():
 print(f"  {len(weather_out)} days")
 
 
+# ===========================================================================
+# 7. victims.json  (VictimChart — 4 aggregations)
+# ===========================================================================
+print("\n[7/7] victims.json ...")
+
+victim_df = pd.read_csv(DATA / "agg_victim.csv")
+
+total_v = int(victim_df["crimes"].sum())
+
+# ── by_sex ─────────────────────────────────────────────────────────────────
+by_sex = []
+for sex, g in victim_df.groupby("vict_sex"):
+    c = int(g["crimes"].sum())
+    v = int(g["violent"].sum())
+    by_sex.append({
+        "sex":        str(sex),
+        "crimes":     c,
+        "violent":    v,
+        "share_pct":  round(c / total_v * 100, 1),
+        "violent_pct":round(v / c * 100, 1) if c else 0,
+    })
+by_sex.sort(key=lambda x: x["crimes"], reverse=True)
+
+# ── by_age ─────────────────────────────────────────────────────────────────
+AGE_ORDER = ["Juvenile (<18)", "Young Adult (18-24)", "Adult (25-34)",
+             "Adult (35-49)", "Middle-Aged (50-64)", "Senior (65+)"]
+by_age = []
+for age, g in victim_df.groupby("age_group"):
+    c = int(g["crimes"].sum())
+    v = int(g["violent"].sum())
+    by_age.append({
+        "age":         str(age),
+        "crimes":      c,
+        "violent":     v,
+        "share_pct":   round(c / total_v * 100, 1),
+        "violent_pct": round(v / c * 100, 1) if c else 0,
+    })
+by_age.sort(key=lambda x: AGE_ORDER.index(x["age"]) if x["age"] in AGE_ORDER else 99)
+
+# ── by_descent ─────────────────────────────────────────────────────────────
+by_descent = []
+for desc, g in victim_df.groupby("descent_group"):
+    if str(desc) == "Unknown":
+        continue
+    c = int(g["crimes"].sum())
+    v = int(g["violent"].sum())
+    by_descent.append({
+        "descent":     str(desc),
+        "crimes":      c,
+        "violent":     v,
+        "share_pct":   round(c / total_v * 100, 1),
+        "violent_pct": round(v / c * 100, 1) if c else 0,
+    })
+by_descent.sort(key=lambda x: x["crimes"], reverse=True)
+
+# ── by_cat_sex — top violent categories broken down by sex ─────────────────
+VIOLENT_CATS = [
+    "Violent - Assault & Battery", "Violent - Aggravated Assault",
+    "Violent - Robbery", "Violent - Sexual Assault", "Violent - Homicide",
+    "Domestic Violence", "Sex Offense", "Crimes Against Children",
+]
+# Normalize category names (the CSV has '?' instead of dash due to encoding)
+victim_df["cat_clean"] = victim_df["crime_category"].str.replace(r"[^\w\s&/,()]+", "-", regex=True).str.strip()
+
+cat_sex_pivot = (
+    victim_df[victim_df["vict_sex"].isin(["Male", "Female"])]
+    .groupby(["cat_clean", "vict_sex"])["crimes"]
+    .sum()
+    .unstack(fill_value=0)
+    .reset_index()
+)
+cat_sex_pivot.columns.name = None
+cat_sex_pivot = cat_sex_pivot.rename(columns={"cat_clean": "category"})
+
+# Keep all categories, sort by total (Male+Female)
+if "Male" not in cat_sex_pivot.columns:   cat_sex_pivot["Male"]   = 0
+if "Female" not in cat_sex_pivot.columns: cat_sex_pivot["Female"] = 0
+cat_sex_pivot["total"] = cat_sex_pivot["Male"] + cat_sex_pivot["Female"]
+cat_sex_pivot = cat_sex_pivot.sort_values("total", ascending=False)
+
+by_cat_sex = []
+for _, r in cat_sex_pivot.iterrows():
+    male   = int(r["Male"])
+    female = int(r["Female"])
+    total  = male + female
+    by_cat_sex.append({
+        "category":   str(r["category"]),
+        "Male":       male,
+        "Female":     female,
+        "total":      total,
+        "female_pct": round(female / total * 100, 1) if total else 0,
+    })
+
+victims_out = {
+    "by_sex":     by_sex,
+    "by_age":     by_age,
+    "by_descent": by_descent,
+    "by_cat_sex": by_cat_sex,
+}
+
+(OUT / "victims.json").write_text(json.dumps(victims_out, indent=2))
+print(f"  by_sex={len(by_sex)}  by_age={len(by_age)}  by_descent={len(by_descent)}  by_cat_sex={len(by_cat_sex)}")
+for d in by_descent:
+    print(f"    {d['descent']:<18} {d['crimes']:>7,}  vio={d['violent_pct']}%")
+
+
 # ── Summary ───────────────────────────────────────────────────────────────
 print("\n" + "="*55)
 print(f"Output: {OUT}")

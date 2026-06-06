@@ -1,0 +1,241 @@
+{
+  "by_sex": [
+    {
+      "sex": "Male",
+      "crimes": 370266,
+      "violent": 120878,
+      "share_pct": 50.3,
+      "violent_pct": 32.6
+    },
+    {
+      "sex": "Female",
+      "crimes": 354663,
+      "violent": 125137,
+      "share_pct": 48.2,
+      "violent_pct": 35.3
+    },
+    {
+      "sex": "Unknown",
+      "crimes": 10650,
+      "violent": 1848,
+      "share_pct": 1.4,
+      "violent_pct": 17.4
+    }
+  ],
+  "by_age": [
+    {
+      "age": "Juvenile (<18)",
+      "crimes": 25566,
+      "violent": 16960,
+      "share_pct": 3.5,
+      "violent_pct": 66.3
+    },
+    {
+      "age": "Young Adult (18-24)",
+      "crimes": 94949,
+      "violent": 37909,
+      "share_pct": 12.9,
+      "violent_pct": 39.9
+    },
+    {
+      "age": "Adult (25-34)",
+      "crimes": 205218,
+      "violent": 70561,
+      "share_pct": 27.9,
+      "violent_pct": 34.4
+    },
+    {
+      "age": "Adult (35-49)",
+      "crimes": 220608,
+      "violent": 69177,
+      "share_pct": 30.0,
+      "violent_pct": 31.4
+    },
+    {
+      "age": "Middle-Aged (50-64)",
+      "crimes": 133727,
+      "violent": 40337,
+      "share_pct": 18.2,
+      "violent_pct": 30.2
+    },
+    {
+      "age": "Senior (65+)",
+      "crimes": 55511,
+      "violent": 12919,
+      "share_pct": 7.5,
+      "violent_pct": 23.3
+    }
+  ],
+  "by_descent": [
+    {
+      "descent": "Hispanic/Latino",
+      "crimes": 291504,
+      "violent": 124847,
+      "share_pct": 39.6,
+      "violent_pct": 42.8
+    },
+    {
+      "descent": "White",
+      "crimes": 186523,
+      "violent": 41495,
+      "share_pct": 25.4,
+      "violent_pct": 22.2
+    },
+    {
+      "descent": "Black",
+      "crimes": 134247,
+      "violent": 56756,
+      "share_pct": 18.3,
+      "violent_pct": 42.3
+    },
+    {
+      "descent": "Other",
+      "crimes": 65616,
+      "violent": 15756,
+      "share_pct": 8.9,
+      "violent_pct": 24.0
+    },
+    {
+      "descent": "Asian",
+      "crimes": 39917,
+      "violent": 6222,
+      "share_pct": 5.4,
+      "violent_pct": 15.6
+    },
+    {
+      "descent": "Pacific Islander",
+      "crimes": 600,
+      "violent": 49,
+      "share_pct": 0.1,
+      "violent_pct": 8.2
+    }
+  ],
+  "by_cat_sex": [
+    {
+      "category": "Property - Burglary",
+      "Male": 59742,
+      "Female": 43680,
+      "total": 103422,
+      "female_pct": 42.2
+    },
+    {
+      "category": "Other",
+      "Male": 44790,
+      "Female": 48652,
+      "total": 93442,
+      "female_pct": 52.1
+    },
+    {
+      "category": "Property - Theft",
+      "Male": 48227,
+      "Female": 42752,
+      "total": 90979,
+      "female_pct": 47.0
+    },
+    {
+      "category": "Violent - Assault & Battery",
+      "Male": 43523,
+      "Female": 42489,
+      "total": 86012,
+      "female_pct": 49.4
+    },
+    {
+      "category": "Identity / Fraud",
+      "Male": 31005,
+      "Female": 41316,
+      "total": 72321,
+      "female_pct": 57.1
+    },
+    {
+      "category": "Property - Vandalism",
+      "Male": 33840,
+      "Female": 31216,
+      "total": 65056,
+      "female_pct": 48.0
+    },
+    {
+      "category": "Domestic Violence",
+      "Male": 13837,
+      "Female": 44950,
+      "total": 58787,
+      "female_pct": 76.5
+    },
+    {
+      "category": "Vehicle Crime",
+      "Male": 30938,
+      "Female": 21338,
+      "total": 52276,
+      "female_pct": 40.8
+    },
+    {
+      "category": "Violent - Aggravated Assault",
+      "Male": 37394,
+      "Female": 14325,
+      "total": 51719,
+      "female_pct": 27.7
+    },
+    {
+      "category": "Violent - Robbery",
+      "Male": 20700,
+      "Female": 8697,
+      "total": 29397,
+      "female_pct": 29.6
+    },
+    {
+      "category": "Sex Offense",
+      "Male": 3188,
+      "Female": 7539,
+      "total": 10727,
+      "female_pct": 70.3
+    },
+    {
+      "category": "Violent - Sexual Assault",
+      "Male": 171,
+      "Female": 5197,
+      "total": 5368,
+      "female_pct": 96.8
+    },
+    {
+      "category": "Violent - Homicide",
+      "Male": 1340,
+      "Female": 210,
+      "total": 1550,
+      "female_pct": 13.5
+    },
+    {
+      "category": "Property - Arson",
+      "Male": 844,
+      "Female": 568,
+      "total": 1412,
+      "female_pct": 40.2
+    },
+    {
+      "category": "Crimes Against Children",
+      "Male": 495,
+      "Female": 469,
+      "total": 964,
+      "female_pct": 48.7
+    },
+    {
+      "category": "Violent - Kidnapping",
+      "Male": 218,
+      "Female": 708,
+      "total": 926,
+      "female_pct": 76.5
+    },
+    {
+      "category": "Human Trafficking",
+      "Male": 12,
+      "Female": 553,
+      "total": 565,
+      "female_pct": 97.9
+    },
+    {
+      "category": "Drug Offense",
+      "Male": 2,
+      "Female": 4,
+      "total": 6,
+      "female_pct": 66.7
+    }
+  ]
+}

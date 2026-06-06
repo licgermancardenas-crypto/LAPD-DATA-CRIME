@@ -11,6 +11,7 @@ import CategoryChart      from '@/components/CategoryChart';
 import WeatherChart       from '@/components/WeatherChart';
 import UnemploymentChart  from '@/components/UnemploymentChart';
 import ReportingLagChart  from '@/components/ReportingLagChart';
+import VictimChart        from '@/components/VictimChart';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
 
@@ -19,6 +20,7 @@ const NAV_SECTIONS = [
   { id: 'geographic' },
   { id: 'temporal' },
   { id: 'categories' },
+  { id: 'victims' },
   { id: 'external' },
 ];
 
@@ -111,8 +113,9 @@ export default function Home() {
       fetch(`${b}/division.json`).then(r => r.json()),
       fetch(`${b}/categories.json`).then(r => r.json()),
       fetch(`${b}/weather_daily.json`).then(r => r.json()),
-    ]).then(([summary, monthly, hourly, division, categories, weather]) => {
-      setData({ summary, monthly, hourly, division, categories, weather });
+      fetch(`${b}/victims.json`).then(r => r.json()),
+    ]).then(([summary, monthly, hourly, division, categories, weather, victims]) => {
+      setData({ summary, monthly, hourly, division, categories, weather, victims });
     }).catch(() => setData('error'));
   }, []);
 
@@ -146,7 +149,7 @@ export default function Home() {
     </Shell>
   );
 
-  const { summary, monthly, hourly, division, categories, weather } = data;
+  const { summary, monthly, hourly, division, categories, weather, victims } = data;
   const clrColor = summary.clearance_rate >= 20 ? '#3ecf8e'
                  : summary.clearance_rate >= 12 ? '#e0c066' : '#e05252';
 
@@ -193,6 +196,7 @@ export default function Home() {
           { id: 'geographic', label: 'Geographic',   icon: '🗺️' },
           { id: 'temporal',   label: 'Temporal',     icon: '🕐' },
           { id: 'categories', label: 'Categories',   icon: '📂' },
+          { id: 'victims',    label: 'Victims',      icon: '👥' },
           { id: 'external',   label: 'Context',      icon: '🌦️' },
         ].map(item => (
           <a
@@ -284,6 +288,16 @@ export default function Home() {
         <Section id="categories">
           <SectionHeader title="Crime Categories" sub="UCR Part 1 & 2 classification — 18 categories · red bars indicate violent crime" badge="18 categories" />
           <CategoryChart data={categories} />
+        </Section>
+
+        {/* VICTIMS */}
+        <Section id="victims">
+          <SectionHeader
+            title="Victim Demographics"
+            sub="Who gets victimized? Age, gender, and ethnic breakdown across 735,579 victim records — 2020-2024"
+            badge="735k victims"
+          />
+          <VictimChart data={victims} />
         </Section>
 
         {/* CONTEXT */}

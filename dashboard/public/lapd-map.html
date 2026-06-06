@@ -75,6 +75,55 @@
         border:1px solid var(--border);border-radius:6px;padding:5px 11px;
         font-size:11px;color:var(--muted);z-index:1000}
 
+  /* ── Hour animation controls (bottom-center) ── */
+  #hour-ctrl{
+    position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
+    z-index:1000;display:flex;align-items:center;gap:10px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:11px;padding:9px 14px;
+    box-shadow:0 4px 20px rgba(0,0,0,.35);white-space:nowrap;
+  }
+  #play-btn{
+    width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface-s);color:var(--text);cursor:pointer;
+    font-size:13px;display:flex;align-items:center;justify-content:center;
+    transition:all .12s;flex-shrink:0;
+  }
+  #play-btn:hover:not(:disabled){border-color:#4f8ef7;color:#4f8ef7}
+  #play-btn:disabled{opacity:.35;cursor:default}
+  #play-btn.playing{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
+  #hc-track{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+  #hc-spark{display:flex;gap:1.5px;align-items:flex-end;height:18px;width:216px}
+  .hc-bar{flex:1;border-radius:2px 2px 0 0;background:rgba(79,142,247,.18);
+          transition:background .12s,height .12s}
+  .hc-bar.hc-act{background:#4f8ef7}
+  #hour-slider{
+    width:216px;height:3px;appearance:none;-webkit-appearance:none;
+    background:var(--border);border-radius:2px;cursor:pointer;outline:none;
+  }
+  #hour-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+    background:#4f8ef7;cursor:pointer;border:2px solid #fff;
+    box-shadow:0 0 0 2px rgba(79,142,247,.4);
+  }
+  #hour-slider::-moz-range-thumb{
+    width:13px;height:13px;border-radius:50%;
+    background:#4f8ef7;cursor:pointer;border:2px solid #fff;box-shadow:none;
+  }
+  #hour-slider:disabled{opacity:.3;cursor:default}
+  #hc-label{
+    font-size:12px;font-weight:700;color:var(--text);
+    min-width:66px;text-align:center;line-height:1.2;
+  }
+  #hc-label small{display:block;font-size:9px;color:var(--muted);font-weight:400;margin-top:2px}
+  #hour-reset{
+    width:22px;height:22px;border-radius:5px;border:1px solid var(--border);
+    background:transparent;color:var(--muted);cursor:pointer;font-size:11px;
+    display:none;align-items:center;justify-content:center;flex-shrink:0;
+    transition:all .12s;
+  }
+  #hour-reset:hover{border-color:#e05252;color:#e05252}
+
   /* ── Division name labels ── */
   .leaflet-tooltip.div-lab{
     background:transparent!important;border:none!important;box-shadow:none!important;
@@ -110,6 +159,16 @@
 
 <div id="hint">Click a division to explore</div>
 
+<div id="hour-ctrl">
+  <button id="play-btn" title="Play 24h animation" disabled>▶</button>
+  <div id="hc-track">
+    <div id="hc-spark"></div>
+    <input type="range" id="hour-slider" min="0" max="23" step="1" value="6" disabled>
+  </div>
+  <div id="hc-label">All Hours<small>Loading…</small></div>
+  <button id="hour-reset" title="Reset to all hours">✕</button>
+</div>
+
 <script>
 // ── Color stops ────────────────────────────────────────────────────────────
 var S_CRIMES = [[13,33,55],[26,74,138],[79,142,247],[224,136,58],[224,82,82]];
@@ -124,6 +183,13 @@ function lerp(t, stops) {
 
 // ── State ──────────────────────────────────────────────────────────────────
 var dark = true, metric = 'crimes', geoLayer;
+
+// Hour animation state
+var hourFractions = null;   // array[24] of fractions summing to 1
+var maxHourFrac   = 1;
+var currentHour   = null;   // null = all-day view, 0-23 = specific hour
+var isPlaying     = false;
+var playInterval  = null;
 
 // ── Legend ─────────────────────────────────────────────────────────────────
 function buildLegend() {
@@ -178,11 +244,21 @@ document.querySelectorAll('.mb').forEach(function(btn) {
 // ── Layer style ─────────────────────────────────────────────────────────────
 function featureStyle(f) {
   var p = f.properties;
-  var t = metric === 'crimes' ? p.norm : p._clrNorm;
-  var stops = metric === 'crimes' ? S_CRIMES : S_CLR;
+  var stops, t;
+  if (metric === 'clearance') {
+    t = p._clrNorm;
+    stops = S_CLR;
+  } else {
+    t = p.norm;
+    // Modulate brightness by time-of-day fraction (all divisions scale together)
+    if (currentHour !== null && hourFractions) {
+      t = t * (hourFractions[currentHour] / maxHourFrac);
+    }
+    stops = S_CRIMES;
+  }
   return {
     fillColor:   lerp(t, stops),
-    fillOpacity: 0.65,
+    fillOpacity: currentHour !== null && metric === 'crimes' ? 0.78 : 0.65,
     color:       dark ? '#0a0c12' : '#c8ccd6',
     weight: 1.8, opacity: 0.9
   };
@@ -285,6 +361,126 @@ document.getElementById('tt').addEventListener('click', function() {
     nbLayer.setStyle(nbStyle());
   }
 });
+
+// ── Hour animation ──────────────────────────────────────────────────────────
+var HOUR_LABELS = [
+  '12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM','7 AM',
+  '8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM',
+  '4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM'
+];
+
+function buildSparkline() {
+  var spark = document.getElementById('hc-spark');
+  spark.innerHTML = '';
+  var maxF = maxHourFrac;
+  for (var h = 0; h < 24; h++) {
+    var bar = document.createElement('div');
+    bar.className = 'hc-bar' + (h === currentHour ? ' hc-act' : '');
+    bar.id = 'hc-b' + h;
+    bar.style.height = Math.max(3, Math.round((hourFractions[h] / maxF) * 100)) + '%';
+    spark.appendChild(bar);
+  }
+}
+
+function updateSparkline() {
+  for (var h = 0; h < 24; h++) {
+    var bar = document.getElementById('hc-b' + h);
+    if (bar) {
+      if (h === currentHour) bar.classList.add('hc-act');
+      else                   bar.classList.remove('hc-act');
+    }
+  }
+}
+
+function updateHourLabel() {
+  var el = document.getElementById('hc-label');
+  if (currentHour === null) {
+    el.innerHTML = 'All Hours<small>5-year total</small>';
+  } else {
+    var pct = (hourFractions[currentHour] * 100).toFixed(1);
+    el.innerHTML = HOUR_LABELS[currentHour] + '<small>' + pct + '% of daily crime</small>';
+  }
+}
+
+function setHour(h) {
+  currentHour = h;
+  document.getElementById('hour-slider').value = h;
+  updateSparkline();
+  updateHourLabel();
+  refreshStyle();
+  document.getElementById('hour-reset').style.display = 'flex';
+}
+
+function resetHour() {
+  stopPlay();
+  currentHour = null;
+  document.getElementById('hour-slider').value = 6;
+  updateSparkline();
+  updateHourLabel();
+  refreshStyle();
+  document.getElementById('hour-reset').style.display = 'none';
+}
+
+function stopPlay() {
+  if (playInterval) { clearInterval(playInterval); playInterval = null; }
+  isPlaying = false;
+  var btn = document.getElementById('play-btn');
+  btn.textContent = '▶';
+  btn.classList.remove('playing');
+  btn.title = 'Play 24h animation';
+}
+
+document.getElementById('play-btn').addEventListener('click', function() {
+  if (isPlaying) {
+    stopPlay();
+  } else {
+    isPlaying = true;
+    this.textContent = '⏸';
+    this.classList.add('playing');
+    this.title = 'Pause animation';
+    if (currentHour === null) currentHour = 0;
+    playInterval = setInterval(function() {
+      setHour((currentHour + 1) % 24);
+    }, 300);
+  }
+});
+
+document.getElementById('hour-slider').addEventListener('input', function() {
+  if (isPlaying) stopPlay();  // manual drag stops auto-play
+  setHour(parseInt(this.value, 10));
+});
+
+document.getElementById('hour-reset').addEventListener('click', resetHour);
+
+// Pause animation when switching to clearance rate
+document.querySelectorAll('.mb').forEach(function(btn) {
+  btn.addEventListener('click', function() { if (isPlaying) stopPlay(); });
+});
+
+// Load hourly city-wide data → compute fractions → enable controls
+fetch('/data/hourly_dow.json')
+  .then(function(r) { return r.json(); })
+  .then(function(rows) {
+    var totals = new Array(24).fill(0);
+    for (var i = 0; i < rows.length; i++) {
+      totals[rows[i].hour] = (totals[rows[i].hour] || 0) + rows[i].crimes;
+    }
+    var grand = totals.reduce(function(a, b) { return a + b; }, 0);
+    hourFractions = totals.map(function(v) { return v / grand; });
+    maxHourFrac = Math.max.apply(null, hourFractions);
+
+    // Enable controls
+    document.getElementById('play-btn').disabled   = false;
+    document.getElementById('hour-slider').disabled = false;
+
+    buildSparkline();
+    updateHourLabel();
+    document.getElementById('hc-label').innerHTML =
+      'All Hours<small>drag or press play</small>';
+  })
+  .catch(function() {
+    document.getElementById('hc-label').innerHTML = 'Hourly data<small>unavailable</small>';
+  });
 </script>
 </body>
 </html>

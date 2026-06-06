@@ -6,140 +6,221 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <style>
+  :root {
+    --bg:#0a0c12; --surface:rgba(10,12,18,.92); --surface-s:#1a1d27;
+    --border:#2a2d3a; --text:#e8eaf0; --muted:#7b82a0;
+    --popup-bg:rgba(10,12,18,.97); --outline:#0a0c12;
+  }
+  .lm {
+    --bg:#eef0f4; --surface:rgba(255,255,255,.95); --surface-s:#ffffff;
+    --border:#d4d8e2; --text:#1a1d27; --muted:#6b7280;
+    --popup-bg:rgba(255,255,255,.98); --outline:#c8ccd6;
+  }
+
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%;margin:0;padding:0;background:#0a0c12;font-family:Inter,system-ui,sans-serif;color:#e8eaf0;overflow:hidden}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);transition:background .25s}
   #map{position:absolute;top:0;left:0;right:0;bottom:0}
 
-  /* Leaflet overrides */
-  .leaflet-control-zoom a{background:#1a1d27!important;color:#e8eaf0!important;border-color:#2a2d3a!important}
-  .leaflet-control-zoom a:hover{background:#2a2d3a!important}
-  .leaflet-bar{border:1px solid #2a2d3a!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.4)!important}
-  .leaflet-control-attribution{background:rgba(10,12,18,.75)!important;color:#7b82a0!important;font-size:10px!important}
+  /* ── Leaflet overrides ── */
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2)!important}
+  .leaflet-control-attribution{background:var(--surface)!important;color:var(--muted)!important;font-size:10px!important}
   .leaflet-control-attribution a{color:#4f8ef7!important}
-  .leaflet-popup-content-wrapper{background:rgba(10,12,18,.97)!important;border:1px solid #2a2d3a!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important;color:#e8eaf0!important}
-  .leaflet-popup-tip{background:rgba(10,12,18,.97)!important}
-  .leaflet-popup-close-button{color:#7b82a0!important;font-size:18px!important;padding:6px 8px!important}
-  .leaflet-popup-close-button:hover{color:#e8eaf0!important;background:none!important}
-  .leaflet-popup-content{margin:14px 16px!important;min-width:200px}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;border:1px solid var(--border)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.25)!important;color:var(--text)!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important}
+  .leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;padding:6px 8px!important}
+  .leaflet-popup-close-button:hover{color:var(--text)!important;background:none!important}
+  .leaflet-popup-content{margin:14px 16px!important;min-width:210px}
 
-  .div-name{font-weight:700;font-size:15px;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-  .div-dot{width:10px;height:10px;border-radius:50%}
-  .div-rank{display:inline-flex;align-items:center;gap:4px;background:#1a1d27;border:1px solid #2a2d3a;border-radius:6px;padding:3px 10px;margin-bottom:10px;font-size:11px}
+  /* ── Popup card ── */
+  .div-name{font-weight:700;font-size:15px;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .div-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .div-rank{display:inline-flex;align-items:center;gap:4px;background:var(--surface-s);border:1px solid var(--border);border-radius:6px;padding:3px 10px;margin-bottom:10px;font-size:11px;color:var(--muted)}
   .div-rank .rn{color:#e0883a;font-weight:700}
   .stat-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
-  .stat-label{font-size:11px;color:#7b82a0}
+  .stat-label{font-size:11px;color:var(--muted)}
   .stat-val{font-size:13px;font-weight:600}
-  .stat-sep{height:1px;background:#2a2d3a;margin:6px 0}
-  .mini-bar-wrap{margin-top:10px}
-  .mini-bar-bg{height:4px;border-radius:2px;background:#1a1d27;overflow:hidden}
+  .stat-sep{height:1px;background:var(--border);margin:6px 0}
+  .mini-bar-bg{height:4px;border-radius:2px;background:var(--surface-s);overflow:hidden;margin-top:10px}
   .mini-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
-  .mini-bar-labels{display:flex;justify-content:space-between;margin-top:3px}
-  .mini-bar-labels span{font-size:9px;color:#7b82a0}
 
-  #legend{position:fixed;bottom:36px;right:52px;background:rgba(10,12,18,.92);border:1px solid #2a2d3a;border-radius:8px;padding:9px 12px;z-index:1000}
-  #legend p{font-size:10px;color:#7b82a0;font-weight:600;letter-spacing:.06em;margin-bottom:5px}
-  #legend-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;width:110px}
-  #legend-labels{display:flex;justify-content:space-between;margin-top:3px}
-  #legend-labels span{font-size:9px;color:#7b82a0}
+  /* ── Metric toolbar (top-left) ── */
+  #toolbar{position:fixed;top:12px;left:12px;z-index:1000;display:flex;gap:4px}
+  .mb{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;
+      border:1px solid var(--border);background:var(--surface-s);color:var(--muted);
+      transition:all .15s;letter-spacing:.03em;white-space:nowrap}
+  .mb.on{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
+  .mb:hover:not(.on){color:var(--text)}
 
-  #hint{position:fixed;bottom:36px;left:12px;background:rgba(10,12,18,.85);border:1px solid #2a2d3a;border-radius:6px;padding:5px 11px;font-size:11px;color:#7b82a0;z-index:1000}
+  /* ── Theme toggle (top-right) ── */
+  #tt{position:fixed;top:12px;right:12px;z-index:1000;width:34px;height:34px;
+      border-radius:8px;border:1px solid var(--border);background:var(--surface-s);
+      color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;transition:all .15s}
+  #tt:hover{opacity:.75}
+
+  /* ── Legend (bottom-right) ── */
+  #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);
+          border:1px solid var(--border);border-radius:8px;padding:9px 12px;z-index:1000}
+  #legend p{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;width:120px}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+
+  /* ── Hint (bottom-left) ── */
+  #hint{position:fixed;bottom:36px;left:12px;background:var(--surface);
+        border:1px solid var(--border);border-radius:6px;padding:5px 11px;
+        font-size:11px;color:var(--muted);z-index:1000}
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="legend">
-  <p>CRIME VOLUME 2020-24</p>
-  <div id="legend-bar"></div>
-  <div id="legend-labels"><span>Low</span><span>High</span></div>
+
+<div id="toolbar">
+  <button class="mb on" data-m="crimes">Total Crimes</button>
+  <button class="mb"    data-m="clearance">Clearance Rate</button>
 </div>
+
+<button id="tt" title="Toggle dark / light mode">🌙</button>
+
+<div id="legend">
+  <p id="leg-title">CRIME VOLUME 2020-24</p>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span id="leg-lo">Low</span><span id="leg-hi">High</span></div>
+</div>
+
 <div id="hint">Click a division to explore</div>
 
 <script>
-// ── Color scale ───────────────────────────────────────────────────────────
-const STOPS = [
-  [13,33,55],[26,74,138],[79,142,247],[224,136,58],[224,82,82]
-];
-function lerp(t) {
+// ── Color stops ────────────────────────────────────────────────────────────
+var S_CRIMES = [[13,33,55],[26,74,138],[79,142,247],[224,136,58],[224,82,82]];
+var S_CLR    = [[224,82,82],[224,136,58],[224,192,102],[79,207,142],[40,160,100]];
+
+function lerp(t, stops) {
   t = Math.max(0, Math.min(1, t));
-  const n = STOPS.length - 1;
-  const s = t * n, i = Math.min(Math.floor(s), n - 1), f = s - i;
-  const [r1,g1,b1] = STOPS[i], [r2,g2,b2] = STOPS[i+1]||STOPS[n];
-  return 'rgb('+Math.round(r1+f*(r2-r1))+','+Math.round(g1+f*(g2-g1))+','+Math.round(b1+f*(b2-b1))+')';
+  var n = stops.length - 1, s = t*n, i = Math.min(Math.floor(s), n-1), f = s-i;
+  var a = stops[i], b = stops[i+1]||stops[n];
+  return 'rgb('+Math.round(a[0]+f*(b[0]-a[0]))+','+Math.round(a[1]+f*(b[1]-a[1]))+','+Math.round(a[2]+f*(b[2]-a[2]))+')';
 }
 
-// Build legend gradient
-var bar = document.getElementById('legend-bar');
-for (var k = 0; k < 22; k++) {
-  var s = document.createElement('div');
-  s.style.flex = '1';
-  s.style.background = lerp(k/21);
-  bar.appendChild(s);
-}
+// ── State ──────────────────────────────────────────────────────────────────
+var dark = true, metric = 'crimes', geoLayer;
 
-// ── Map init ──────────────────────────────────────────────────────────────
+// ── Legend ─────────────────────────────────────────────────────────────────
+function buildLegend() {
+  var stops = metric === 'crimes' ? S_CRIMES : S_CLR;
+  var bar = document.getElementById('leg-bar');
+  bar.innerHTML = '';
+  for (var k=0; k<24; k++) {
+    var d = document.createElement('div');
+    d.style.flex = '1';
+    d.style.background = lerp(k/23, stops);
+    bar.appendChild(d);
+  }
+  document.getElementById('leg-title').textContent =
+    metric === 'crimes' ? 'CRIME VOLUME 2020-24' : 'CLEARANCE RATE 2020-24';
+  document.getElementById('leg-lo').textContent = metric === 'crimes' ? 'Low'   : 'Low %';
+  document.getElementById('leg-hi').textContent = metric === 'crimes' ? 'High'  : 'High %';
+}
+buildLegend();
+
+// ── Map ────────────────────────────────────────────────────────────────────
 var map = L.map('map',{center:[34.045,-118.28],zoom:10,zoomControl:false,attributionControl:true});
 setTimeout(function(){ map.invalidateSize(); }, 100);
 L.control.zoom({position:'bottomright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-  attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>',
-  subdomains:'abcd',maxZoom:19
-}).addTo(map);
 
-// ── Load GeoJSON ──────────────────────────────────────────────────────────
+var tOpts = {subdomains:'abcd',maxZoom:19,
+  attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+// ── Theme toggle ───────────────────────────────────────────────────────────
+document.getElementById('tt').addEventListener('click', function() {
+  dark = !dark;
+  document.body.classList.toggle('lm', !dark);
+  this.textContent = dark ? '🌙' : '☀️';
+  if (dark) { map.removeLayer(tLight); tDark.addTo(map); }
+  else      { map.removeLayer(tDark);  tLight.addTo(map); }
+  refreshStyle();
+});
+
+// ── Metric buttons ─────────────────────────────────────────────────────────
+document.querySelectorAll('.mb').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mb').forEach(function(b){ b.classList.remove('on'); });
+    this.classList.add('on');
+    metric = this.dataset.m;
+    refreshStyle();
+    buildLegend();
+  });
+});
+
+// ── Layer style ─────────────────────────────────────────────────────────────
+function featureStyle(f) {
+  var p = f.properties;
+  var t = metric === 'crimes' ? p.norm : p._clrNorm;
+  var stops = metric === 'crimes' ? S_CRIMES : S_CLR;
+  return {
+    fillColor:   lerp(t, stops),
+    fillOpacity: 0.65,
+    color:       dark ? '#0a0c12' : '#c8ccd6',
+    weight: 1.8, opacity: 0.9
+  };
+}
+
+function refreshStyle() {
+  if (geoLayer) geoLayer.setStyle(featureStyle);
+}
+
+// ── Load GeoJSON ───────────────────────────────────────────────────────────
 fetch('/data/lapd_divisions_crimes.geojson')
-  .then(function(r){return r.json();})
-  .then(function(gj){
-    // Sort and rank
-    gj.features.sort(function(a,b){return b.properties.total_crimes - a.properties.total_crimes;});
-    gj.features.forEach(function(f,i){f.properties.rank = i+1;});
+  .then(function(r){ return r.json(); })
+  .then(function(gj) {
+    gj.features.sort(function(a,b){ return b.properties.total_crimes - a.properties.total_crimes; });
+    gj.features.forEach(function(f,i){ f.properties.rank = i+1; });
 
-    var geoLayer = L.geoJSON(gj,{
-      style: function(f){
-        return {
-          fillColor: lerp(f.properties.norm),
-          fillOpacity: 0.60,
-          color: '#0a0c12',
-          weight: 1.8,
-          opacity: 0.9
-        };
-      },
-      onEachFeature: function(feature,layer){
-        var p = feature.properties;
-        var clrColor = p.clearance >= 20 ? '#3ecf8e' : p.clearance >= 12 ? '#e0c066' : '#e05252';
+    // Normalise clearance rate across divisions
+    var vals = gj.features.map(function(f){ return f.properties.clearance||0; });
+    var mn = Math.min.apply(null,vals), mx = Math.max.apply(null,vals);
+    gj.features.forEach(function(f){
+      f.properties._clrNorm = (f.properties.clearance - mn) / (mx - mn || 1);
+    });
 
+    geoLayer = L.geoJSON(gj, {
+      style: featureStyle,
+      onEachFeature: function(feat, layer) {
+        var p = feat.properties;
+        var clrCol = p.clearance >= 20 ? '#3ecf8e' : p.clearance >= 12 ? '#e0c066' : '#e05252';
         var html =
           '<div class="div-name">' +
-            '<span class="div-dot" style="background:'+lerp(p.norm)+'"></span>' +
+            '<span class="div-dot" style="background:'+lerp(p.norm,S_CRIMES)+'"></span>' +
             p.name +
           '</div>' +
-          '<div class="div-rank">Rank <span class="rn">#'+p.rank+'</span> of 21 divisions</div>' +
+          '<div class="div-rank">Rank <span class="rn">#'+p.rank+'</span> / 21</div>' +
           '<div class="stat-row"><span class="stat-label">Total Crimes</span>' +
             '<span class="stat-val" style="color:#4f8ef7">'+(p.total_crimes||0).toLocaleString()+'</span></div>' +
           '<div class="stat-row"><span class="stat-label">Clearance Rate</span>' +
-            '<span class="stat-val" style="color:'+clrColor+'">'+((p.clearance||0).toFixed(1))+'%</span></div>' +
+            '<span class="stat-val" style="color:'+clrCol+'">'+((p.clearance||0).toFixed(1))+'%</span></div>' +
           '<div class="stat-sep"></div>' +
           '<div class="stat-row"><span class="stat-label">Top Category</span>' +
-            '<span class="stat-val" style="color:#7b82a0;font-size:11px">'+(p.top_category||'—')+'</span></div>' +
-          '<div class="mini-bar-wrap">' +
-            '<div class="mini-bar-bg"><div class="mini-bar-fill" style="width:'+(p.norm*100)+'%;background:'+lerp(p.norm)+'"></div></div>' +
-          '</div>';
+            '<span class="stat-val" style="color:var(--muted);font-size:11px">'+(p.top_category||'—')+'</span></div>' +
+          '<div class="mini-bar-bg"><div class="mini-bar-fill" style="width:'+(p.norm*100)+'%;background:'+lerp(p.norm,S_CRIMES)+'"></div></div>';
 
-        layer.bindPopup(html, {maxWidth: 260, closeButton: true});
+        layer.bindPopup(html, {maxWidth:270, closeButton:true});
 
         layer.on({
-          mouseover: function(e){
-            e.target.setStyle({fillOpacity:0.85,weight:2.5,color:'#ffffff'});
+          mouseover: function(e) {
+            e.target.setStyle({fillOpacity:0.88, weight:2.5, color:'#4f8ef7'});
             e.target.bringToFront();
           },
-          mouseout: function(e){ geoLayer.resetStyle(e.target); },
-          click: function(){
-            document.getElementById('hint').style.display='none';
-          }
+          mouseout:  function(e){ geoLayer.resetStyle(e.target); },
+          click:     function(){ document.getElementById('hint').style.display='none'; }
         });
       }
     }).addTo(map);
   })
-  .catch(function(err){console.error('GeoJSON load error:',err);});
+  .catch(function(e){ console.error('GeoJSON error:',e); });
 </script>
 </body>
 </html>

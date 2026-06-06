@@ -124,6 +124,84 @@
   }
   #hour-reset:hover{border-color:#e05252;color:#e05252}
 
+  /* ── Glassmorphism info panel (top-right) ── */
+  #info-panel{
+    position:fixed;top:58px;right:12px;z-index:999;
+    width:188px;
+    background:rgba(6,8,16,.72);
+    backdrop-filter:blur(20px) saturate(1.4);
+    -webkit-backdrop-filter:blur(20px) saturate(1.4);
+    border:1px solid rgba(79,142,247,.13);
+    border-radius:14px;
+    padding:13px 15px 12px;
+    box-shadow:0 8px 32px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.04);
+    font-family:Inter,system-ui,sans-serif;
+    color:#e8eaf0;
+    opacity:0;
+    transition:opacity .35s ease;
+    pointer-events:none;
+  }
+  #info-panel.ready{opacity:1}
+  .lm #info-panel{
+    background:rgba(240,242,248,.82);
+    border-color:rgba(79,142,247,.18);
+    color:#1a1d27;
+    box-shadow:0 8px 32px rgba(0,0,0,.15),inset 0 0 0 1px rgba(255,255,255,.6);
+  }
+
+  /* Status row */
+  #ip-status{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+  @keyframes ip-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.5)}}
+  #ip-dot{
+    width:6px;height:6px;border-radius:50%;background:#3a3f55;
+    display:inline-block;flex-shrink:0;
+    animation:ip-pulse 1.8s ease-in-out infinite;transition:background .3s;
+  }
+  #ip-mode{
+    font-size:8.5px;font-weight:700;letter-spacing:.12em;
+    text-transform:uppercase;color:#4f5870;transition:color .3s;
+  }
+  .lm #ip-mode{color:#8090b0}
+
+  /* Hour display */
+  #ip-hour{font-size:21px;font-weight:800;color:#fff;line-height:1;margin-bottom:3px;transition:color .2s}
+  .lm #ip-hour{color:#0f1117}
+  #ip-sub{font-size:10px;color:#4f5870;margin-bottom:10px;transition:color .2s}
+  .lm #ip-sub{color:#8090b0}
+
+  /* Separator */
+  .ip-sep{height:1px;background:rgba(79,142,247,.1);margin:9px 0}
+
+  /* Crime stats */
+  #ip-crimes-lbl{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4f5870;margin-bottom:5px}
+  .lm #ip-crimes-lbl{color:#8090b0}
+  #ip-crimes-val{font-size:22px;font-weight:800;color:#4f8ef7;line-height:1;margin-bottom:6px;
+                 transition:all .25s;font-variant-numeric:tabular-nums}
+  #ip-bar-row{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  #ip-bar-bg{flex:1;height:4px;background:rgba(79,142,247,.14);border-radius:2px;overflow:hidden}
+  #ip-bar-fill{height:100%;background:linear-gradient(90deg,#4f8ef7,#7c5cbf);border-radius:2px;
+               transition:width .3s ease;width:0%}
+  #ip-pct{font-size:10px;font-weight:600;color:#7b82a0;white-space:nowrap;flex-shrink:0}
+  #ip-vs{font-size:11px;font-weight:600;margin-bottom:2px;transition:color .2s;color:#7b82a0}
+
+  /* Context rows */
+  .ip-ctx{display:flex;justify-content:space-between;align-items:baseline;margin-top:3px}
+  .ip-ctx-k{font-size:10px;color:#3d4255}
+  .lm .ip-ctx-k{color:#8090b0}
+  .ip-ctx-v{font-size:10px;font-weight:600;color:#7b82a0}
+
+  /* CTA footer */
+  #ip-cta{
+    margin-top:10px;display:flex;align-items:center;gap:6px;
+    font-size:10px;color:#4f5870;border-top:1px solid rgba(79,142,247,.08);
+    padding-top:9px;
+  }
+  #ip-cta-icon{
+    width:18px;height:18px;border-radius:4px;background:rgba(79,142,247,.1);
+    display:flex;align-items:center;justify-content:center;font-size:9px;
+    border:1px solid rgba(79,142,247,.2);color:#4f8ef7;flex-shrink:0;
+  }
+
   /* ── Division name labels ── */
   .leaflet-tooltip.div-lab{
     background:transparent!important;border:none!important;box-shadow:none!important;
@@ -159,6 +237,47 @@
 
 <div id="hint">Click a division to explore</div>
 
+<div id="info-panel">
+  <!-- Status row -->
+  <div id="ip-status">
+    <span id="ip-dot"></span>
+    <span id="ip-mode">CRIME OVERVIEW</span>
+  </div>
+
+  <!-- Hour / title -->
+  <div id="ip-hour">All Hours</div>
+  <div id="ip-sub">2020–2024 · 5 years</div>
+
+  <div class="ip-sep"></div>
+
+  <!-- Crime count block -->
+  <div id="ip-crimes-lbl">TOTAL ACCUMULATED</div>
+  <div id="ip-crimes-val">—</div>
+  <div id="ip-bar-row">
+    <div id="ip-bar-bg"><div id="ip-bar-fill"></div></div>
+    <span id="ip-pct">—</span>
+  </div>
+  <div id="ip-vs"></div>
+
+  <div class="ip-sep"></div>
+
+  <!-- Contextual comparisons -->
+  <div class="ip-ctx">
+    <span class="ip-ctx-k">Peak hour</span>
+    <span class="ip-ctx-v" id="ip-peak">—</span>
+  </div>
+  <div class="ip-ctx">
+    <span class="ip-ctx-k">Quietest</span>
+    <span class="ip-ctx-v" id="ip-quiet">—</span>
+  </div>
+
+  <!-- CTA (all-day mode only) -->
+  <div id="ip-cta">
+    <div id="ip-cta-icon">▶</div>
+    <span>Press Play to animate by hour</span>
+  </div>
+</div>
+
 <div id="hour-ctrl">
   <button id="play-btn" title="Play 24h animation" disabled>▶</button>
   <div id="hc-track">
@@ -190,6 +309,9 @@ var maxHourFrac   = 1;
 var currentHour   = null;   // null = all-day view, 0-23 = specific hour
 var isPlaying     = false;
 var playInterval  = null;
+var grandTotal    = 0;
+var peakHour      = 0;
+var quietHour     = 0;
 
 // ── Legend ─────────────────────────────────────────────────────────────────
 function buildLegend() {
@@ -415,6 +537,7 @@ function setHour(h) {
   updateSparkline();
   updateHourLabel();
   refreshStyle();
+  updateInfoPanel();
   document.getElementById('hour-reset').style.display = 'flex';
 }
 
@@ -425,6 +548,7 @@ function resetHour() {
   updateSparkline();
   updateHourLabel();
   refreshStyle();
+  updateInfoPanel();
   document.getElementById('hour-reset').style.display = 'none';
 }
 
@@ -435,6 +559,7 @@ function stopPlay() {
   btn.textContent = '▶';
   btn.classList.remove('playing');
   btn.title = 'Play 24h animation';
+  updateInfoPanel(); // refresh dot color + mode label
 }
 
 document.getElementById('play-btn').addEventListener('click', function() {
@@ -464,6 +589,84 @@ document.querySelectorAll('.mb').forEach(function(btn) {
   btn.addEventListener('click', function() { if (isPlaying) stopPlay(); });
 });
 
+// ── Info panel update ──────────────────────────────────────────────────────
+function updateInfoPanel() {
+  if (!grandTotal) return;
+
+  var panel    = document.getElementById('info-panel');
+  var dotEl    = document.getElementById('ip-dot');
+  var modeEl   = document.getElementById('ip-mode');
+  var hourEl   = document.getElementById('ip-hour');
+  var subEl    = document.getElementById('ip-sub');
+  var lblEl    = document.getElementById('ip-crimes-lbl');
+  var valEl    = document.getElementById('ip-crimes-val');
+  var fillEl   = document.getElementById('ip-bar-fill');
+  var pctEl    = document.getElementById('ip-pct');
+  var vsEl     = document.getElementById('ip-vs');
+  var ctaEl    = document.getElementById('ip-cta');
+  var peakEl   = document.getElementById('ip-peak');
+  var quietEl  = document.getElementById('ip-quiet');
+
+  // Shared: peak / quiet info
+  var peakPct  = (hourFractions[peakHour]  * 100).toFixed(1);
+  var quietPct = (hourFractions[quietHour] * 100).toFixed(1);
+  peakEl.textContent  = HOUR_LABELS[peakHour]  + ' · ' + peakPct + '%';
+  quietEl.textContent = HOUR_LABELS[quietHour] + ' · ' + quietPct + '%';
+
+  if (currentHour === null) {
+    // ── All-day view ──
+    dotEl.style.background  = '#3a3f55';
+    modeEl.textContent      = 'CRIME OVERVIEW';
+    modeEl.style.color      = '';
+    hourEl.textContent      = 'All Hours';
+    subEl.textContent       = '2020–2024 · 5-year total';
+    lblEl.textContent       = 'TOTAL ACCUMULATED';
+    valEl.textContent       = grandTotal.toLocaleString();
+    valEl.style.color       = '#4f8ef7';
+    fillEl.style.width      = '100%';
+    pctEl.textContent       = '100% · full period';
+    vsEl.textContent        = 'Daily avg ~' + Math.round(grandTotal / (365.25 * 5)).toLocaleString() + ' crimes';
+    vsEl.style.color        = '#7b82a0';
+    ctaEl.style.display     = 'flex';
+
+  } else {
+    // ── Specific hour view ──
+    var h       = currentHour;
+    var crimes  = Math.round(hourFractions[h] * grandTotal);
+    var sharePct = (hourFractions[h] * 100).toFixed(1);
+    var barW    = (hourFractions[h] / maxHourFrac * 100).toFixed(0);
+    var vsAvg   = Math.round((hourFractions[h] * 24 - 1) * 100); // % above/below equal-dist avg
+
+    var period  = h < 5 ? 'Late Night' : h < 12 ? 'Morning'
+                : h < 17 ? 'Afternoon' : h < 21 ? 'Evening' : 'Night';
+    var hh      = (h < 10 ? '0' : '') + h;
+
+    dotEl.style.background  = isPlaying ? '#4f8ef7' : '#3ecf8e';
+    modeEl.textContent      = isPlaying ? 'ANIMATING' : 'LIVE ANALYSIS';
+    modeEl.style.color      = isPlaying ? '#4f8ef7' : '#3ecf8e';
+    hourEl.textContent      = HOUR_LABELS[h];
+    subEl.textContent       = period + ' · ' + hh + ':00 – ' + (h < 10 ? '0' : '') + ((h+1)%24) + ':00';
+    lblEl.textContent       = 'CRIMES THIS HOUR';
+    valEl.textContent       = crimes.toLocaleString();
+    valEl.style.color       = hourFractions[h] >= hourFractions[peakHour] * 0.8 ? '#e0883a'
+                            : hourFractions[h] >= 1/24 ? '#4f8ef7' : '#3ecf8e';
+    fillEl.style.width      = barW + '%';
+    pctEl.textContent       = sharePct + '% of daily';
+
+    if (vsAvg >= 20) {
+      vsEl.textContent = '+' + vsAvg + '% above hourly avg';
+      vsEl.style.color = '#e05252';
+    } else if (vsAvg >= 0) {
+      vsEl.textContent = '+' + vsAvg + '% above hourly avg';
+      vsEl.style.color = '#e0c066';
+    } else {
+      vsEl.textContent = vsAvg + '% below hourly avg';
+      vsEl.style.color = '#3ecf8e';
+    }
+    ctaEl.style.display = 'none';
+  }
+}
+
 // Load hourly city-wide data → compute fractions → enable controls
 fetch('/data/hourly_dow.json')
   .then(function(r) { return r.json(); })
@@ -474,7 +677,10 @@ fetch('/data/hourly_dow.json')
     }
     var grand = totals.reduce(function(a, b) { return a + b; }, 0);
     hourFractions = totals.map(function(v) { return v / grand; });
-    maxHourFrac = Math.max.apply(null, hourFractions);
+    maxHourFrac   = Math.max.apply(null, hourFractions);
+    grandTotal    = grand;
+    peakHour      = hourFractions.indexOf(maxHourFrac);
+    quietHour     = hourFractions.indexOf(Math.min.apply(null, hourFractions));
 
     // Enable controls
     document.getElementById('play-btn').disabled   = false;
@@ -482,8 +688,11 @@ fetch('/data/hourly_dow.json')
 
     buildSparkline();
     updateHourLabel();
-    document.getElementById('hc-label').innerHTML =
-      'All Hours<small>drag or press play</small>';
+    document.getElementById('hc-label').innerHTML = 'All Hours<small>drag or press play</small>';
+
+    // Reveal and populate panel
+    updateInfoPanel();
+    document.getElementById('info-panel').classList.add('ready');
   })
   .catch(function() {
     document.getElementById('hc-label').innerHTML = 'Hourly data<small>unavailable</small>';

@@ -10,6 +10,7 @@ import HourHeatmap        from '@/components/HourHeatmap';
 import CategoryChart      from '@/components/CategoryChart';
 import WeatherChart       from '@/components/WeatherChart';
 import UnemploymentChart  from '@/components/UnemploymentChart';
+import ReportingLagChart  from '@/components/ReportingLagChart';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
 
@@ -242,12 +243,16 @@ export default function Home() {
         <Section id="overview">
           <SectionHeader title="Executive Overview" sub="Key performance indicators across the full 5-year period" badge="1,004,894 records" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14, marginBottom: 24 }}>
-            <KpiCard label="Total Crimes"   value={summary.total_crimes.toLocaleString()} sub="2020-2024 cumulative" color="#4f8ef7" icon="📋" />
-            <KpiCard label="Clearance Rate" value={`${summary.clearance_rate}%`} sub="Cases with arrest or exceptional clearance" color={clrColor} icon="✅" />
-            <KpiCard label="Violent Share"  value={`${summary.violent_pct}%`} sub={`${summary.violent_crimes.toLocaleString()} violent incidents`} color="#e05252" icon="⚡" />
-            <KpiCard label="2024 vs 2023"   value={summary.crimes_2024.toLocaleString()} trend={summary.yoy_2024_vs_2023} sub="Year-over-year change" color="#e0883a" icon="📈" />
+            <KpiCard label="Total Crimes"    value={summary.total_crimes.toLocaleString()} sub="2020-2024 cumulative" color="#4f8ef7" icon="📋" />
+            <KpiCard label="Clearance Rate"  value={`${summary.clearance_rate}%`} sub="Cases with arrest or exceptional clearance" color={clrColor} icon="✅" />
+            <KpiCard label="Violent Share"   value={`${summary.violent_pct}%`} sub={`${summary.violent_crimes.toLocaleString()} violent incidents`} color="#e05252" icon="⚡" />
+            <KpiCard label="2024 vs 2023"    value={summary.crimes_2024.toLocaleString()} trend={summary.yoy_2024_vs_2023} sub="Year-over-year change" color="#e0883a" icon="📈" />
+            <KpiCard label="Reporting Lag"   value={`${summary.avg_reporting_lag}d`} sub="Avg days: crime occurred → report filed" color="#a78bfa" icon="🕐" />
           </div>
           <MonthlyTrend data={monthly} />
+          <div style={{ marginTop: 20 }}>
+            <ReportingLagChart data={monthly} />
+          </div>
         </Section>
 
         {/* GEOGRAPHIC */}

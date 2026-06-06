@@ -5,6 +5,7 @@
   "violent_crimes": 263218,
   "crimes_2024": 127567,
   "yoy_2024_vs_2023": -45.1,
+  "avg_reporting_lag": 7.0,
   "by_year": [
     {
       "year": 2020,

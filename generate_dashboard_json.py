@@ -12,6 +12,7 @@ No extra args needed — paths are relative to the repo.
 
 import json
 import sys
+import calendar
 from pathlib import Path
 
 try:
@@ -68,40 +69,79 @@ c2024 = next((y["crimes"] for y in by_year if y["year"] == 2024), 0)
 yoy   = round((c2024 - c2023) / c2023 * 100, 1) if c2023 else 0
 
 summary = {
-    "total_crimes":     total,
-    "clearance_rate":   round(cleared / total * 100, 1),
-    "violent_pct":      round(violent / total * 100, 1),
-    "violent_crimes":   violent,
-    "crimes_2024":      c2024,
-    "yoy_2024_vs_2023": yoy,
-    "by_year":          by_year,
+    "total_crimes":       total,
+    "clearance_rate":     round(cleared / total * 100, 1),
+    "violent_pct":        round(violent / total * 100, 1),
+    "violent_crimes":     violent,
+    "crimes_2024":        c2024,
+    "yoy_2024_vs_2023":   yoy,
+    "avg_reporting_lag":  None,   # filled in after monthly is computed
+    "by_year":            by_year,
 }
 (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
 print(f"  total={total:,}  clearance={summary['clearance_rate']}%  violent={summary['violent_pct']}%  yoy={yoy}%")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 2. monthly.json  (MonthlyTrend + UnemploymentChart)
+# 2. monthly.json  (MonthlyTrend + UnemploymentChart + ReportingLagChart)
 # ═══════════════════════════════════════════════════════════════════════════
 print("\n[2/6] monthly.json ...")
 
-monthly_df = monthly_df.sort_values(["year","month"]).reset_index(drop=True)
-monthly_df["rolling3"] = monthly_df["crimes"].rolling(3, min_periods=1).mean().round(0).astype(int)
+# ── Reporting lag from fact_crimes.csv (cap at 365 to remove data-entry errors) ──
+print("  Loading fact_crimes for reporting lag (161 MB)...")
+lag_df = pd.read_csv(DATA / "fact_crimes.csv", usecols=["date_key", "days_to_report"])
+lag_df["date_key"] = lag_df["date_key"].astype(str)
+lag_df["year"]  = lag_df["date_key"].str[:4].astype(int)
+lag_df["month"] = lag_df["date_key"].str[4:6].astype(int)
+lag_df = lag_df[lag_df["days_to_report"].between(0, 365)]   # drop obvious data errors
+lag_monthly = (
+    lag_df.groupby(["year", "month"])["days_to_report"]
+    .mean().round(1).reset_index()
+    .rename(columns={"days_to_report": "avg_lag"})
+)
+
+# ── Merge lag into monthly aggregation ────────────────────────────────────
+monthly_df = monthly_df.sort_values(["year", "month"]).reset_index(drop=True)
+monthly_df = monthly_df.merge(lag_monthly, on=["year", "month"], how="left")
+
+# ── Daily averages (normalize for unequal month lengths) ──────────────────
+monthly_df["days_in_month"] = monthly_df.apply(
+    lambda r: calendar.monthrange(int(r["year"]), int(r["month"]))[1], axis=1
+)
+monthly_df["daily_avg"]     = (monthly_df["crimes"]  / monthly_df["days_in_month"]).round(1)
+monthly_df["daily_violent"] = (monthly_df["violent"] / monthly_df["days_in_month"]).round(1)
+
+# ── Rolling 3-month averages ───────────────────────────────────────────────
+monthly_df["rolling3"]       = monthly_df["crimes"].rolling(3, min_periods=1).mean().round(0).astype(int)
+monthly_df["rolling3_daily"] = monthly_df["daily_avg"].rolling(3, min_periods=1).mean().round(1)
+monthly_df["rolling3_lag"]   = monthly_df["avg_lag"].rolling(3, min_periods=1).mean().round(1)
 
 monthly = []
 for _, r in monthly_df.iterrows():
     monthly.append({
-        "period":     str(r["period"]),          # "2020-01"
-        "year":       int(r["year"]),
-        "month":      int(r["month"]),
-        "crimes":     int(r["crimes"]),
-        "violent":    int(r["violent"]),
-        "rolling3":   int(r["rolling3"]),
-        "unemp_rate": float(round(r["unemp_rate"], 1)),
+        "period":        str(r["period"]),
+        "year":          int(r["year"]),
+        "month":         int(r["month"]),
+        "crimes":        int(r["crimes"]),
+        "violent":       int(r["violent"]),
+        "daily_avg":     float(r["daily_avg"]),
+        "daily_violent": float(r["daily_violent"]),
+        "rolling3":      int(r["rolling3"]),
+        "rolling3_daily":float(r["rolling3_daily"]),
+        "avg_lag":       float(r["avg_lag"]) if pd.notna(r["avg_lag"]) else None,
+        "rolling3_lag":  float(r["rolling3_lag"]) if pd.notna(r["rolling3_lag"]) else None,
+        "unemp_rate":    float(round(r["unemp_rate"], 1)),
     })
 
 (OUT / "monthly.json").write_text(json.dumps(monthly, indent=2))
 print(f"  {len(monthly)} months")
+lag_vals = [m["avg_lag"] for m in monthly if m["avg_lag"] is not None]
+overall_lag = round(sum(lag_vals) / len(lag_vals), 1)
+print(f"  Lag range: {min(lag_vals):.1f}-{max(lag_vals):.1f} days  overall_avg={overall_lag} days")
+
+# Back-fill avg_reporting_lag into summary and re-write
+summary["avg_reporting_lag"] = overall_lag
+(OUT / "summary.json").write_text(json.dumps(summary, indent=2))
 
 
 # ═══════════════════════════════════════════════════════════════════════════

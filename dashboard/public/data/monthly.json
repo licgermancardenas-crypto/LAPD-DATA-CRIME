@@ -5,7 +5,12 @@
     "month": 1,
     "crimes": 18576,
     "violent": 5228,
+    "daily_avg": 599.2,
+    "daily_violent": 168.6,
     "rolling3": 18576,
+    "rolling3_daily": 599.2,
+    "avg_lag": 7.4,
+    "rolling3_lag": 7.4,
     "unemp_rate": 4.9
   },
   {
@@ -14,7 +19,12 @@
     "month": 2,
     "crimes": 17284,
     "violent": 4883,
+    "daily_avg": 596.0,
+    "daily_violent": 168.4,
     "rolling3": 17930,
+    "rolling3_daily": 597.6,
+    "avg_lag": 6.4,
+    "rolling3_lag": 6.9,
     "unemp_rate": 4.6
   },
   {
@@ -23,7 +33,12 @@
     "month": 3,
     "crimes": 16188,
     "violent": 4614,
+    "daily_avg": 522.2,
+    "daily_violent": 148.8,
     "rolling3": 17349,
+    "rolling3_daily": 572.5,
+    "avg_lag": 9.5,
+    "rolling3_lag": 7.8,
     "unemp_rate": 8.0
   },
   {
@@ -32,7 +47,12 @@
     "month": 4,
     "crimes": 15706,
     "violent": 4413,
+    "daily_avg": 523.5,
+    "daily_violent": 147.1,
     "rolling3": 16393,
+    "rolling3_daily": 547.2,
+    "avg_lag": 7.6,
+    "rolling3_lag": 7.8,
     "unemp_rate": 20.0
   },
   {
@@ -41,7 +61,12 @@
     "month": 5,
     "crimes": 17230,
     "violent": 4866,
+    "daily_avg": 555.8,
+    "daily_violent": 157.0,
     "rolling3": 16375,
+    "rolling3_daily": 533.8,
+    "avg_lag": 6.8,
+    "rolling3_lag": 8.0,
     "unemp_rate": 18.2
   },
   {
@@ -50,7 +75,12 @@
     "month": 6,
     "crimes": 17060,
     "violent": 4986,
+    "daily_avg": 568.7,
+    "daily_violent": 166.2,
     "rolling3": 16665,
+    "rolling3_daily": 549.3,
+    "avg_lag": 7.4,
+    "rolling3_lag": 7.3,
     "unemp_rate": 16.7
   },
   {
@@ -59,7 +89,12 @@
     "month": 7,
     "crimes": 17158,
     "violent": 5096,
+    "daily_avg": 553.5,
+    "daily_violent": 164.4,
     "rolling3": 17149,
+    "rolling3_daily": 559.3,
+    "avg_lag": 6.6,
+    "rolling3_lag": 6.9,
     "unemp_rate": 15.7
   },
   {
@@ -68,7 +103,12 @@
     "month": 8,
     "crimes": 16902,
     "violent": 5408,
+    "daily_avg": 545.2,
+    "daily_violent": 174.5,
     "rolling3": 17040,
+    "rolling3_daily": 555.8,
+    "avg_lag": 6.9,
+    "rolling3_lag": 7.0,
     "unemp_rate": 14.3
   },
   {
@@ -77,7 +117,12 @@
     "month": 9,
     "crimes": 15658,
     "violent": 4912,
+    "daily_avg": 521.9,
+    "daily_violent": 163.7,
     "rolling3": 16573,
+    "rolling3_daily": 540.2,
+    "avg_lag": 6.9,
+    "rolling3_lag": 6.8,
     "unemp_rate": 12.9
   },
   {
@@ -86,7 +131,12 @@
     "month": 10,
     "crimes": 16510,
     "violent": 5062,
+    "daily_avg": 532.6,
+    "daily_violent": 163.3,
     "rolling3": 16357,
+    "rolling3_daily": 533.2,
+    "avg_lag": 7.5,
+    "rolling3_lag": 7.1,
     "unemp_rate": 11.2
   },
   {
@@ -95,7 +145,12 @@
     "month": 11,
     "crimes": 15596,
     "violent": 4493,
+    "daily_avg": 519.9,
+    "daily_violent": 149.8,
     "rolling3": 15921,
+    "rolling3_daily": 524.8,
+    "avg_lag": 7.9,
+    "rolling3_lag": 7.4,
     "unemp_rate": 10.4
   },
   {
@@ -104,7 +159,12 @@
     "month": 12,
     "crimes": 15979,
     "violent": 4412,
+    "daily_avg": 515.5,
+    "daily_violent": 142.3,
     "rolling3": 16028,
+    "rolling3_daily": 522.7,
+    "avg_lag": 8.1,
+    "rolling3_lag": 7.8,
     "unemp_rate": 11.1
   },
   {
@@ -113,7 +173,12 @@
     "month": 1,
     "crimes": 16636,
     "violent": 4548,
+    "daily_avg": 536.6,
+    "daily_violent": 146.7,
     "rolling3": 16070,
+    "rolling3_daily": 524.0,
+    "avg_lag": 9.8,
+    "rolling3_lag": 8.6,
     "unemp_rate": 11.0
   },
   {
@@ -122,7 +187,12 @@
     "month": 2,
     "crimes": 15440,
     "violent": 4200,
+    "daily_avg": 551.4,
+    "daily_violent": 150.0,
     "rolling3": 16018,
+    "rolling3_daily": 534.5,
+    "avg_lag": 7.5,
+    "rolling3_lag": 8.5,
     "unemp_rate": 10.4
   },
   {
@@ -131,7 +201,12 @@
     "month": 3,
     "crimes": 16354,
     "violent": 4595,
+    "daily_avg": 527.5,
+    "daily_violent": 148.2,
     "rolling3": 16143,
+    "rolling3_daily": 538.5,
+    "avg_lag": 8.0,
+    "rolling3_lag": 8.4,
     "unemp_rate": 9.0
   },
   {
@@ -140,7 +215,12 @@
     "month": 4,
     "crimes": 16091,
     "violent": 4581,
+    "daily_avg": 536.4,
+    "daily_violent": 152.7,
     "rolling3": 15962,
+    "rolling3_daily": 538.4,
+    "avg_lag": 7.8,
+    "rolling3_lag": 7.8,
     "unemp_rate": 8.7
   },
   {
@@ -149,7 +229,12 @@
     "month": 5,
     "crimes": 17020,
     "violent": 5032,
+    "daily_avg": 549.0,
+    "daily_violent": 162.3,
     "rolling3": 16488,
+    "rolling3_daily": 537.6,
+    "avg_lag": 7.4,
+    "rolling3_lag": 7.7,
     "unemp_rate": 8.3
   },
   {
@@ -158,7 +243,12 @@
     "month": 6,
     "crimes": 17182,
     "violent": 5102,
+    "daily_avg": 572.7,
+    "daily_violent": 170.1,
     "rolling3": 16764,
+    "rolling3_daily": 552.7,
+    "avg_lag": 7.5,
+    "rolling3_lag": 7.6,
     "unemp_rate": 7.8
   },
   {
@@ -167,7 +257,12 @@
     "month": 7,
     "crimes": 18690,
     "violent": 5766,
+    "daily_avg": 602.9,
+    "daily_violent": 186.0,
     "rolling3": 17631,
+    "rolling3_daily": 574.9,
+    "avg_lag": 6.5,
+    "rolling3_lag": 7.1,
     "unemp_rate": 7.5
   },
   {
@@ -176,7 +271,12 @@
     "month": 8,
     "crimes": 18398,
     "violent": 5613,
+    "daily_avg": 593.5,
+    "daily_violent": 181.1,
     "rolling3": 18090,
+    "rolling3_daily": 589.7,
+    "avg_lag": 7.6,
+    "rolling3_lag": 7.2,
     "unemp_rate": 7.5
   },
   {
@@ -185,7 +285,12 @@
     "month": 9,
     "crimes": 18386,
     "violent": 5428,
+    "daily_avg": 612.9,
+    "daily_violent": 180.9,
     "rolling3": 18491,
+    "rolling3_daily": 603.1,
+    "avg_lag": 7.3,
+    "rolling3_lag": 7.1,
     "unemp_rate": 7.0
   },
   {
@@ -194,7 +299,12 @@
     "month": 10,
     "crimes": 19343,
     "violent": 5473,
+    "daily_avg": 624.0,
+    "daily_violent": 176.5,
     "rolling3": 18709,
+    "rolling3_daily": 610.1,
+    "avg_lag": 7.3,
+    "rolling3_lag": 7.4,
     "unemp_rate": 6.8
   },
   {
@@ -203,7 +313,12 @@
     "month": 11,
     "crimes": 18374,
     "violent": 5026,
+    "daily_avg": 612.5,
+    "daily_violent": 167.5,
     "rolling3": 18701,
+    "rolling3_daily": 616.5,
+    "avg_lag": 7.5,
+    "rolling3_lag": 7.4,
     "unemp_rate": 6.4
   },
   {
@@ -212,7 +327,12 @@
     "month": 12,
     "crimes": 17962,
     "violent": 4760,
+    "daily_avg": 579.4,
+    "daily_violent": 153.5,
     "rolling3": 18560,
+    "rolling3_daily": 605.3,
+    "avg_lag": 8.1,
+    "rolling3_lag": 7.6,
     "unemp_rate": 6.1
   },
   {
@@ -221,7 +341,12 @@
     "month": 1,
     "crimes": 18567,
     "violent": 4934,
+    "daily_avg": 598.9,
+    "daily_violent": 159.2,
     "rolling3": 18301,
+    "rolling3_daily": 596.9,
+    "avg_lag": 9.6,
+    "rolling3_lag": 8.4,
     "unemp_rate": 6.0
   },
   {
@@ -230,7 +355,12 @@
     "month": 2,
     "crimes": 17750,
     "violent": 4805,
+    "daily_avg": 633.9,
+    "daily_violent": 171.6,
     "rolling3": 18093,
+    "rolling3_daily": 604.1,
+    "avg_lag": 7.6,
+    "rolling3_lag": 8.4,
     "unemp_rate": 5.6
   },
   {
@@ -239,7 +369,12 @@
     "month": 3,
     "crimes": 19745,
     "violent": 5233,
+    "daily_avg": 636.9,
+    "daily_violent": 168.8,
     "rolling3": 18687,
+    "rolling3_daily": 623.2,
+    "avg_lag": 8.2,
+    "rolling3_lag": 8.5,
     "unemp_rate": 4.7
   },
   {
@@ -248,7 +383,12 @@
     "month": 4,
     "crimes": 19837,
     "violent": 5197,
+    "daily_avg": 661.2,
+    "daily_violent": 173.2,
     "rolling3": 19111,
+    "rolling3_daily": 644.0,
+    "avg_lag": 7.7,
+    "rolling3_lag": 7.8,
     "unemp_rate": 4.5
   },
   {
@@ -257,7 +397,12 @@
     "month": 5,
     "crimes": 20467,
     "violent": 5644,
+    "daily_avg": 660.2,
+    "daily_violent": 182.1,
     "rolling3": 20016,
+    "rolling3_daily": 652.8,
+    "avg_lag": 7.2,
+    "rolling3_lag": 7.7,
     "unemp_rate": 4.2
   },
   {
@@ -266,7 +411,12 @@
     "month": 6,
     "crimes": 20273,
     "violent": 5657,
+    "daily_avg": 675.8,
+    "daily_violent": 188.6,
     "rolling3": 20192,
+    "rolling3_daily": 665.7,
+    "avg_lag": 8.1,
+    "rolling3_lag": 7.7,
     "unemp_rate": 4.3
   },
   {
@@ -275,7 +425,12 @@
     "month": 7,
     "crimes": 20009,
     "violent": 5656,
+    "daily_avg": 645.5,
+    "daily_violent": 182.5,
     "rolling3": 20250,
+    "rolling3_daily": 660.5,
+    "avg_lag": 7.2,
+    "rolling3_lag": 7.5,
     "unemp_rate": 4.3
   },
   {
@@ -284,7 +439,12 @@
     "month": 8,
     "crimes": 20144,
     "violent": 5624,
+    "daily_avg": 649.8,
+    "daily_violent": 181.4,
     "rolling3": 20142,
+    "rolling3_daily": 657.0,
+    "avg_lag": 7.5,
+    "rolling3_lag": 7.6,
     "unemp_rate": 4.4
   },
   {
@@ -293,7 +453,12 @@
     "month": 9,
     "crimes": 19341,
     "violent": 5448,
+    "daily_avg": 644.7,
+    "daily_violent": 181.6,
     "rolling3": 19831,
+    "rolling3_daily": 646.7,
+    "avg_lag": 7.3,
+    "rolling3_lag": 7.3,
     "unemp_rate": 4.1
   },
   {
@@ -302,7 +467,12 @@
     "month": 10,
     "crimes": 20335,
     "violent": 5579,
+    "daily_avg": 656.0,
+    "daily_violent": 180.0,
     "rolling3": 19940,
+    "rolling3_daily": 650.2,
+    "avg_lag": 7.6,
+    "rolling3_lag": 7.5,
     "unemp_rate": 4.0
   },
   {
@@ -311,7 +481,12 @@
     "month": 11,
     "crimes": 18755,
     "violent": 4713,
+    "daily_avg": 625.2,
+    "daily_violent": 157.1,
     "rolling3": 19477,
+    "rolling3_daily": 642.0,
+    "avg_lag": 7.8,
+    "rolling3_lag": 7.6,
     "unemp_rate": 4.0
   },
   {
@@ -320,7 +495,12 @@
     "month": 12,
     "crimes": 20036,
     "violent": 4701,
+    "daily_avg": 646.3,
+    "daily_violent": 151.6,
     "rolling3": 19709,
+    "rolling3_daily": 642.5,
+    "avg_lag": 8.0,
+    "rolling3_lag": 7.8,
     "unemp_rate": 4.3
   },
   {
@@ -329,7 +509,12 @@
     "month": 1,
     "crimes": 19970,
     "violent": 4896,
+    "daily_avg": 644.2,
+    "daily_violent": 157.9,
     "rolling3": 19587,
+    "rolling3_daily": 638.6,
+    "avg_lag": 9.7,
+    "rolling3_lag": 8.5,
     "unemp_rate": 4.7
   },
   {
@@ -338,7 +523,12 @@
     "month": 2,
     "crimes": 18489,
     "violent": 4376,
+    "daily_avg": 660.3,
+    "daily_violent": 156.3,
     "rolling3": 19498,
+    "rolling3_daily": 650.3,
+    "avg_lag": 8.0,
+    "rolling3_lag": 8.6,
     "unemp_rate": 4.6
   },
   {
@@ -347,7 +537,12 @@
     "month": 3,
     "crimes": 19214,
     "violent": 5002,
+    "daily_avg": 619.8,
+    "daily_violent": 161.4,
     "rolling3": 19224,
+    "rolling3_daily": 641.4,
+    "avg_lag": 7.4,
+    "rolling3_lag": 8.4,
     "unemp_rate": 4.2
   },
   {
@@ -356,7 +551,12 @@
     "month": 4,
     "crimes": 18937,
     "violent": 5138,
+    "daily_avg": 631.2,
+    "daily_violent": 171.3,
     "rolling3": 18880,
+    "rolling3_daily": 637.1,
+    "avg_lag": 7.1,
+    "rolling3_lag": 7.5,
     "unemp_rate": 4.5
   },
   {
@@ -365,7 +565,12 @@
     "month": 5,
     "crimes": 18908,
     "violent": 5323,
+    "daily_avg": 609.9,
+    "daily_violent": 171.7,
     "rolling3": 19020,
+    "rolling3_daily": 620.3,
+    "avg_lag": 7.3,
+    "rolling3_lag": 7.3,
     "unemp_rate": 4.6
   },
   {
@@ -374,7 +579,12 @@
     "month": 6,
     "crimes": 18741,
     "violent": 5184,
+    "daily_avg": 624.7,
+    "daily_violent": 172.8,
     "rolling3": 18862,
+    "rolling3_daily": 621.9,
+    "avg_lag": 7.4,
+    "rolling3_lag": 7.3,
     "unemp_rate": 5.0
   },
   {
@@ -383,7 +593,12 @@
     "month": 7,
     "crimes": 19935,
     "violent": 5764,
+    "daily_avg": 643.1,
+    "daily_violent": 185.9,
     "rolling3": 19195,
+    "rolling3_daily": 625.9,
+    "avg_lag": 6.5,
+    "rolling3_lag": 7.1,
     "unemp_rate": 5.3
   },
   {
@@ -392,7 +607,12 @@
     "month": 8,
     "crimes": 20082,
     "violent": 5716,
+    "daily_avg": 647.8,
+    "daily_violent": 184.4,
     "rolling3": 19586,
+    "rolling3_daily": 638.5,
+    "avg_lag": 6.7,
+    "rolling3_lag": 6.9,
     "unemp_rate": 5.5
   },
   {
@@ -401,7 +621,12 @@
     "month": 9,
     "crimes": 19321,
     "violent": 5516,
+    "daily_avg": 644.0,
+    "daily_violent": 183.9,
     "rolling3": 19779,
+    "rolling3_daily": 645.0,
+    "avg_lag": 6.9,
+    "rolling3_lag": 6.7,
     "unemp_rate": 5.1
   },
   {
@@ -410,7 +635,12 @@
     "month": 10,
     "crimes": 20122,
     "violent": 5618,
+    "daily_avg": 649.1,
+    "daily_violent": 181.2,
     "rolling3": 19842,
+    "rolling3_daily": 647.0,
+    "avg_lag": 6.6,
+    "rolling3_lag": 6.7,
     "unemp_rate": 5.0
   },
   {
@@ -419,7 +649,12 @@
     "month": 11,
     "crimes": 19074,
     "violent": 4998,
+    "daily_avg": 635.8,
+    "daily_violent": 166.6,
     "rolling3": 19506,
+    "rolling3_daily": 643.0,
+    "avg_lag": 6.0,
+    "rolling3_lag": 6.5,
     "unemp_rate": 5.0
   },
   {
@@ -428,7 +663,12 @@
     "month": 12,
     "crimes": 19552,
     "violent": 5040,
+    "daily_avg": 630.7,
+    "daily_violent": 162.6,
     "rolling3": 19583,
+    "rolling3_daily": 638.5,
+    "avg_lag": 6.3,
+    "rolling3_lag": 6.3,
     "unemp_rate": 5.4
   },
   {
@@ -437,7 +677,12 @@
     "month": 1,
     "crimes": 18926,
     "violent": 4890,
+    "daily_avg": 610.5,
+    "daily_violent": 157.7,
     "rolling3": 19184,
+    "rolling3_daily": 625.7,
+    "avg_lag": 6.1,
+    "rolling3_lag": 6.1,
     "unemp_rate": 5.7
   },
   {
@@ -446,7 +691,12 @@
     "month": 2,
     "crimes": 17394,
     "violent": 4499,
+    "daily_avg": 599.8,
+    "daily_violent": 155.1,
     "rolling3": 18624,
+    "rolling3_daily": 613.7,
+    "avg_lag": 4.9,
+    "rolling3_lag": 5.8,
     "unemp_rate": 5.5
   },
   {
@@ -455,7 +705,12 @@
     "month": 3,
     "crimes": 16293,
     "violent": 3890,
+    "daily_avg": 525.6,
+    "daily_violent": 125.5,
     "rolling3": 17538,
+    "rolling3_daily": 578.6,
+    "avg_lag": 5.3,
+    "rolling3_lag": 5.4,
     "unemp_rate": 5.0
   },
   {
@@ -464,7 +719,12 @@
     "month": 4,
     "crimes": 12946,
     "violent": 2813,
+    "daily_avg": 431.5,
+    "daily_violent": 93.8,
     "rolling3": 15544,
+    "rolling3_daily": 519.0,
+    "avg_lag": 5.2,
+    "rolling3_lag": 5.1,
     "unemp_rate": 5.4
   },
   {
@@ -473,7 +733,12 @@
     "month": 5,
     "crimes": 9386,
     "violent": 1097,
+    "daily_avg": 302.8,
+    "daily_violent": 35.4,
     "rolling3": 12875,
+    "rolling3_daily": 420.0,
+    "avg_lag": 6.2,
+    "rolling3_lag": 5.6,
     "unemp_rate": 5.4
   },
   {
@@ -482,7 +747,12 @@
     "month": 6,
     "crimes": 8126,
     "violent": 261,
+    "daily_avg": 270.9,
+    "daily_violent": 8.7,
     "rolling3": 10153,
+    "rolling3_daily": 335.1,
+    "avg_lag": 6.5,
+    "rolling3_lag": 6.0,
     "unemp_rate": 5.7
   },
   {
@@ -491,7 +761,12 @@
     "month": 7,
     "crimes": 8170,
     "violent": 272,
+    "daily_avg": 263.5,
+    "daily_violent": 8.8,
     "rolling3": 8561,
+    "rolling3_daily": 279.1,
+    "avg_lag": 5.7,
+    "rolling3_lag": 6.1,
     "unemp_rate": 5.8
   },
   {
@@ -500,7 +775,12 @@
     "month": 8,
     "crimes": 8324,
     "violent": 292,
+    "daily_avg": 268.5,
+    "daily_violent": 9.4,
     "rolling3": 8207,
+    "rolling3_daily": 267.6,
+    "avg_lag": 5.5,
+    "rolling3_lag": 5.9,
     "unemp_rate": 6.0
   },
   {
@@ -509,7 +789,12 @@
     "month": 9,
     "crimes": 8309,
     "violent": 299,
+    "daily_avg": 277.0,
+    "daily_violent": 10.0,
     "rolling3": 8268,
+    "rolling3_daily": 269.7,
+    "avg_lag": 4.9,
+    "rolling3_lag": 5.4,
     "unemp_rate": 5.7
   },
   {
@@ -518,7 +803,12 @@
     "month": 10,
     "crimes": 7817,
     "violent": 257,
+    "daily_avg": 252.2,
+    "daily_violent": 8.3,
     "rolling3": 8150,
+    "rolling3_daily": 265.9,
+    "avg_lag": 4.2,
+    "rolling3_lag": 4.9,
     "unemp_rate": 5.5
   },
   {
@@ -527,7 +817,12 @@
     "month": 11,
     "crimes": 7179,
     "violent": 263,
+    "daily_avg": 239.3,
+    "daily_violent": 8.8,
     "rolling3": 7768,
+    "rolling3_daily": 256.2,
+    "avg_lag": 3.4,
+    "rolling3_lag": 4.2,
     "unemp_rate": 5.5
   },
   {
@@ -536,7 +831,12 @@
     "month": 12,
     "crimes": 4697,
     "violent": 126,
+    "daily_avg": 151.5,
+    "daily_violent": 4.1,
     "rolling3": 6564,
+    "rolling3_daily": 214.3,
+    "avg_lag": 2.3,
+    "rolling3_lag": 3.3,
     "unemp_rate": 5.8
   }
 ]

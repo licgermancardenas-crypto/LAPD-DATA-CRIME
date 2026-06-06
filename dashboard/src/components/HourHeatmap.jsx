@@ -15,9 +15,14 @@ function intensityMeta(v) {
   return               { label: 'Crítica',  color: '#e05252' };
 }
 
-function hourRange(h) {
-  const f = n => `${String(n).padStart(2,'0')}:00`;
-  return `${f(h)} – ${f((h + 1) % 24)}`;
+function toMilitary(h) {
+  return `${String(h).padStart(2, '0')}00`;
+}
+function toAmPm(h) {
+  if (h === 0)  return '12 AM';
+  if (h < 12)   return `${h} AM`;
+  if (h === 12) return '12 PM';
+  return `${h - 12} PM`;
 }
 
 function interpolateColor(intensity) {
@@ -149,6 +154,9 @@ export default function HourHeatmap({ data, filters, onFilter }) {
               }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4f8ef7', display: 'inline-block', animation: 'pulse 1s ease-in-out infinite' }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#4f8ef7' }}>{playLabel}</span>
+                <span style={{ fontSize: 10, color: '#3a5080', fontVariantNumeric: 'tabular-nums', letterSpacing: '.04em' }}>
+                  {playHour !== null && toMilitary(playHour)}
+                </span>
               </div>
               <span style={{ fontSize: 13, color: '#e8eaf0' }}>
                 <strong style={{ color: '#4f8ef7' }}>{playTotal}</strong>
@@ -290,8 +298,12 @@ export default function HourHeatmap({ data, filters, onFilter }) {
               <p style={{ fontSize: 13, fontWeight: 700, color: '#e4e6f0', margin: 0 }}>
                 {DAYS_FULL[dow]}
               </p>
-              <p style={{ fontSize: 11, color: '#7b82a0', margin: '2px 0 0' }}>
-                {hourRange(h)}
+              <p style={{ fontSize: 11, margin: '3px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ color: '#9098b8', fontVariantNumeric: 'tabular-nums', letterSpacing: '.04em' }}>
+                  {toMilitary(h)} – {toMilitary((h + 1) % 24)}
+                </span>
+                <span style={{ color: '#2e3348' }}>·</span>
+                <span style={{ color: '#7b82a0' }}>{toAmPm(h)} – {toAmPm((h + 1) % 24)}</span>
               </p>
             </div>
 

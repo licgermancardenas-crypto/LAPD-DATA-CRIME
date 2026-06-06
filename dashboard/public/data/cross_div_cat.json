@@ -1,0 +1,2898 @@
+[
+  {
+    "area": "77Th Street",
+    "category": "Crimes Against Children",
+    "crimes": 91,
+    "cleared": 77,
+    "violent": 91,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Domestic Violence",
+    "crimes": 5666,
+    "cleared": 3916,
+    "violent": 5666,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Drug Offense",
+    "crimes": 1,
+    "cleared": 1,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Human Trafficking",
+    "crimes": 284,
+    "cleared": 53,
+    "violent": 284,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Identity / Fraud",
+    "crimes": 4820,
+    "cleared": 54,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Other",
+    "crimes": 7839,
+    "cleared": 3362,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Property \u2013 Arson",
+    "crimes": 203,
+    "cleared": 15,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Property \u2013 Burglary",
+    "crimes": 4257,
+    "cleared": 334,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Property \u2013 Theft",
+    "crimes": 4113,
+    "cleared": 384,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 5140,
+    "cleared": 828,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Sex Offense",
+    "crimes": 510,
+    "cleared": 129,
+    "violent": 510,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Vehicle Crime",
+    "crimes": 11990,
+    "cleared": 439,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 6078,
+    "cleared": 2116,
+    "violent": 6078,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 5695,
+    "cleared": 1786,
+    "violent": 5695,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 239,
+    "cleared": 148,
+    "violent": 239,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 134,
+    "cleared": 64,
+    "violent": 134,
+    "part": "p2"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 4291,
+    "cleared": 1018,
+    "violent": 4291,
+    "part": "p1"
+  },
+  {
+    "area": "77Th Street",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 405,
+    "cleared": 160,
+    "violent": 405,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Crimes Against Children",
+    "crimes": 44,
+    "cleared": 30,
+    "violent": 44,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Domestic Violence",
+    "crimes": 2942,
+    "cleared": 1899,
+    "violent": 2942,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Human Trafficking",
+    "crimes": 8,
+    "cleared": 1,
+    "violent": 8,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Identity / Fraud",
+    "crimes": 2694,
+    "cleared": 118,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Other",
+    "crimes": 8631,
+    "cleared": 1641,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Property \u2013 Arson",
+    "crimes": 232,
+    "cleared": 23,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Property \u2013 Burglary",
+    "crimes": 12289,
+    "cleared": 513,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Property \u2013 Theft",
+    "crimes": 11503,
+    "cleared": 421,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 6494,
+    "cleared": 786,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Sex Offense",
+    "crimes": 729,
+    "cleared": 204,
+    "violent": 729,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Vehicle Crime",
+    "crimes": 7920,
+    "cleared": 326,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 4213,
+    "cleared": 1463,
+    "violent": 4213,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 8227,
+    "cleared": 1694,
+    "violent": 8227,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 103,
+    "cleared": 73,
+    "violent": 103,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 57,
+    "cleared": 22,
+    "violent": 57,
+    "part": "p2"
+  },
+  {
+    "area": "Central",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 3125,
+    "cleared": 642,
+    "violent": 3125,
+    "part": "p1"
+  },
+  {
+    "area": "Central",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 457,
+    "cleared": 118,
+    "violent": 457,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Crimes Against Children",
+    "crimes": 53,
+    "cleared": 37,
+    "violent": 53,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Domestic Violence",
+    "crimes": 2290,
+    "cleared": 1937,
+    "violent": 2290,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Drug Offense",
+    "crimes": 2,
+    "cleared": 0,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Identity / Fraud",
+    "crimes": 4535,
+    "cleared": 200,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Other",
+    "crimes": 4242,
+    "cleared": 1653,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Property \u2013 Arson",
+    "crimes": 53,
+    "cleared": 6,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Property \u2013 Burglary",
+    "crimes": 6432,
+    "cleared": 393,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Property \u2013 Theft",
+    "crimes": 6371,
+    "cleared": 573,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 2895,
+    "cleared": 507,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Sex Offense",
+    "crimes": 606,
+    "cleared": 141,
+    "violent": 606,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Vehicle Crime",
+    "crimes": 8433,
+    "cleared": 378,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1369,
+    "cleared": 622,
+    "violent": 1369,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3287,
+    "cleared": 1637,
+    "violent": 3287,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 29,
+    "cleared": 27,
+    "violent": 29,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 30,
+    "cleared": 10,
+    "violent": 30,
+    "part": "p2"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 955,
+    "cleared": 351,
+    "violent": 955,
+    "part": "p1"
+  },
+  {
+    "area": "Devonshire",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 161,
+    "cleared": 61,
+    "violent": 161,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Crimes Against Children",
+    "crimes": 72,
+    "cleared": 52,
+    "violent": 72,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Domestic Violence",
+    "crimes": 2246,
+    "cleared": 1752,
+    "violent": 2246,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Identity / Fraud",
+    "crimes": 3201,
+    "cleared": 86,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Other",
+    "crimes": 4007,
+    "cleared": 2015,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Property \u2013 Arson",
+    "crimes": 94,
+    "cleared": 13,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Property \u2013 Burglary",
+    "crimes": 3622,
+    "cleared": 324,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Property \u2013 Theft",
+    "crimes": 3287,
+    "cleared": 305,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 2880,
+    "cleared": 578,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Sex Offense",
+    "crimes": 412,
+    "cleared": 156,
+    "violent": 412,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Vehicle Crime",
+    "crimes": 7523,
+    "cleared": 203,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1807,
+    "cleared": 852,
+    "violent": 1807,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 2882,
+    "cleared": 1581,
+    "violent": 2882,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 41,
+    "cleared": 25,
+    "violent": 41,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 51,
+    "cleared": 31,
+    "violent": 51,
+    "part": "p2"
+  },
+  {
+    "area": "Foothill",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 842,
+    "cleared": 389,
+    "violent": 842,
+    "part": "p1"
+  },
+  {
+    "area": "Foothill",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 162,
+    "cleared": 102,
+    "violent": 162,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Crimes Against Children",
+    "crimes": 53,
+    "cleared": 42,
+    "violent": 53,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Domestic Violence",
+    "crimes": 3130,
+    "cleared": 2282,
+    "violent": 3130,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Human Trafficking",
+    "crimes": 5,
+    "cleared": 1,
+    "violent": 5,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Identity / Fraud",
+    "crimes": 2567,
+    "cleared": 73,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Other",
+    "crimes": 5592,
+    "cleared": 2378,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Property \u2013 Arson",
+    "crimes": 91,
+    "cleared": 18,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Property \u2013 Burglary",
+    "crimes": 4271,
+    "cleared": 420,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Property \u2013 Theft",
+    "crimes": 4078,
+    "cleared": 613,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4094,
+    "cleared": 787,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Sex Offense",
+    "crimes": 404,
+    "cleared": 145,
+    "violent": 404,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Vehicle Crime",
+    "crimes": 9316,
+    "cleared": 530,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2404,
+    "cleared": 940,
+    "violent": 2404,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3844,
+    "cleared": 1760,
+    "violent": 3844,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 80,
+    "cleared": 56,
+    "violent": 80,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 36,
+    "cleared": 15,
+    "violent": 36,
+    "part": "p2"
+  },
+  {
+    "area": "Harbor",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1193,
+    "cleared": 380,
+    "violent": 1193,
+    "part": "p1"
+  },
+  {
+    "area": "Harbor",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 234,
+    "cleared": 97,
+    "violent": 234,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Crimes Against Children",
+    "crimes": 38,
+    "cleared": 31,
+    "violent": 38,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Domestic Violence",
+    "crimes": 2200,
+    "cleared": 1498,
+    "violent": 2200,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Drug Offense",
+    "crimes": 1,
+    "cleared": 1,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Human Trafficking",
+    "crimes": 2,
+    "cleared": 0,
+    "violent": 2,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Identity / Fraud",
+    "crimes": 2414,
+    "cleared": 23,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Other",
+    "crimes": 4213,
+    "cleared": 1556,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Property \u2013 Arson",
+    "crimes": 99,
+    "cleared": 9,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Property \u2013 Burglary",
+    "crimes": 3301,
+    "cleared": 170,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Property \u2013 Theft",
+    "crimes": 3644,
+    "cleared": 184,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 3777,
+    "cleared": 471,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Sex Offense",
+    "crimes": 359,
+    "cleared": 93,
+    "violent": 359,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Vehicle Crime",
+    "crimes": 9305,
+    "cleared": 126,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2437,
+    "cleared": 973,
+    "violent": 2437,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3626,
+    "cleared": 1537,
+    "violent": 3626,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 144,
+    "cleared": 72,
+    "violent": 144,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 44,
+    "cleared": 22,
+    "violent": 44,
+    "part": "p2"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1306,
+    "cleared": 340,
+    "violent": 1306,
+    "part": "p1"
+  },
+  {
+    "area": "Hollenbeck",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 171,
+    "cleared": 70,
+    "violent": 171,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Crimes Against Children",
+    "crimes": 40,
+    "cleared": 26,
+    "violent": 40,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Domestic Violence",
+    "crimes": 2569,
+    "cleared": 1733,
+    "violent": 2569,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Human Trafficking",
+    "crimes": 24,
+    "cleared": 8,
+    "violent": 24,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Identity / Fraud",
+    "crimes": 3598,
+    "cleared": 107,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Other",
+    "crimes": 6034,
+    "cleared": 1582,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Property \u2013 Arson",
+    "crimes": 128,
+    "cleared": 13,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Property \u2013 Burglary",
+    "crimes": 7132,
+    "cleared": 485,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Property \u2013 Theft",
+    "crimes": 9346,
+    "cleared": 367,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4672,
+    "cleared": 647,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Sex Offense",
+    "crimes": 716,
+    "cleared": 136,
+    "violent": 716,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Vehicle Crime",
+    "crimes": 7232,
+    "cleared": 257,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2806,
+    "cleared": 1096,
+    "violent": 2806,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 5315,
+    "cleared": 940,
+    "violent": 5315,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 44,
+    "cleared": 40,
+    "violent": 44,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 65,
+    "cleared": 32,
+    "violent": 65,
+    "part": "p2"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 2329,
+    "cleared": 677,
+    "violent": 2329,
+    "part": "p1"
+  },
+  {
+    "area": "Hollywood",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 379,
+    "cleared": 95,
+    "violent": 379,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Crimes Against Children",
+    "crimes": 84,
+    "cleared": 70,
+    "violent": 84,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Domestic Violence",
+    "crimes": 3259,
+    "cleared": 2756,
+    "violent": 3259,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Drug Offense",
+    "crimes": 3,
+    "cleared": 1,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Human Trafficking",
+    "crimes": 9,
+    "cleared": 3,
+    "violent": 9,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Identity / Fraud",
+    "crimes": 3701,
+    "cleared": 170,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Other",
+    "crimes": 4898,
+    "cleared": 2341,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Property \u2013 Arson",
+    "crimes": 101,
+    "cleared": 5,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Property \u2013 Burglary",
+    "crimes": 3562,
+    "cleared": 301,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Property \u2013 Theft",
+    "crimes": 4176,
+    "cleared": 435,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 3205,
+    "cleared": 606,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Sex Offense",
+    "crimes": 505,
+    "cleared": 206,
+    "violent": 505,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Vehicle Crime",
+    "crimes": 9845,
+    "cleared": 531,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2072,
+    "cleared": 983,
+    "violent": 2072,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3422,
+    "cleared": 1665,
+    "violent": 3422,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 46,
+    "cleared": 35,
+    "violent": 46,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 43,
+    "cleared": 20,
+    "violent": 43,
+    "part": "p2"
+  },
+  {
+    "area": "Mission",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1177,
+    "cleared": 416,
+    "violent": 1177,
+    "part": "p1"
+  },
+  {
+    "area": "Mission",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 234,
+    "cleared": 165,
+    "violent": 234,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Crimes Against Children",
+    "crimes": 46,
+    "cleared": 39,
+    "violent": 46,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Domestic Violence",
+    "crimes": 2758,
+    "cleared": 2374,
+    "violent": 2758,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Drug Offense",
+    "crimes": 1,
+    "cleared": 1,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Human Trafficking",
+    "crimes": 12,
+    "cleared": 6,
+    "violent": 12,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Identity / Fraud",
+    "crimes": 4318,
+    "cleared": 205,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Other",
+    "crimes": 5965,
+    "cleared": 2871,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Property \u2013 Arson",
+    "crimes": 143,
+    "cleared": 25,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Property \u2013 Burglary",
+    "crimes": 7561,
+    "cleared": 720,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Property \u2013 Theft",
+    "crimes": 7092,
+    "cleared": 972,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4498,
+    "cleared": 968,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Sex Offense",
+    "crimes": 751,
+    "cleared": 308,
+    "violent": 751,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Vehicle Crime",
+    "crimes": 10203,
+    "cleared": 684,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2019,
+    "cleared": 1019,
+    "violent": 2019,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 4108,
+    "cleared": 1984,
+    "violent": 4108,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 51,
+    "cleared": 40,
+    "violent": 51,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 33,
+    "cleared": 21,
+    "violent": 33,
+    "part": "p2"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1295,
+    "cleared": 575,
+    "violent": 1295,
+    "part": "p1"
+  },
+  {
+    "area": "N Hollywood",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 252,
+    "cleared": 151,
+    "violent": 252,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Crimes Against Children",
+    "crimes": 48,
+    "cleared": 24,
+    "violent": 48,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Domestic Violence",
+    "crimes": 3276,
+    "cleared": 1658,
+    "violent": 3276,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Drug Offense",
+    "crimes": 1,
+    "cleared": 0,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Human Trafficking",
+    "crimes": 8,
+    "cleared": 0,
+    "violent": 8,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Identity / Fraud",
+    "crimes": 3068,
+    "cleared": 65,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Other",
+    "crimes": 5146,
+    "cleared": 1646,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Property \u2013 Arson",
+    "crimes": 181,
+    "cleared": 13,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Property \u2013 Burglary",
+    "crimes": 5469,
+    "cleared": 320,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Property \u2013 Theft",
+    "crimes": 4453,
+    "cleared": 175,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4197,
+    "cleared": 594,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Sex Offense",
+    "crimes": 379,
+    "cleared": 62,
+    "violent": 379,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Vehicle Crime",
+    "crimes": 11233,
+    "cleared": 312,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 3852,
+    "cleared": 1319,
+    "violent": 3852,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 4746,
+    "cleared": 749,
+    "violent": 4746,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 134,
+    "cleared": 79,
+    "violent": 134,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 63,
+    "cleared": 24,
+    "violent": 63,
+    "part": "p2"
+  },
+  {
+    "area": "Newton",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 2654,
+    "cleared": 593,
+    "violent": 2654,
+    "part": "p1"
+  },
+  {
+    "area": "Newton",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 265,
+    "cleared": 108,
+    "violent": 265,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Crimes Against Children",
+    "crimes": 38,
+    "cleared": 24,
+    "violent": 38,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Domestic Violence",
+    "crimes": 1705,
+    "cleared": 1323,
+    "violent": 1705,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Identity / Fraud",
+    "crimes": 3268,
+    "cleared": 130,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Other",
+    "crimes": 4853,
+    "cleared": 2215,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Property \u2013 Arson",
+    "crimes": 129,
+    "cleared": 11,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Property \u2013 Burglary",
+    "crimes": 5980,
+    "cleared": 331,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Property \u2013 Theft",
+    "crimes": 5946,
+    "cleared": 470,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4040,
+    "cleared": 610,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Sex Offense",
+    "crimes": 559,
+    "cleared": 201,
+    "violent": 559,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Vehicle Crime",
+    "crimes": 10182,
+    "cleared": 321,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1684,
+    "cleared": 764,
+    "violent": 1684,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3112,
+    "cleared": 1501,
+    "violent": 3112,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 52,
+    "cleared": 29,
+    "violent": 52,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 37,
+    "cleared": 21,
+    "violent": 37,
+    "part": "p2"
+  },
+  {
+    "area": "Northeast",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1201,
+    "cleared": 407,
+    "violent": 1201,
+    "part": "p1"
+  },
+  {
+    "area": "Northeast",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 165,
+    "cleared": 70,
+    "violent": 165,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Crimes Against Children",
+    "crimes": 57,
+    "cleared": 47,
+    "violent": 57,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Domestic Violence",
+    "crimes": 3299,
+    "cleared": 2458,
+    "violent": 3299,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Human Trafficking",
+    "crimes": 27,
+    "cleared": 3,
+    "violent": 27,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Identity / Fraud",
+    "crimes": 3364,
+    "cleared": 133,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Other",
+    "crimes": 5558,
+    "cleared": 1916,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Property \u2013 Arson",
+    "crimes": 142,
+    "cleared": 14,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Property \u2013 Burglary",
+    "crimes": 6830,
+    "cleared": 394,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Property \u2013 Theft",
+    "crimes": 5951,
+    "cleared": 319,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4468,
+    "cleared": 667,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Sex Offense",
+    "crimes": 511,
+    "cleared": 165,
+    "violent": 511,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Vehicle Crime",
+    "crimes": 9549,
+    "cleared": 270,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2721,
+    "cleared": 1143,
+    "violent": 2721,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 5017,
+    "cleared": 2048,
+    "violent": 5017,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 60,
+    "cleared": 56,
+    "violent": 60,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 46,
+    "cleared": 18,
+    "violent": 46,
+    "part": "p2"
+  },
+  {
+    "area": "Olympic",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 2139,
+    "cleared": 455,
+    "violent": 2139,
+    "part": "p1"
+  },
+  {
+    "area": "Olympic",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 331,
+    "cleared": 118,
+    "violent": 331,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Crimes Against Children",
+    "crimes": 32,
+    "cleared": 23,
+    "violent": 32,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Domestic Violence",
+    "crimes": 1985,
+    "cleared": 1162,
+    "violent": 1985,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Drug Offense",
+    "crimes": 2,
+    "cleared": 0,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Human Trafficking",
+    "crimes": 8,
+    "cleared": 3,
+    "violent": 8,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Identity / Fraud",
+    "crimes": 5085,
+    "cleared": 281,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Other",
+    "crimes": 7280,
+    "cleared": 1284,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Property \u2013 Arson",
+    "crimes": 126,
+    "cleared": 21,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Property \u2013 Burglary",
+    "crimes": 8752,
+    "cleared": 547,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Property \u2013 Theft",
+    "crimes": 10639,
+    "cleared": 775,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4708,
+    "cleared": 616,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Sex Offense",
+    "crimes": 615,
+    "cleared": 136,
+    "violent": 615,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Vehicle Crime",
+    "crimes": 12598,
+    "cleared": 435,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 2075,
+    "cleared": 859,
+    "violent": 2075,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 4004,
+    "cleared": 1009,
+    "violent": 4004,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 35,
+    "cleared": 28,
+    "violent": 35,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 27,
+    "cleared": 8,
+    "violent": 27,
+    "part": "p2"
+  },
+  {
+    "area": "Pacific",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1266,
+    "cleared": 336,
+    "violent": 1266,
+    "part": "p1"
+  },
+  {
+    "area": "Pacific",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 276,
+    "cleared": 86,
+    "violent": 276,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Crimes Against Children",
+    "crimes": 49,
+    "cleared": 34,
+    "violent": 49,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Domestic Violence",
+    "crimes": 3133,
+    "cleared": 2126,
+    "violent": 3133,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Human Trafficking",
+    "crimes": 6,
+    "cleared": 1,
+    "violent": 6,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Identity / Fraud",
+    "crimes": 3128,
+    "cleared": 51,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Other",
+    "crimes": 5671,
+    "cleared": 1899,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Property \u2013 Arson",
+    "crimes": 133,
+    "cleared": 13,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Property \u2013 Burglary",
+    "crimes": 4862,
+    "cleared": 379,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Property \u2013 Theft",
+    "crimes": 5733,
+    "cleared": 825,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4051,
+    "cleared": 698,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Sex Offense",
+    "crimes": 426,
+    "cleared": 116,
+    "violent": 426,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Vehicle Crime",
+    "crimes": 8735,
+    "cleared": 395,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 3162,
+    "cleared": 1341,
+    "violent": 3162,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 4855,
+    "cleared": 1687,
+    "violent": 4855,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 84,
+    "cleared": 53,
+    "violent": 84,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 60,
+    "cleared": 37,
+    "violent": 60,
+    "part": "p2"
+  },
+  {
+    "area": "Rampart",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 2412,
+    "cleared": 856,
+    "violent": 2412,
+    "part": "p1"
+  },
+  {
+    "area": "Rampart",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 324,
+    "cleared": 153,
+    "violent": 324,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Crimes Against Children",
+    "crimes": 70,
+    "cleared": 35,
+    "violent": 70,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Domestic Violence",
+    "crimes": 4621,
+    "cleared": 1770,
+    "violent": 4621,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Human Trafficking",
+    "crimes": 116,
+    "cleared": 11,
+    "violent": 116,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Identity / Fraud",
+    "crimes": 4159,
+    "cleared": 35,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Other",
+    "crimes": 6107,
+    "cleared": 1493,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Property \u2013 Arson",
+    "crimes": 160,
+    "cleared": 12,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Property \u2013 Burglary",
+    "crimes": 3040,
+    "cleared": 190,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Property \u2013 Theft",
+    "crimes": 3453,
+    "cleared": 238,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4336,
+    "cleared": 557,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Sex Offense",
+    "crimes": 451,
+    "cleared": 103,
+    "violent": 451,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Vehicle Crime",
+    "crimes": 10017,
+    "cleared": 263,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 5066,
+    "cleared": 1544,
+    "violent": 5066,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 4778,
+    "cleared": 992,
+    "violent": 4778,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 206,
+    "cleared": 148,
+    "violent": 206,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 89,
+    "cleared": 34,
+    "violent": 89,
+    "part": "p2"
+  },
+  {
+    "area": "Southeast",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 2992,
+    "cleared": 626,
+    "violent": 2992,
+    "part": "p1"
+  },
+  {
+    "area": "Southeast",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 268,
+    "cleared": 104,
+    "violent": 268,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Crimes Against Children",
+    "crimes": 85,
+    "cleared": 53,
+    "violent": 85,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Domestic Violence",
+    "crimes": 3825,
+    "cleared": 1941,
+    "violent": 3825,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Human Trafficking",
+    "crimes": 33,
+    "cleared": 9,
+    "violent": 33,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Identity / Fraud",
+    "crimes": 4721,
+    "cleared": 172,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Other",
+    "crimes": 9073,
+    "cleared": 2382,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Property \u2013 Arson",
+    "crimes": 111,
+    "cleared": 18,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Property \u2013 Burglary",
+    "crimes": 4576,
+    "cleared": 467,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Property \u2013 Theft",
+    "crimes": 6900,
+    "cleared": 530,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4881,
+    "cleared": 750,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Sex Offense",
+    "crimes": 733,
+    "cleared": 123,
+    "violent": 733,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Vehicle Crime",
+    "crimes": 10495,
+    "cleared": 588,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 3770,
+    "cleared": 1616,
+    "violent": 3770,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 5406,
+    "cleared": 1266,
+    "violent": 5406,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 83,
+    "cleared": 62,
+    "violent": 83,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 69,
+    "cleared": 25,
+    "violent": 69,
+    "part": "p2"
+  },
+  {
+    "area": "Southwest",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 2344,
+    "cleared": 788,
+    "violent": 2344,
+    "part": "p1"
+  },
+  {
+    "area": "Southwest",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 329,
+    "cleared": 135,
+    "violent": 329,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Crimes Against Children",
+    "crimes": 33,
+    "cleared": 29,
+    "violent": 33,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Domestic Violence",
+    "crimes": 2440,
+    "cleared": 2031,
+    "violent": 2440,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Human Trafficking",
+    "crimes": 8,
+    "cleared": 3,
+    "violent": 8,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Identity / Fraud",
+    "crimes": 4354,
+    "cleared": 265,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Other",
+    "crimes": 4261,
+    "cleared": 2030,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Property \u2013 Arson",
+    "crimes": 54,
+    "cleared": 8,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Property \u2013 Burglary",
+    "crimes": 5920,
+    "cleared": 437,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Property \u2013 Theft",
+    "crimes": 7761,
+    "cleared": 1176,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 2942,
+    "cleared": 733,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Sex Offense",
+    "crimes": 653,
+    "cleared": 265,
+    "violent": 653,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Vehicle Crime",
+    "crimes": 6822,
+    "cleared": 503,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1573,
+    "cleared": 828,
+    "violent": 1573,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3217,
+    "cleared": 1720,
+    "violent": 3217,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 34,
+    "cleared": 28,
+    "violent": 34,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 32,
+    "cleared": 23,
+    "violent": 32,
+    "part": "p2"
+  },
+  {
+    "area": "Topanga",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1057,
+    "cleared": 443,
+    "violent": 1057,
+    "part": "p1"
+  },
+  {
+    "area": "Topanga",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 204,
+    "cleared": 140,
+    "violent": 204,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Crimes Against Children",
+    "crimes": 75,
+    "cleared": 57,
+    "violent": 75,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Domestic Violence",
+    "crimes": 2482,
+    "cleared": 2097,
+    "violent": 2482,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Human Trafficking",
+    "crimes": 33,
+    "cleared": 21,
+    "violent": 33,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Identity / Fraud",
+    "crimes": 4219,
+    "cleared": 246,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Other",
+    "crimes": 4144,
+    "cleared": 1989,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Property \u2013 Arson",
+    "crimes": 95,
+    "cleared": 13,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Property \u2013 Burglary",
+    "crimes": 6190,
+    "cleared": 438,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Property \u2013 Theft",
+    "crimes": 6063,
+    "cleared": 865,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 3811,
+    "cleared": 726,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Sex Offense",
+    "crimes": 582,
+    "cleared": 214,
+    "violent": 582,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Vehicle Crime",
+    "crimes": 8867,
+    "cleared": 535,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1658,
+    "cleared": 886,
+    "violent": 1658,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3431,
+    "cleared": 1664,
+    "violent": 3431,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 30,
+    "cleared": 23,
+    "violent": 30,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 42,
+    "cleared": 18,
+    "violent": 42,
+    "part": "p2"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1036,
+    "cleared": 395,
+    "violent": 1036,
+    "part": "p1"
+  },
+  {
+    "area": "Van Nuys",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 123,
+    "cleared": 82,
+    "violent": 123,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Crimes Against Children",
+    "crimes": 17,
+    "cleared": 13,
+    "violent": 17,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Domestic Violence",
+    "crimes": 1191,
+    "cleared": 886,
+    "violent": 1191,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Human Trafficking",
+    "crimes": 2,
+    "cleared": 1,
+    "violent": 2,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Identity / Fraud",
+    "crimes": 4612,
+    "cleared": 113,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Other",
+    "crimes": 4980,
+    "cleared": 1326,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Property \u2013 Arson",
+    "crimes": 76,
+    "cleared": 4,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Property \u2013 Burglary",
+    "crimes": 8126,
+    "cleared": 621,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Property \u2013 Theft",
+    "crimes": 9369,
+    "cleared": 858,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 3934,
+    "cleared": 512,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Sex Offense",
+    "crimes": 723,
+    "cleared": 203,
+    "violent": 723,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Vehicle Crime",
+    "crimes": 7506,
+    "cleared": 420,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 789,
+    "cleared": 377,
+    "violent": 789,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3404,
+    "cleared": 1419,
+    "violent": 3404,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 11,
+    "cleared": 8,
+    "violent": 11,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 15,
+    "cleared": 12,
+    "violent": 15,
+    "part": "p2"
+  },
+  {
+    "area": "West La",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 763,
+    "cleared": 234,
+    "violent": 763,
+    "part": "p1"
+  },
+  {
+    "area": "West La",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 207,
+    "cleared": 53,
+    "violent": 207,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Crimes Against Children",
+    "crimes": 120,
+    "cleared": 97,
+    "violent": 120,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Domestic Violence",
+    "crimes": 2617,
+    "cleared": 2170,
+    "violent": 2617,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Drug Offense",
+    "crimes": 1,
+    "cleared": 0,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Human Trafficking",
+    "crimes": 4,
+    "cleared": 1,
+    "violent": 4,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Identity / Fraud",
+    "crimes": 4119,
+    "cleared": 253,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Other",
+    "crimes": 4924,
+    "cleared": 2326,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Property \u2013 Arson",
+    "crimes": 85,
+    "cleared": 3,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Property \u2013 Burglary",
+    "crimes": 6622,
+    "cleared": 499,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Property \u2013 Theft",
+    "crimes": 4516,
+    "cleared": 736,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 3400,
+    "cleared": 811,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Sex Offense",
+    "crimes": 634,
+    "cleared": 269,
+    "violent": 634,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Vehicle Crime",
+    "crimes": 8461,
+    "cleared": 652,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1842,
+    "cleared": 935,
+    "violent": 1842,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3414,
+    "cleared": 1855,
+    "violent": 3414,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 34,
+    "cleared": 29,
+    "violent": 34,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 44,
+    "cleared": 23,
+    "violent": 44,
+    "part": "p2"
+  },
+  {
+    "area": "West Valley",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1084,
+    "cleared": 393,
+    "violent": 1084,
+    "part": "p1"
+  },
+  {
+    "area": "West Valley",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 225,
+    "cleared": 138,
+    "violent": 225,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Crimes Against Children",
+    "crimes": 56,
+    "cleared": 42,
+    "violent": 56,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Domestic Violence",
+    "crimes": 1734,
+    "cleared": 1022,
+    "violent": 1734,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Human Trafficking",
+    "crimes": 8,
+    "cleared": 1,
+    "violent": 8,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Identity / Fraud",
+    "crimes": 3576,
+    "cleared": 89,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Other",
+    "crimes": 4937,
+    "cleared": 1501,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Property \u2013 Arson",
+    "crimes": 129,
+    "cleared": 19,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Property \u2013 Burglary",
+    "crimes": 7250,
+    "cleared": 508,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Property \u2013 Theft",
+    "crimes": 10033,
+    "cleared": 668,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Property \u2013 Vandalism",
+    "crimes": 4037,
+    "cleared": 526,
+    "violent": 0,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Sex Offense",
+    "crimes": 800,
+    "cleared": 286,
+    "violent": 800,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Vehicle Crime",
+    "crimes": 8060,
+    "cleared": 375,
+    "violent": 0,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Violent \u2013 Aggravated Assault",
+    "crimes": 1818,
+    "cleared": 727,
+    "violent": 1818,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Violent \u2013 Assault & Battery",
+    "crimes": 3819,
+    "cleared": 1239,
+    "violent": 3819,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Violent \u2013 Homicide",
+    "crimes": 37,
+    "cleared": 33,
+    "violent": 37,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Violent \u2013 Kidnapping",
+    "crimes": 27,
+    "cleared": 10,
+    "violent": 27,
+    "part": "p2"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Violent \u2013 Robbery",
+    "crimes": 1692,
+    "cleared": 611,
+    "violent": 1692,
+    "part": "p1"
+  },
+  {
+    "area": "Wilshire",
+    "category": "Violent \u2013 Sexual Assault",
+    "crimes": 224,
+    "cleared": 50,
+    "violent": 224,
+    "part": "p1"
+  }
+]

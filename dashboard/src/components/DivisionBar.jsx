@@ -5,7 +5,7 @@ import {
   Tooltip, Cell, ResponsiveContainer,
 } from 'recharts';
 
-const CustomTooltip = ({ active, payload, activePart }) => {
+const CustomTooltip = ({ active, payload, activePart, hasFilter }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   const crimes = activePart === 'p1' ? d.crimes_p1 : activePart === 'p2' ? d.crimes_p2 : d.crimes;
@@ -17,17 +17,25 @@ const CustomTooltip = ({ active, payload, activePart }) => {
       <p style={{ color: '#3ecf8e', fontSize: 13 }}>Esclarecimiento: <strong>{clr}%</strong></p>
       {activePart === 'all' && (
         <>
-          <p style={{ color: '#e0883a', fontSize: 12, marginTop: 4 }}>Part 1: {d.crimes_p1.toLocaleString()}</p>
-          <p style={{ color: '#4f8ef7', fontSize: 12 }}>Part 2: {d.crimes_p2.toLocaleString()}</p>
-          <p style={{ color: '#e05252', fontSize: 12 }}>Violentos: {d.violent_pct}%</p>
+          <p style={{ color: '#e0883a', fontSize: 12, marginTop: 4 }}>Part 1: {(d.crimes_p1 ?? 0).toLocaleString()}</p>
+          <p style={{ color: '#4f8ef7', fontSize: 12 }}>Part 2: {(d.crimes_p2 ?? 0).toLocaleString()}</p>
+          <p style={{ color: '#e05252', fontSize: 12 }}>Violentos: {d.violent_pct ?? 0}%</p>
         </>
+      )}
+      {hasFilter && (
+        <p style={{ color: '#7c5cbf', fontSize: 11, marginTop: 6, fontStyle: 'italic' }}>
+          Click para filtrar por esta área
+        </p>
       )}
     </div>
   );
 };
 
-export default function DivisionBar({ data, activePart = 'all' }) {
+export default function DivisionBar({ data, activePart = 'all', filters, onFilter }) {
   if (!data?.length) return null;
+
+  const activeArea   = filters?.area ?? null;
+  const isFiltered   = !!filters?.category;
 
   const colorFor = (rate) =>
     rate >= 20 ? '#3ecf8e' : rate >= 10 ? '#e0c066' : '#e05252';
@@ -44,25 +52,52 @@ export default function DivisionBar({ data, activePart = 'all' }) {
                 : activePart === 'p2' ? '— sólo Delitos Menores Part 2'
                 : '';
 
+  const handleClick = (e) => {
+    if (!onFilter) return;
+    const entry = e?.activePayload?.[0]?.payload;
+    if (!entry) return;
+    onFilter('area', activeArea === entry.name ? null : entry.name);
+  };
+
   return (
     <div className="card">
       <p className="section-title">Crímenes por División LAPD</p>
       <p className="section-sub">
         Total 2020-2024 {partSub} · color = tasa de esclarecimiento (verde &ge; 20%, amarillo 10-20%, rojo &lt; 10%)
+        {isFiltered && <span style={{ color: '#4f8ef7' }}> · Filtrado por categoría seleccionada</span>}
+        {onFilter && <span style={{ color: '#7c5cbf' }}> · Click en barra para filtrar</span>}
       </p>
       <ResponsiveContainer width="100%" height={420}>
-        <BarChart data={sorted} layout="vertical" margin={{ top: 5, right: 20, left: 80, bottom: 5 }}>
+        <BarChart
+          data={sorted}
+          layout="vertical"
+          margin={{ top: 5, right: 20, left: 80, bottom: 5 }}
+          onClick={handleClick}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" horizontal={false} />
           <XAxis type="number" tick={{ fill: '#7b82a0', fontSize: 11 }} axisLine={false}
             tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
           <YAxis type="category" dataKey="name" tick={{ fill: '#e8eaf0', fontSize: 12 }}
             axisLine={false} tickLine={false} width={78} />
-          <Tooltip content={<CustomTooltip activePart={activePart} />} />
-          <Bar dataKey={activePart === 'p1' ? 'crimes_p1' : activePart === 'p2' ? 'crimes_p2' : 'crimes'}
-               radius={[0, 4, 4, 0]}>
-            {sorted.map((entry, i) => (
-              <Cell key={i} fill={colorFor(getClearance(entry))} />
-            ))}
+          <Tooltip content={<CustomTooltip activePart={activePart} hasFilter={!!onFilter} />} />
+          <Bar
+            dataKey={activePart === 'p1' ? 'crimes_p1' : activePart === 'p2' ? 'crimes_p2' : 'crimes'}
+            radius={[0, 4, 4, 0]}
+            cursor={onFilter ? 'pointer' : 'default'}
+          >
+            {sorted.map((entry, i) => {
+              const isActive = activeArea === entry.name;
+              const isDimmed = activeArea && !isActive;
+              return (
+                <Cell
+                  key={i}
+                  fill={colorFor(getClearance(entry))}
+                  opacity={isDimmed ? 0.25 : 0.85}
+                  stroke={isActive ? '#fff' : 'none'}
+                  strokeWidth={isActive ? 1.5 : 0}
+                />
+              );
+            })}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

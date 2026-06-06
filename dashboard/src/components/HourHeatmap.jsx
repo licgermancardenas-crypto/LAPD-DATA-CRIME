@@ -22,12 +22,14 @@ function interpolateColor(intensity) {
   return `rgb(${Math.round(lo.r+(hi.r-lo.r)*t)},${Math.round(lo.g+(hi.g-lo.g)*t)},${Math.round(lo.b+(hi.b-lo.b)*t)})`;
 }
 
-export default function HourHeatmap({ data }) {
+export default function HourHeatmap({ data, filters, onFilter }) {
   const [hovered,   setHovered]   = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playHour,  setPlayHour]  = useState(null);
   const [speedIdx,  setSpeedIdx]  = useState(0);
   const intervalRef = useRef(null);
+
+  const activeSlot = filters?.timeSlot ?? null;
 
   // Build lookup: dow -> hour -> row
   const lookup = {};
@@ -187,12 +189,19 @@ export default function HourHeatmap({ data }) {
                   const cell = lookup[dow]?.[h];
                   const intensity = cell?.intensity ?? 0;
                   const isActive = activeHour === h;
+                  const isSlotActive = activeSlot?.dow === dow && activeSlot?.hour === h;
+                  const isSlotDimmed = activeSlot && !isSlotActive;
                   return (
                     <div
                       key={h}
                       title={`${day} ${LABELS[h]}: ${cell?.crimes?.toLocaleString() ?? 0} crimes`}
                       onMouseEnter={() => !isPlaying && cell && setHovered({ ...cell, day })}
                       onMouseLeave={() => !isPlaying && setHovered(null)}
+                      onClick={() => {
+                        if (!isPlaying && onFilter && cell) {
+                          onFilter('timeSlot', isSlotActive ? null : { dow, hour: h });
+                        }
+                      }}
                       style={{
                         flex: 1,
                         height: 26,
@@ -200,14 +209,14 @@ export default function HourHeatmap({ data }) {
                         borderRadius: 3,
                         cursor: isPlaying ? 'default' : 'pointer',
                         transition: 'filter .12s, transform .12s',
-                        filter: activeHour === null
-                          ? 'none'
-                          : isActive
-                            ? 'brightness(1.6) saturate(1.3)'
-                            : 'brightness(0.35)',
-                        transform: isActive ? 'scaleY(1.12)' : 'scaleY(1)',
+                        filter: activeHour !== null
+                          ? (isActive ? 'brightness(1.6) saturate(1.3)' : 'brightness(0.35)')
+                          : isSlotDimmed
+                            ? 'brightness(0.3)'
+                            : 'none',
+                        transform: (isActive || isSlotActive) ? 'scaleY(1.12)' : 'scaleY(1)',
                         transformOrigin: 'bottom',
-                        outline: isActive ? '1px solid rgba(79,142,247,.7)' : 'none',
+                        outline: isSlotActive ? '2px solid #f72585' : isActive ? '1px solid rgba(79,142,247,.7)' : 'none',
                       }}
                     />
                   );

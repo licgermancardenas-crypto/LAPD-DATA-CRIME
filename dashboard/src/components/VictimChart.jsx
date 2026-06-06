@@ -5,7 +5,6 @@ import {
   ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 
-// ── Spanish labels ──────────────────────────────────────────────────────────
 const DESCENT_ES = {
   'Hispanic/Latino': 'Hispano/Latino',
   'White':           'Blanco',
@@ -25,13 +24,11 @@ const AGE_ES = {
   'Senior (65+)':        'Mayor (65+)',
 };
 
-// ── Magenta / Cyan palette ──────────────────────────────────────────────────
-const MAGENTA  = '#f72585';
-const CYAN     = '#4cc9f0';
-const TEAL     = '#00b4d8';
-const PINK     = '#e878c8';
-const VIOLET   = '#7c5cbf';
-const GOLD     = '#e0c066';
+const MAGENTA = '#f72585';
+const CYAN    = '#4cc9f0';
+const TEAL    = '#00b4d8';
+const VIOLET  = '#7c5cbf';
+const GOLD    = '#e0c066';
 
 const DESCENT_COLORS = {
   'Hispanic/Latino': MAGENTA,
@@ -42,15 +39,13 @@ const DESCENT_COLORS = {
   'Pacific Islander': GOLD,
 };
 
-// ── Shared tooltip shell ────────────────────────────────────────────────────
 const tipBox = (children) => (
   <div style={{ background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 8, padding: '10px 14px', minWidth: 200 }}>
     {children}
   </div>
 );
 
-// ── Age tooltip ─────────────────────────────────────────────────────────────
-function AgeTip({ active, payload, label }) {
+function AgeTip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return tipBox(<>
@@ -58,24 +53,21 @@ function AgeTip({ active, payload, label }) {
     <p style={{ color: CYAN, fontSize: 13, margin: '2px 0' }}>Total: <strong>{d.crimes.toLocaleString()}</strong> ({d.share_pct}%)</p>
     <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Violentos: <strong>{d.violent.toLocaleString()}</strong> ({d.violent_pct}%)</p>
     <p style={{ color: '#7b82a0', fontSize: 11, marginTop: 4 }}>
-      Nota: excluye {'{'}26.8%{'}'} sin datos de víctima (empresas/vehículos)
+      Click para filtrar por este grupo etario
     </p>
   </>);
 }
 
-// ── Descent tooltip ─────────────────────────────────────────────────────────
 function DescentTip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
-  const esLabel = DESCENT_ES[d.descent] ?? d.descent;
   return tipBox(<>
-    <p style={{ color: '#c0c4d4', fontSize: 12, marginBottom: 6 }}>{esLabel}</p>
+    <p style={{ color: '#c0c4d4', fontSize: 12, marginBottom: 6 }}>{DESCENT_ES[d.descent] ?? d.descent}</p>
     <p style={{ color: CYAN, fontSize: 13, margin: '2px 0' }}>Víctimas: <strong>{d.crimes.toLocaleString()}</strong></p>
-    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Crímenes violentos: <strong>{d.violent.toLocaleString()}</strong> ({d.violent_pct}%)</p>
+    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Violentos: <strong>{d.violent.toLocaleString()}</strong> ({d.violent_pct}%)</p>
   </>);
 }
 
-// ── Crime × Sex tooltip ─────────────────────────────────────────────────────
 function CatSexTip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
@@ -87,7 +79,6 @@ function CatSexTip({ active, payload }) {
   </>);
 }
 
-// ── Mini KPI card ───────────────────────────────────────────────────────────
 function KpiMini({ label, value, sub, color, border }) {
   return (
     <div style={{
@@ -101,32 +92,32 @@ function KpiMini({ label, value, sub, color, border }) {
   );
 }
 
-// ── Main component ──────────────────────────────────────────────────────────
-export default function VictimChart({ data }) {
+export default function VictimChart({ data, filters, onFilter }) {
   if (!data) return null;
   const { by_sex, by_age, by_descent, by_cat_sex,
-          no_victim_count, no_victim_pct, victim_count } = data;
+          no_victim_count, no_victim_pct, victim_count,
+          _filtered, _filter_total } = data;
 
-  const male   = by_sex.find(s => s.sex === 'Male');
-  const female = by_sex.find(s => s.sex === 'Female');
+  const activeAge = filters?.ageGroup ?? null;
+  const isFiltered = !!filters?.category;
+
+  const male   = by_sex?.find(s => s.sex === 'Male');
+  const female = by_sex?.find(s => s.sex === 'Female');
   const gapVio = female && male
     ? (female.violent_pct - male.violent_pct).toFixed(1)
     : '—';
 
-  // Translate descent for chart
-  const descentData = by_descent.map(d => ({
+  const descentData = (by_descent ?? []).map(d => ({
     ...d,
     label: DESCENT_ES[d.descent] ?? d.descent,
   }));
 
-  // Age data with Spanish labels
-  const ageData = by_age.map(d => ({
+  const ageData = (by_age ?? []).map(d => ({
     ...d,
     label: AGE_ES[d.age] ?? d.age,
   }));
 
-  // Crime × sex with short category labels
-  const catData = by_cat_sex
+  const catData = (by_cat_sex ?? [])
     .map(d => ({
       ...d,
       label: d.category
@@ -141,22 +132,42 @@ export default function VictimChart({ data }) {
     }))
     .slice(0, 14);
 
+  const handleAgeClick = (e) => {
+    if (!onFilter) return;
+    const entry = e?.activePayload?.[0]?.payload;
+    if (!entry?.age) return;
+    onFilter('ageGroup', activeAge === entry.age ? null : entry.age);
+  };
+
   return (
     <div style={{ display: 'grid', gap: 20 }}>
 
-      {/* ── KPI row ────────────────────────────────────────────────────── */}
+      {/* Filter context banner */}
+      {_filtered && (
+        <div style={{
+          padding: '8px 14px', borderRadius: 8,
+          background: 'rgba(79,142,247,.08)', border: '1px solid rgba(79,142,247,.2)',
+          fontSize: 12, color: '#4f8ef7',
+        }}>
+          Datos filtrados por selección activa
+          {_filter_total && ` · ${_filter_total.toLocaleString()} registros`}
+          {isFiltered && <span style={{ color: '#7b82a0' }}> · categoría seleccionada</span>}
+        </div>
+      )}
+
+      {/* ── KPI row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
         <KpiMini
           label="Víctimas Masculinas"
-          value={`${male?.share_pct}%`}
-          sub={`${male?.crimes.toLocaleString()} · ${male?.violent_pct}% violento`}
+          value={`${male?.share_pct ?? '—'}%`}
+          sub={`${male?.crimes.toLocaleString() ?? '—'} · ${male?.violent_pct}% violento`}
           color={CYAN}
           border="rgba(76,201,240,.2)"
         />
         <KpiMini
           label="Víctimas Femeninas"
-          value={`${female?.share_pct}%`}
-          sub={`${female?.crimes.toLocaleString()} · ${female?.violent_pct}% violento`}
+          value={`${female?.share_pct ?? '—'}%`}
+          sub={`${female?.crimes.toLocaleString() ?? '—'} · ${female?.violent_pct}% violento`}
           color={MAGENTA}
           border="rgba(247,37,133,.2)"
         />
@@ -176,22 +187,51 @@ export default function VictimChart({ data }) {
         />
       </div>
 
-      {/* ── Age distribution ─────────────────────────────────────────────── */}
+      {/* ── Age distribution ── */}
       <div className="card">
-        <p className="section-title">Victimización por Grupo Etario</p>
-        <p className="section-sub">
-          Solo el 73.2% de los registros tiene datos de víctima identificable ·
-          excluye edad≤0 (empresas/vehículos) · % violento encima de cada barra
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <div>
+            <p className="section-title">Victimización por Grupo Etario</p>
+            <p className="section-sub">
+              Solo el 73.2% tiene datos de víctima identificable · excluye edad≤0 (empresas/vehículos)
+              {onFilter && <span style={{ color: '#7c5cbf' }}> · Click para filtrar</span>}
+            </p>
+          </div>
+          {activeAge && (
+            <div style={{
+              padding: '4px 10px', borderRadius: 6, fontSize: 11,
+              background: 'rgba(124,92,191,.15)', border: '1px solid rgba(124,92,191,.3)',
+              color: '#7c5cbf', whiteSpace: 'nowrap',
+            }}>
+              {AGE_ES[activeAge] ?? activeAge}
+            </div>
+          )}
+        </div>
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={ageData} margin={{ top: 18, right: 20, left: 10, bottom: 4 }}>
+          <BarChart data={ageData} margin={{ top: 18, right: 20, left: 10, bottom: 4 }}
+            onClick={handleAgeClick}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e2030" />
             <XAxis dataKey="label" tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false} tickLine={false}
               tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
             <Tooltip content={<AgeTip />} />
-            <Bar dataKey="crimes"  name="Total"    fill={CYAN}    opacity={0.55} radius={[3,3,0,0]} />
-            <Bar dataKey="violent" name="Violento" fill={MAGENTA} opacity={0.9}  radius={[3,3,0,0]}>
+            <Bar dataKey="crimes"  name="Total"    radius={[3,3,0,0]}
+              cursor={onFilter ? 'pointer' : 'default'}>
+              {ageData.map((entry, i) => {
+                const isActive = activeAge === entry.age;
+                const isDimmed = activeAge && !isActive;
+                return <Cell key={i} fill={CYAN} opacity={isDimmed ? 0.15 : 0.55}
+                  stroke={isActive ? CYAN : 'none'} strokeWidth={isActive ? 2 : 0} />;
+              })}
+            </Bar>
+            <Bar dataKey="violent" name="Violento" radius={[3,3,0,0]}
+              cursor={onFilter ? 'pointer' : 'default'}>
+              {ageData.map((entry, i) => {
+                const isActive = activeAge === entry.age;
+                const isDimmed = activeAge && !isActive;
+                return <Cell key={i} fill={MAGENTA} opacity={isDimmed ? 0.2 : 0.9}
+                  stroke={isActive ? MAGENTA : 'none'} strokeWidth={isActive ? 2 : 0} />;
+              })}
               <LabelList dataKey="violent_pct" position="top"
                 formatter={v => `${v}%`} style={{ fontSize: 9, fill: '#9b82c8' }} />
             </Bar>
@@ -206,7 +246,7 @@ export default function VictimChart({ data }) {
         </div>
       </div>
 
-      {/* ── Descent breakdown ────────────────────────────────────────────── */}
+      {/* ── Descent breakdown ── */}
       <div className="card">
         <p className="section-title">Perfil por Grupo Étnico</p>
         <p className="section-sub">
@@ -232,7 +272,7 @@ export default function VictimChart({ data }) {
         </ResponsiveContainer>
       </div>
 
-      {/* ── Crime type × Sex ─────────────────────────────────────────────── */}
+      {/* ── Crime type × Sex ── */}
       <div className="card">
         <p className="section-title">Tipo de Crimen × Género de Víctima</p>
         <p className="section-sub">
@@ -261,7 +301,7 @@ export default function VictimChart({ data }) {
           ))}
         </div>
         <p style={{ fontSize: 11, color: '#3a3f55', marginTop: 10 }}>
-          Nota: registros con vict_sex="Unknown" excluidos de este gráfico · edad≤0 ya excluida en preprocessing
+          Nota: registros con vict_sex="Unknown" excluidos · edad≤0 excluida en preprocessing
         </p>
       </div>
 

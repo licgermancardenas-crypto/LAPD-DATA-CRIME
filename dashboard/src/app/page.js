@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Shell              from '@/components/Shell';
 import KpiCard            from '@/components/KpiCard';
@@ -13,6 +13,8 @@ import UnemploymentChart  from '@/components/UnemploymentChart';
 import ReportingLagChart  from '@/components/ReportingLagChart';
 import VictimChart        from '@/components/VictimChart';
 import PremiseChart       from '@/components/PremiseChart';
+import FilterBar          from '@/components/FilterBar';
+import { computeCategories, computeDivisions, computeVictims } from '@/lib/filterUtils';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
 
@@ -105,6 +107,9 @@ export default function Home() {
   const [geoView,    setGeoView]    = useState('map');
   const [showTop,    setShowTop]    = useState(false);
   const [activePart, setActivePart] = useState('all');
+  const [filters,    setFilters]    = useState({
+    area: null, category: null, ageGroup: null, timeSlot: null,
+  });
 
   useEffect(() => {
     const b = '/data';
@@ -117,8 +122,9 @@ export default function Home() {
       fetch(`${b}/weather_daily.json`).then(r => r.json()),
       fetch(`${b}/victims.json`).then(r => r.json()),
       fetch(`${b}/premises.json`).then(r => r.json()),
-    ]).then(([summary, monthly, hourly, division, categories, weather, victims, premises]) => {
-      setData({ summary, monthly, hourly, division, categories, weather, victims, premises });
+      fetch(`${b}/cross_div_cat.json`).then(r => r.json()),
+    ]).then(([summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat]) => {
+      setData({ summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat });
     }).catch(() => setData('error'));
   }, []);
 
@@ -138,6 +144,28 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // ── Cross-filter computed data ──────────────────────────────────────────
+  const computedCategories = useMemo(() => {
+    if (!data || data === 'error') return null;
+    return computeCategories(data.crossDivCat, data.categories, filters, activePart);
+  }, [data, filters, activePart]);
+
+  const computedDivisions = useMemo(() => {
+    if (!data || data === 'error') return null;
+    const result = computeDivisions(data.crossDivCat, filters, activePart);
+    return result ?? data.division; // null = use base
+  }, [data, filters, activePart]);
+
+  const computedVictims = useMemo(() => {
+    if (!data || data === 'error') return null;
+    return computeVictims(data.victims?.raw_cross ?? [], data.victims, filters);
+  }, [data, filters]);
+
+  // ── Filter setter ───────────────────────────────────────────────────────
+  const handleFilter = useCallback((key, value) => {
+    setFilters(f => ({ ...f, [key]: value }));
+  }, []);
+
   if (!data) return <LoadingScreen />;
 
   if (data === 'error') return (
@@ -152,7 +180,7 @@ export default function Home() {
     </Shell>
   );
 
-  const { summary, monthly, hourly, division, categories, weather, victims, premises } = data;
+  const { summary, monthly, hourly, premises, weather } = data;
   const clrColor = summary.clearance_rate >= 20 ? '#3ecf8e'
                  : summary.clearance_rate >= 12 ? '#e0c066' : '#e05252';
 
@@ -225,6 +253,9 @@ export default function Home() {
           Afecta: tendencia mensual · divisiones · categorías · lugares
         </span>
       </div>
+
+      {/* ── Active cross-filters bar ─────────────────────────────────────── */}
+      <FilterBar filters={filters} setFilters={setFilters} />
 
       {/* ── Thin section tab nav ─────────────────────────────────────────── */}
       <div style={{
@@ -314,24 +345,34 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <DivisionBar data={division} activePart={activePart} />
+            <DivisionBar
+              data={computedDivisions}
+              activePart={activePart}
+              filters={filters}
+              onFilter={handleFilter}
+            />
           )}
         </Section>
 
         {/* TEMPORAL */}
         <Section id="temporal">
           <SectionHeader title="Temporal Patterns" sub="When do crimes occur? Hour of day vs day of week — all 5 years combined" badge="168 cells" />
-          <HourHeatmap data={hourly} />
+          <HourHeatmap data={hourly} filters={filters} onFilter={handleFilter} />
         </Section>
 
         {/* CATEGORIES */}
         <Section id="categories">
           <SectionHeader
             title="Categorías de Crimen"
-            sub="Clasificación UCR Part 1 (graves FBI) y Part 2 (menores) — 18 categorías · el toggle global filtra todo el dashboard"
+            sub="Clasificación UCR Part 1 (graves FBI) y Part 2 (menores) — 18 categorías · click en barra para cross-filtrar el dashboard"
             badge="18 categorías"
           />
-          <CategoryChart data={categories} activePart={activePart} />
+          <CategoryChart
+            data={computedCategories}
+            activePart={activePart}
+            filters={filters}
+            onFilter={handleFilter}
+          />
           <div style={{ marginTop: 20 }}>
             <PremiseChart data={premises} activePart={activePart} />
           </div>
@@ -341,10 +382,14 @@ export default function Home() {
         <Section id="victims">
           <SectionHeader
             title="Victim Demographics"
-            sub="Who gets victimized? Age, gender, and ethnic breakdown across 735,579 victim records — 2020-2024"
+            sub="Who gets victimized? Age, gender, and ethnic breakdown — cross-filterable by crime category and age group"
             badge="735k victims"
           />
-          <VictimChart data={victims} />
+          <VictimChart
+            data={computedVictims}
+            filters={filters}
+            onFilter={handleFilter}
+          />
         </Section>
 
         {/* CONTEXT */}

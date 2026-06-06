@@ -13,7 +13,7 @@ import UnemploymentChart  from '@/components/UnemploymentChart';
 import ReportingLagChart  from '@/components/ReportingLagChart';
 import VictimChart        from '@/components/VictimChart';
 import PremiseChart       from '@/components/PremiseChart';
-import FilterBar          from '@/components/FilterBar';
+import GlobalFilterPanel  from '@/components/GlobalFilterPanel';
 import ChartSkeleton      from '@/components/ChartSkeleton';
 import ExecutiveInsights  from '@/components/ExecutiveInsights';
 import { computeCategories, computeDivisions, computeVictims } from '@/lib/filterUtils';
@@ -238,45 +238,15 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Part 1/2 global filter strip ────────────────────────────────── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '12px 32px', background: '#0c0e1a',
-        borderBottom: '1px solid #1e2030', flexWrap: 'wrap',
-      }}>
-        <span style={{ fontSize: 11, color: '#7b82a0', fontWeight: 600, letterSpacing: '.06em' }}>
-          FILTRO FBI UCR:
-        </span>
-        {[
-          { v: 'all', label: 'Todos los delitos',        color: '#e8eaf0', bg: 'rgba(255,255,255,.06)', border: 'rgba(255,255,255,.15)' },
-          { v: 'p1',  label: 'Part 1 — Delitos Graves',  color: '#e0883a', bg: 'rgba(224,136,58,.1)',   border: 'rgba(224,136,58,.4)'  },
-          { v: 'p2',  label: 'Part 2 — Delitos Menores', color: '#4f8ef7', bg: 'rgba(79,142,247,.1)',   border: 'rgba(79,142,247,.4)'  },
-        ].map(o => (
-          <button key={o.v} onClick={() => setActivePart(o.v)} style={{
-            padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: activePart === o.v ? 700 : 400,
-            border:  `1px solid ${activePart === o.v ? o.border : '#2a2d3a'}`,
-            background: activePart === o.v ? o.bg : 'transparent',
-            color:   activePart === o.v ? o.color : '#7b82a0',
-            cursor: 'pointer', transition: 'all .15s',
-          }}>
-            {o.label}
-            {o.v !== 'all' && activePart === o.v && (
-              <span style={{ marginLeft: 6, opacity: .7 }}>
-                {o.v === 'p1'
-                  ? `${((summary.crimes_p1 / summary.total_crimes) * 100).toFixed(0)}%`
-                  : `${((summary.crimes_p2 / summary.total_crimes) * 100).toFixed(0)}%`
-                } del total
-              </span>
-            )}
-          </button>
-        ))}
-        <span style={{ fontSize: 11, color: '#3a3f55', marginLeft: 4 }}>
-          Afecta: tendencia mensual · divisiones · categorías · lugares
-        </span>
-      </div>
-
-      {/* ── Active cross-filters bar ─────────────────────────────────────── */}
-      <FilterBar filters={filters} setFilters={setFilters} />
+      {/* ── Unified global filter panel ──────────────────────────────────── */}
+      <GlobalFilterPanel
+        activePart={activePart}
+        setActivePart={setActivePart}
+        filters={filters}
+        setFilters={setFilters}
+        categories={data.categories}
+        divisions={data.division}
+      />
 
       {/* ── Thin section tab nav ─────────────────────────────────────────── */}
       <div style={{

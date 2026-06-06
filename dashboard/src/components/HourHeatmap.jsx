@@ -2,10 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-const DAYS   = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAYS      = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAYS_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const HOURS  = Array.from({ length: 24 }, (_, i) => i);
 const LABELS = HOURS.map(h => h === 0 ? '12a' : h < 12 ? `${h}a` : h === 12 ? '12p' : `${h - 12}p`);
 const SPEEDS = [{ label: '1×', ms: 700 }, { label: '2×', ms: 350 }, { label: '4×', ms: 175 }];
+
+function intensityMeta(v) {
+  if (v < 0.22) return { label: 'Baja',     color: '#3ecf8e' };
+  if (v < 0.48) return { label: 'Moderada', color: '#e0c066' };
+  if (v < 0.72) return { label: 'Alta',     color: '#e0883a' };
+  return               { label: 'Crítica',  color: '#e05252' };
+}
+
+function hourRange(h) {
+  const f = n => `${String(n).padStart(2,'0')}:00`;
+  return `${f(h)} – ${f((h + 1) % 24)}`;
+}
 
 function interpolateColor(intensity) {
   const stops = [
@@ -23,10 +36,11 @@ function interpolateColor(intensity) {
 }
 
 export default function HourHeatmap({ data, filters, onFilter }) {
-  const [hovered,   setHovered]   = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playHour,  setPlayHour]  = useState(null);
-  const [speedIdx,  setSpeedIdx]  = useState(0);
+  const [hovered,    setHovered]    = useState(null);
+  const [tooltipPos, setTooltipPos] = useState(null);
+  const [isPlaying,  setIsPlaying]  = useState(false);
+  const [playHour,   setPlayHour]   = useState(null);
+  const [speedIdx,   setSpeedIdx]   = useState(0);
   const intervalRef = useRef(null);
 
   const activeSlot = filters?.timeSlot ?? null;
@@ -43,6 +57,13 @@ export default function HourHeatmap({ data, filters, onFilter }) {
     DAYS.reduce((sum, _, dow) => sum + (lookup[dow]?.[h]?.crimes || 0), 0)
   );
   const maxHourTotal = Math.max(...hourTotals);
+
+  // Aggregates for tooltip percentages
+  const weeklyTotal = hourTotals.reduce((a, b) => a + b, 0);
+  const dayTotals   = DAYS.map((_, dow) =>
+    HOURS.reduce((sum, h) => sum + (lookup[dow]?.[h]?.crimes || 0), 0)
+  );
+  const avgPerCell  = weeklyTotal / 168;
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -113,35 +134,30 @@ export default function HourHeatmap({ data, filters, onFilter }) {
         </div>
       </div>
 
-      {/* Live status bar */}
-      <div style={{
-        height: 34, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10,
-        opacity: activeHour !== null ? 1 : 0, transition: 'opacity .2s',
-      }}>
-        {isPlaying && playLabel && (
-          <>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.3)',
-              borderRadius: 8, padding: '4px 12px',
-            }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4f8ef7', display: 'inline-block', animation: 'pulse 1s ease-in-out infinite' }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#4f8ef7' }}>{playLabel}</span>
-            </div>
-            <span style={{ fontSize: 13, color: '#e8eaf0' }}>
-              <strong style={{ color: '#4f8ef7' }}>{playTotal}</strong>
-              <span style={{ color: '#7b82a0' }}> crimes across all weekdays</span>
-            </span>
-          </>
-        )}
-        {!isPlaying && hovered && (
-          <span style={{ fontSize: 13, color: '#e8eaf0' }}>
-            <span style={{ color: '#7b82a0' }}>{hovered.day} {LABELS[hovered.hour]} — </span>
-            <strong style={{ color: '#4f8ef7' }}>{hovered.crimes.toLocaleString()}</strong>
-            <span style={{ color: '#7b82a0' }}> crimes</span>
-          </span>
-        )}
-      </div>
+      {/* Live status bar — only shown while playing animation */}
+      {isPlaying && (
+        <div style={{
+          height: 34, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10,
+          opacity: playLabel ? 1 : 0, transition: 'opacity .2s',
+        }}>
+          {playLabel && (
+            <>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.3)',
+                borderRadius: 8, padding: '4px 12px',
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4f8ef7', display: 'inline-block', animation: 'pulse 1s ease-in-out infinite' }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#4f8ef7' }}>{playLabel}</span>
+              </div>
+              <span style={{ fontSize: 13, color: '#e8eaf0' }}>
+                <strong style={{ color: '#4f8ef7' }}>{playTotal}</strong>
+                <span style={{ color: '#7b82a0' }}> crimes across all weekdays</span>
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Hour progress bar (only while playing) */}
       {isPlaying && playHour !== null && (
@@ -194,9 +210,9 @@ export default function HourHeatmap({ data, filters, onFilter }) {
                   return (
                     <div
                       key={h}
-                      title={`${day} ${LABELS[h]}: ${cell?.crimes?.toLocaleString() ?? 0} crimes`}
-                      onMouseEnter={() => !isPlaying && cell && setHovered({ ...cell, day })}
-                      onMouseLeave={() => !isPlaying && setHovered(null)}
+                      onMouseEnter={() => !isPlaying && cell && setHovered({ ...cell, day, dow })}
+                      onMouseMove={e => !isPlaying && setTooltipPos({ x: e.clientX, y: e.clientY })}
+                      onMouseLeave={() => { if (!isPlaying) { setHovered(null); setTooltipPos(null); } }}
                       onClick={() => {
                         if (!isPlaying && onFilter && cell) {
                           onFilter('timeSlot', isSlotActive ? null : { dow, hour: h });
@@ -243,6 +259,82 @@ export default function HourHeatmap({ data, filters, onFilter }) {
           50%{opacity:.6;transform:scale(1.3)}
         }
       `}</style>
+
+      {/* ── Floating tooltip ──────────────────────────────────────────────── */}
+      {hovered && tooltipPos && !isPlaying && (() => {
+        const dow   = hovered.dow;
+        const h     = hovered.hour;
+        const pctW  = weeklyTotal > 0 ? ((hovered.crimes / weeklyTotal) * 100).toFixed(1) : '—';
+        const pctD  = dayTotals[dow] > 0 ? ((hovered.crimes / dayTotals[dow]) * 100).toFixed(1) : '—';
+        const vsAvg = avgPerCell > 0 ? Math.round(((hovered.crimes - avgPerCell) / avgPerCell) * 100) : 0;
+        const im    = intensityMeta(hovered.intensity);
+        const flipX = tooltipPos.x > (typeof window !== 'undefined' ? window.innerWidth - 230 : 9999);
+        const flipY = tooltipPos.y > (typeof window !== 'undefined' ? window.innerHeight - 180 : 9999);
+        return (
+          <div style={{
+            position: 'fixed',
+            left:  flipX ? tooltipPos.x - 218 : tooltipPos.x + 14,
+            top:   flipY ? tooltipPos.y - 165  : tooltipPos.y + 10,
+            zIndex: 9999,
+            pointerEvents: 'none',
+            background: '#14172a',
+            border: '1px solid #2e334d',
+            borderRadius: 10,
+            padding: '12px 15px',
+            boxShadow: '0 8px 32px rgba(0,0,0,.55)',
+            minWidth: 204,
+            fontFamily: 'Inter, system-ui, sans-serif',
+          }}>
+            {/* Header */}
+            <div style={{ marginBottom: 9 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#e4e6f0', margin: 0 }}>
+                {DAYS_FULL[dow]}
+              </p>
+              <p style={{ fontSize: 11, color: '#7b82a0', margin: '2px 0 0' }}>
+                {hourRange(h)}
+              </p>
+            </div>
+
+            {/* Main metric */}
+            <div style={{
+              fontSize: 22, fontWeight: 800, color: im.color,
+              fontVariantNumeric: 'tabular-nums', marginBottom: 8, lineHeight: 1,
+            }}>
+              {hovered.crimes.toLocaleString()}
+              <span style={{ fontSize: 11, fontWeight: 400, color: '#7b82a0', marginLeft: 5 }}>
+                crímenes
+              </span>
+            </div>
+
+            {/* Stats rows */}
+            <div style={{ borderTop: '1px solid #1e2230', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                <span style={{ color: '#4f5870' }}>% semanal</span>
+                <strong style={{ color: '#c0c4d4' }}>{pctW}%</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                <span style={{ color: '#4f5870' }}>% del día</span>
+                <strong style={{ color: '#c0c4d4' }}>{pctD}%</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                <span style={{ color: '#4f5870' }}>vs. media</span>
+                <strong style={{ color: vsAvg >= 0 ? '#e05252' : '#3ecf8e' }}>
+                  {vsAvg >= 0 ? '+' : ''}{vsAvg}%
+                </strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 2 }}>
+                <span style={{ color: '#4f5870' }}>Intensidad</span>
+                <strong style={{ color: im.color }}>{im.label}</strong>
+              </div>
+            </div>
+
+            {/* Footer hint */}
+            <p style={{ fontSize: 9.5, color: '#3a3f55', marginTop: 8, margin: '8px 0 0' }}>
+              Clic para cross-filtrar el dashboard
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 }

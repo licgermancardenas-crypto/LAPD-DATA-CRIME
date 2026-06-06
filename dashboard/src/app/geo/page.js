@@ -69,6 +69,19 @@ const MAPS = [
     ],
   },
   {
+    id: 'heatmap',
+    label: 'Heatmap',
+    icon: '🔥',
+    src: '/maps/heatmap.html',
+    title: 'Crime Density Heatmap — Point-level Incidents 2020–2024',
+    badge: '1M+ Incidents · 24h Animation',
+    insight: [
+      { icon: '🌡️', text: 'Each point represents a real incident (lat/lon). Density kernel uses radius 18px, blur 15 — hotspots stay compact even at high zoom levels (maxZoom 15).' },
+      { icon: '▶', text: 'Press Play to animate 24 hours of crime density. Midnight shows concentrated Downtown/Hollywood clusters; 12 PM peaks across the entire city.' },
+      { icon: '📍', text: 'Dashed blue lines show LAPD division boundaries as orientation reference. Zoom into any neighborhood to see individual incident clustering.' },
+    ],
+  },
+  {
     id: 'business',
     label: 'Biz & Crime',
     icon: '🏪',

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<style>
+  :root{--bg:#0a0c12;--surface:rgba(10,12,18,.82);--surface-s:#1a1d27;--border:#2a2d3a;--text:#e4e6f0;--muted:#7b82a0}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text)}
+  #map{position:absolute;inset:0}
+
+  /* Leaflet overrides */
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.3)!important}
+  .leaflet-control-attribution{background:rgba(10,12,18,.7)!important;color:var(--muted)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:#4f8ef7!important}
+
+  /* ── Glassmorphism widget (top-right) ─────────────────────────────────── */
+  #hw{
+    position:fixed;top:12px;right:12px;z-index:1000;
+    min-width:170px;
+    background:rgba(6,8,16,.72);
+    backdrop-filter:blur(22px) saturate(1.5);
+    -webkit-backdrop-filter:blur(22px) saturate(1.5);
+    border:1px solid rgba(79,142,247,.15);
+    border-radius:14px;
+    padding:14px 16px 13px;
+    box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);
+    opacity:0;transition:opacity .35s ease;
+  }
+  #hw.ready{opacity:1}
+  .hw-chip{
+    font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:#4f5870;margin-bottom:3px;display:flex;align-items:center;gap:5px;
+  }
+  @keyframes hw-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+  #hw-dot{
+    width:6px;height:6px;border-radius:50%;background:#3a3f55;flex-shrink:0;
+    animation:hw-pulse 1.8s ease-in-out infinite;transition:background .3s;
+  }
+  #hw-hour-val{
+    font-size:20px;font-weight:800;color:#fff;line-height:1;
+    margin-bottom:2px;font-variant-numeric:tabular-nums;
+  }
+  #hw-range{font-size:10px;color:#4f5870;margin-bottom:11px}
+  .hw-sep{height:1px;background:rgba(79,142,247,.1);margin:0 0 10px}
+  #hw-count-lbl{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4f5870;margin-bottom:4px}
+  #hw-count-val{
+    font-size:24px;font-weight:800;color:#4f8ef7;line-height:1;
+    font-variant-numeric:tabular-nums;transition:color .25s;
+  }
+  #hw-count-sub{font-size:10px;color:#4f5870;margin-top:3px}
+  #hw-bar-row{display:flex;align-items:center;gap:7px;margin-top:7px}
+  #hw-bar-bg{flex:1;height:3px;background:rgba(79,142,247,.12);border-radius:2px;overflow:hidden}
+  #hw-bar-fill{height:100%;background:linear-gradient(90deg,#4f8ef7,#e0883a);border-radius:2px;transition:width .3s ease;width:0%}
+  #hw-pct{font-size:10px;color:#7b82a0;white-space:nowrap;flex-shrink:0;font-weight:600}
+
+  /* ── Top-left: theme button ───────────────────────────────────────────── */
+  #tt{
+    position:fixed;top:12px;left:12px;z-index:1000;
+    width:34px;height:34px;border-radius:8px;
+    border:1px solid var(--border);background:var(--surface-s);
+    color:var(--text);font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;
+  }
+  #tt:hover{opacity:.75}
+
+  /* ── Legend ───────────────────────────────────────────────────────────── */
+  #legend{
+    position:fixed;bottom:60px;left:12px;z-index:1000;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:8px;padding:9px 12px;
+  }
+  #legend p{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;width:140px}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+
+  /* ── Hour animation controls (bottom-center) ─────────────────────────── */
+  #hour-ctrl{
+    position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
+    z-index:1000;display:flex;align-items:center;gap:10px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:11px;padding:9px 14px;
+    box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap;
+  }
+  #play-btn{
+    width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface-s);color:var(--text);cursor:pointer;
+    font-size:13px;display:flex;align-items:center;justify-content:center;
+    transition:all .12s;flex-shrink:0;
+  }
+  #play-btn:hover{border-color:#4f8ef7;color:#4f8ef7}
+  #play-btn.playing{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
+  #hc-track{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+  #hc-spark{display:flex;gap:1.5px;align-items:flex-end;height:18px;width:216px}
+  .hc-bar{flex:1;border-radius:2px 2px 0 0;background:rgba(79,142,247,.18);transition:background .12s}
+  .hc-bar.hc-act{background:#4f8ef7}
+  #hour-slider{
+    width:216px;height:3px;appearance:none;-webkit-appearance:none;
+    background:var(--border);border-radius:2px;cursor:pointer;outline:none;
+  }
+  #hour-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+    background:#4f8ef7;cursor:pointer;border:2px solid #fff;
+    box-shadow:0 0 0 2px rgba(79,142,247,.4);
+  }
+  #hour-slider::-moz-range-thumb{
+    width:13px;height:13px;border-radius:50%;
+    background:#4f8ef7;cursor:pointer;border:2px solid #fff;
+  }
+  #hc-label{font-size:12px;font-weight:700;color:var(--text);min-width:66px;text-align:center;line-height:1.2}
+  #hc-label small{display:block;font-size:9px;color:var(--muted);font-weight:400;margin-top:2px}
+  #hour-reset{
+    width:22px;height:22px;border-radius:5px;border:1px solid var(--border);
+    background:transparent;color:var(--muted);cursor:pointer;font-size:11px;
+    display:none;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;
+  }
+  #hour-reset:hover{border-color:#e05252;color:#e05252}
+
+  /* ── Loading ──────────────────────────────────────────────────────────── */
+  #loading{
+    position:fixed;inset:0;background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2000;
+  }
+  #loading p{color:var(--muted);font-size:13px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="loading"><div class="spinner"></div><p id="load-msg">Loading heatmap data…</p></div>
+
+<!-- Glassmorphism widget -->
+<div id="hw">
+  <div class="hw-chip"><span id="hw-dot"></span><span id="hw-mode">ALL HOURS</span></div>
+  <div id="hw-hour-val">All Hours</div>
+  <div id="hw-range">2020–2024 · 5 years</div>
+  <div class="hw-sep"></div>
+  <div id="hw-count-lbl">INCIDENTS</div>
+  <div id="hw-count-val">—</div>
+  <div id="hw-count-sub">loading…</div>
+  <div id="hw-bar-row">
+    <div id="hw-bar-bg"><div id="hw-bar-fill"></div></div>
+    <span id="hw-pct">—</span>
+  </div>
+</div>
+
+<button id="tt" title="Toggle theme">🌙</button>
+
+<div id="legend">
+  <p>CRIME DENSITY</p>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span>Low</span><span>High</span></div>
+</div>
+
+<div id="hour-ctrl">
+  <button id="play-btn" title="Play 24h animation">▶</button>
+  <div id="hc-track">
+    <div id="hc-spark"></div>
+    <input type="range" id="hour-slider" min="0" max="23" step="1" value="12">
+  </div>
+  <div id="hc-label">All Hours<small>drag or press play</small></div>
+  <button id="hour-reset" title="Reset to all hours">✕</button>
+</div>
+
+<script>
+var HOUR_LABELS = [
+  '12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM','7 AM',
+  '8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM',
+  '4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM'
+];
+var HOUR_RANGE = [
+  '12:00–1:00','1:00–2:00','2:00–3:00','3:00–4:00','4:00–5:00','5:00–6:00',
+  '6:00–7:00','7:00–8:00','8:00–9:00','9:00–10:00','10:00–11:00','11:00–12:00',
+  '12:00–13:00','13:00–14:00','14:00–15:00','15:00–16:00','16:00–17:00','17:00–18:00',
+  '18:00–19:00','19:00–20:00','20:00–21:00','21:00–22:00','22:00–23:00','23:00–0:00'
+];
+
+// State
+var dark = true;
+var heatData = null;      // full JSON from server
+var allHoursPts = null;   // subsampled all-hours view
+var currentHour = null;   // null = all-day
+var isPlaying   = false;
+var playInterval = null;
+var maxCount    = 1;
+
+// ── Legend gradient ─────────────────────────────────────────────────────────
+var HEAT_STOPS = ['#1e40af','#7c3aed','#db2777','#f97316','#fde047'];
+(function(){
+  var lb = document.getElementById('leg-bar');
+  for(var k=0;k<30;k++){
+    var d=document.createElement('div');d.style.flex='1';
+    var t=k/29, n=HEAT_STOPS.length-1, s=t*n, i=Math.min(Math.floor(s),n-1), f=s-i;
+    function hex2rgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+    var a=hex2rgb(HEAT_STOPS[i]),b=hex2rgb(HEAT_STOPS[i+1]||HEAT_STOPS[n]);
+    d.style.background='rgb('+Math.round(a[0]+f*(b[0]-a[0]))+','+Math.round(a[1]+f*(b[1]-a[1]))+','+Math.round(a[2]+f*(b[2]-a[2]))+')';
+    lb.appendChild(d);
+  }
+})();
+
+// ── Map ──────────────────────────────────────────────────────────────────────
+var map = L.map('map',{center:[34.02,-118.35],zoom:11,zoomControl:false,attributionControl:true});
+setTimeout(function(){map.invalidateSize();},100);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+var tOpts={subdomains:'abcd',maxZoom:19,
+  attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+// ── Heat layer ───────────────────────────────────────────────────────────────
+var heat = null;
+var HEAT_OPTS = {
+  radius:  18,
+  blur:    15,
+  maxZoom: 15,
+  max:     1.0,
+  gradient:{0.15:'#1e40af', 0.35:'#7c3aed', 0.55:'#db2777', 0.75:'#f97316', 1.0:'#fde047'}
+};
+
+// ── Theme ────────────────────────────────────────────────────────────────────
+document.getElementById('tt').addEventListener('click', function(){
+  dark = !dark;
+  document.body.classList.toggle('lm', !dark);
+  this.textContent = dark ? '🌙' : '☀️';
+  if(dark){map.removeLayer(tLight);tDark.addTo(map);}
+  else    {map.removeLayer(tDark); tLight.addTo(map);}
+});
+
+// ── Sparkline ────────────────────────────────────────────────────────────────
+function buildSparkline(counts) {
+  var spark = document.getElementById('hc-spark');
+  spark.innerHTML = '';
+  var mx = Math.max.apply(null, counts);
+  for(var h=0;h<24;h++){
+    var bar = document.createElement('div');
+    bar.className = 'hc-bar' + (h === currentHour ? ' hc-act' : '');
+    bar.id = 'hc-b'+h;
+    bar.style.height = Math.max(3, Math.round((counts[h]/mx)*100))+'%';
+    spark.appendChild(bar);
+  }
+}
+
+function updateSparkline() {
+  for(var h=0;h<24;h++){
+    var b = document.getElementById('hc-b'+h);
+    if(b){ b.classList.toggle('hc-act', h === currentHour); }
+  }
+}
+
+// ── Widget update ─────────────────────────────────────────────────────────────
+function updateWidget() {
+  if(!heatData) return;
+  var dot   = document.getElementById('hw-dot');
+  var mode  = document.getElementById('hw-mode');
+  var hv    = document.getElementById('hw-hour-val');
+  var range = document.getElementById('hw-range');
+  var cv    = document.getElementById('hw-count-val');
+  var cs    = document.getElementById('hw-count-sub');
+  var fill  = document.getElementById('hw-bar-fill');
+  var pct   = document.getElementById('hw-pct');
+  var total = heatData.total;
+
+  if(currentHour === null) {
+    dot.style.background  = '#3a3f55';
+    mode.textContent      = 'ALL HOURS';
+    mode.style.color      = '';
+    hv.textContent        = 'All Hours';
+    range.textContent     = '2020–2024 · 5 years';
+    cv.textContent        = total.toLocaleString();
+    cv.style.color        = '#4f8ef7';
+    cs.textContent        = 'total incidents';
+    fill.style.width      = '100%';
+    pct.textContent       = '100%';
+  } else {
+    var h       = currentHour;
+    var count   = heatData.counts[h];
+    var sharePct = (count / total * 100).toFixed(1);
+    var barW    = (count / maxCount * 100).toFixed(0);
+
+    dot.style.background  = isPlaying ? '#4f8ef7' : '#3ecf8e';
+    mode.textContent      = isPlaying ? 'ANIMATING' : 'HORA ACTIVA';
+    mode.style.color      = isPlaying ? '#4f8ef7'  : '#3ecf8e';
+    hv.textContent        = 'Hora: '+HOUR_LABELS[h];
+    range.textContent     = HOUR_RANGE[h];
+    cv.textContent        = count.toLocaleString();
+    cv.style.color        = count >= maxCount * 0.8 ? '#e0883a'
+                          : count >= total/24 ? '#4f8ef7' : '#3ecf8e';
+    cs.textContent        = sharePct + '% del total diario';
+    fill.style.width      = barW + '%';
+    pct.textContent       = sharePct + '%';
+  }
+}
+
+// ── Hour controls ─────────────────────────────────────────────────────────────
+function setHour(h) {
+  currentHour = h;
+  document.getElementById('hour-slider').value = h;
+  document.getElementById('hc-label').innerHTML =
+    HOUR_LABELS[h] + '<small>' + (heatData.counts[h]/heatData.total*100).toFixed(1) + '% del total</small>';
+  document.getElementById('hour-reset').style.display = 'flex';
+  updateSparkline();
+  updateWidget();
+  if(heat && heatData) heat.setLatLngs(heatData.hours[h]);
+}
+
+function resetHour() {
+  stopPlay();
+  currentHour = null;
+  document.getElementById('hour-slider').value = 12;
+  document.getElementById('hc-label').innerHTML = 'All Hours<small>drag or press play</small>';
+  document.getElementById('hour-reset').style.display = 'none';
+  updateSparkline();
+  updateWidget();
+  if(heat && allHoursPts) heat.setLatLngs(allHoursPts);
+}
+
+function stopPlay() {
+  if(playInterval){ clearInterval(playInterval); playInterval = null; }
+  isPlaying = false;
+  var btn = document.getElementById('play-btn');
+  btn.textContent = '▶';
+  btn.classList.remove('playing');
+  updateWidget();
+}
+
+document.getElementById('play-btn').addEventListener('click', function(){
+  if(isPlaying) { stopPlay(); return; }
+  if(!heatData) return;
+  isPlaying = true;
+  this.textContent = '⏸';
+  this.classList.add('playing');
+  if(currentHour === null) currentHour = 0;
+  playInterval = setInterval(function(){
+    setHour((currentHour + 1) % 24);
+  }, 300);
+});
+
+document.getElementById('hour-slider').addEventListener('input', function(){
+  if(isPlaying) stopPlay();
+  setHour(parseInt(this.value, 10));
+});
+
+document.getElementById('hour-reset').addEventListener('click', resetHour);
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+fetch('/data/crime_points_hourly.json')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    heatData = d;
+    maxCount = Math.max.apply(null, d.counts);
+
+    // Build all-hours subsample (every 5th point from each hour ≈ 24k pts)
+    allHoursPts = [];
+    for(var h=0;h<24;h++){
+      var arr = d.hours[h];
+      for(var i=0;i<arr.length;i+=5) allHoursPts.push(arr[i]);
+    }
+
+    // Create heatmap layer
+    heat = L.heatLayer(allHoursPts, HEAT_OPTS).addTo(map);
+
+    // Build sparkline from real counts
+    buildSparkline(d.counts);
+
+    // Reveal widget + enable controls
+    updateWidget();
+    document.getElementById('hw').classList.add('ready');
+    document.getElementById('loading').style.display = 'none';
+  })
+  .catch(function(e){
+    document.getElementById('load-msg').textContent = 'Error loading data: ' + e.message;
+  });
+
+// ── Division boundary context layer ───────────────────────────────────────────
+fetch('/data/lapd_divisions_crimes.geojson')
+  .then(function(r){ return r.json(); })
+  .then(function(gj){
+    L.geoJSON(gj, {
+      style: function(){return{fillOpacity:0,color:'rgba(79,142,247,.3)',weight:1,opacity:1,dashArray:'4 3'};},
+      interactive: false,
+    }).addTo(map);
+  }).catch(function(){});
+</script>
+</body>
+</html>

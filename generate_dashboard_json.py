@@ -212,12 +212,14 @@ merged["_rain"] = merged["_rain"].apply(
 
 weather_out = []
 for _, r in merged.iterrows():
+    temp = round(float(r["_temp"]), 1) if pd.notna(r["_temp"]) else None
     weather_out.append({
-        "date":   str(r["date_str"]),
-        "year":   int(r["year"]),
-        "temp_f": round(float(r["_temp"]), 1) if pd.notna(r["_temp"]) else None,
-        "rain":   bool(r["_rain"]),
-        "crimes": int(r["crimes"]),
+        "date":    str(r["date_str"]),
+        "year":    int(r["year"]),
+        "temp":    temp,                          # WeatherChart XAxis dataKey="temp"
+        "crimes":  int(r["crimes"]),
+        "isHot":   bool(temp is not None and temp > 90),   # Cell opacity/radius
+        "isRainy": bool(r["_rain"]),              # Tooltip indicator
     })
 
 (OUT / "weather_daily.json").write_text(json.dumps(weather_out, indent=2))

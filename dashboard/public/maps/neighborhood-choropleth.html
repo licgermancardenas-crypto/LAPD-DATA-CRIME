@@ -67,6 +67,16 @@
   #loading p{color:var(--muted);font-size:13px}
   .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
+
+  .leaflet-tooltip.nb-tip{
+    background:rgba(10,12,18,.93)!important;border:1px solid rgba(79,142,247,.35)!important;
+    border-radius:8px!important;padding:6px 12px!important;color:#e8eaf0!important;
+    font-size:12px!important;font-weight:600!important;line-height:1.4;
+    box-shadow:0 4px 14px rgba(0,0,0,.35)!important;pointer-events:none!important;white-space:nowrap
+  }
+  .lm .leaflet-tooltip.nb-tip{
+    background:rgba(255,255,255,.97)!important;border-color:rgba(26,86,219,.3)!important;color:#1a1d27!important
+  }
 </style>
 </head>
 <body>
@@ -279,6 +289,11 @@ fetch('/data/neighborhood_crimes.geojson')
       onEachFeature: function(feat, layer){
         var p = feat.properties;
         layer.bindPopup(buildPopup(p), {maxWidth:320, closeButton:true});
+        layer.bindTooltip(
+          '<b>' + p.name + '</b><br><span style="font-size:11px;opacity:.75">' +
+          (p.crimes_per_1000 ? Math.round(p.crimes_per_1000) + ' crimes/1k' : '') + '</span>',
+          {sticky:true, direction:'top', className:'nb-tip', opacity:1}
+        );
         layer.on({
           mouseover: function(e){e.target.setStyle({fillOpacity:.90,weight:2,color:'#4f8ef7'});e.target.bringToFront();},
           mouseout:  function(e){geoLayer.resetStyle(e.target);}

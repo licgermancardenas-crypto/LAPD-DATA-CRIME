@@ -74,6 +74,17 @@
   #hint{position:fixed;bottom:36px;left:12px;background:var(--surface);
         border:1px solid var(--border);border-radius:6px;padding:5px 11px;
         font-size:11px;color:var(--muted);z-index:1000}
+
+  /* ── Division name labels ── */
+  .leaflet-tooltip.div-lab{
+    background:transparent!important;border:none!important;box-shadow:none!important;
+    color:#ffffff;font-size:10px;font-weight:700;letter-spacing:.05em;text-align:center;
+    text-shadow:0 1px 4px rgba(0,0,0,.95),0 0 10px rgba(0,0,0,.8);
+    pointer-events:none!important;white-space:nowrap;padding:0!important;line-height:1.3
+  }
+  .lm .leaflet-tooltip.div-lab{
+    color:#0f1117;text-shadow:0 1px 3px rgba(255,255,255,.9),0 0 8px rgba(255,255,255,.6)
+  }
 </style>
 </head>
 <body>
@@ -216,6 +227,7 @@ fetch('/data/lapd_divisions_crimes.geojson')
           '<div class="mini-bar-bg"><div class="mini-bar-fill" style="width:'+(p.norm*100)+'%;background:'+lerp(p.norm,S_CRIMES)+'"></div></div>';
 
         layer.bindPopup(html, {maxWidth:270, closeButton:true});
+        layer.bindTooltip(p.name, {permanent:true, direction:'center', className:'div-lab', opacity:1});
 
         layer.on({
           mouseover: function(e) {

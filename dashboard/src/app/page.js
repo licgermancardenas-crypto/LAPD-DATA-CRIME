@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Shell              from '@/components/Shell';
 import KpiCard            from '@/components/KpiCard';
@@ -14,6 +14,7 @@ import ReportingLagChart  from '@/components/ReportingLagChart';
 import VictimChart        from '@/components/VictimChart';
 import PremiseChart       from '@/components/PremiseChart';
 import FilterBar          from '@/components/FilterBar';
+import ChartSkeleton      from '@/components/ChartSkeleton';
 import { computeCategories, computeDivisions, computeVictims } from '@/lib/filterUtils';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
@@ -58,6 +59,15 @@ function LoadingScreen() {
       </div>
       <p style={{ fontSize: 12, color: '#7b82a0' }}>Loading{'.'.repeat(dot + 1)}</p>
       <style>{`@keyframes loadBar{0%{width:0%;margin-left:0%}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}`}</style>
+    </div>
+  );
+}
+
+function ChartWrapper({ pending, minHeight = 240, children }) {
+  return (
+    <div style={{ position: 'relative', minHeight }}>
+      {children}
+      <ChartSkeleton visible={pending} />
     </div>
   );
 }
@@ -110,6 +120,8 @@ export default function Home() {
   const [filters,    setFilters]    = useState({
     area: null, category: null, ageGroup: null, timeSlot: null,
   });
+  const [isFiltering, setIsFiltering] = useState(false);
+  const filtersReady = useRef(false);
 
   useEffect(() => {
     const b = '/data';
@@ -143,6 +155,14 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
+
+  // ── Skeleton trigger on filter/part change ─────────────────────────────
+  useEffect(() => {
+    if (!filtersReady.current) { filtersReady.current = true; return; }
+    setIsFiltering(true);
+    const t = setTimeout(() => setIsFiltering(false), 380);
+    return () => clearTimeout(t);
+  }, [filters, activePart]);
 
   // ── Cross-filter computed data ──────────────────────────────────────────
   const computedCategories = useMemo(() => {
@@ -324,7 +344,9 @@ export default function Home() {
             <KpiCard label="2024 vs 2023"    value={summary.crimes_2024.toLocaleString()} trend={summary.yoy_2024_vs_2023} sub="Year-over-year change" color="#e0883a" icon="📈" />
             <KpiCard label="Reporting Lag"   value={`${summary.avg_reporting_lag}d`} sub="Avg days: crime occurred → report filed" color="#a78bfa" icon="🕐" />
           </div>
-          <MonthlyTrend data={monthly} activePart={activePart} />
+          <ChartWrapper pending={isFiltering} minHeight={280}>
+            <MonthlyTrend data={monthly} activePart={activePart} />
+          </ChartWrapper>
           <div style={{ marginTop: 20 }}>
             <ReportingLagChart data={monthly} />
           </div>
@@ -345,19 +367,23 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <DivisionBar
-              data={computedDivisions}
-              activePart={activePart}
-              filters={filters}
-              onFilter={handleFilter}
-            />
+            <ChartWrapper pending={isFiltering} minHeight={420}>
+              <DivisionBar
+                data={computedDivisions}
+                activePart={activePart}
+                filters={filters}
+                onFilter={handleFilter}
+              />
+            </ChartWrapper>
           )}
         </Section>
 
         {/* TEMPORAL */}
         <Section id="temporal">
           <SectionHeader title="Temporal Patterns" sub="When do crimes occur? Hour of day vs day of week — all 5 years combined" badge="168 cells" />
-          <HourHeatmap data={hourly} filters={filters} onFilter={handleFilter} />
+          <ChartWrapper pending={isFiltering} minHeight={320}>
+            <HourHeatmap data={hourly} filters={filters} onFilter={handleFilter} />
+          </ChartWrapper>
         </Section>
 
         {/* CATEGORIES */}
@@ -367,14 +393,18 @@ export default function Home() {
             sub="Clasificación UCR Part 1 (graves FBI) y Part 2 (menores) — 18 categorías · click en barra para cross-filtrar el dashboard"
             badge="18 categorías"
           />
-          <CategoryChart
-            data={computedCategories}
-            activePart={activePart}
-            filters={filters}
-            onFilter={handleFilter}
-          />
+          <ChartWrapper pending={isFiltering} minHeight={340}>
+            <CategoryChart
+              data={computedCategories}
+              activePart={activePart}
+              filters={filters}
+              onFilter={handleFilter}
+            />
+          </ChartWrapper>
           <div style={{ marginTop: 20 }}>
-            <PremiseChart data={premises} activePart={activePart} />
+            <ChartWrapper pending={isFiltering} minHeight={260}>
+              <PremiseChart data={premises} activePart={activePart} />
+            </ChartWrapper>
           </div>
         </Section>
 
@@ -385,11 +415,13 @@ export default function Home() {
             sub="Who gets victimized? Age, gender, and ethnic breakdown — cross-filterable by crime category and age group"
             badge="735k victims"
           />
-          <VictimChart
-            data={computedVictims}
-            filters={filters}
-            onFilter={handleFilter}
-          />
+          <ChartWrapper pending={isFiltering} minHeight={460}>
+            <VictimChart
+              data={computedVictims}
+              filters={filters}
+              onFilter={handleFilter}
+            />
+          </ChartWrapper>
         </Section>
 
         {/* CONTEXT */}

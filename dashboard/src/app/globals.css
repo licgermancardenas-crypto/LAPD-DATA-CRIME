@@ -53,6 +53,23 @@ select:focus, input:focus {
   box-shadow: 0 0 0 2px rgba(76,201,240,.3);
 }
 
+/* ── Chart skeleton / shimmer loader ────────────────────────────────────── */
+@keyframes sk-wave {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.sk-shimmer {
+  background: linear-gradient(
+    90deg,
+    #1a1f35 25%,
+    #2e3660 50%,
+    #1a1f35 75%
+  );
+  background-size: 200% 100%;
+  animation: sk-wave 1.8s ease-in-out infinite;
+}
+
 /* Recharts tooltip */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   background: #1a1d27 !important;

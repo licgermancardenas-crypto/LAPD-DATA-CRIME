@@ -1,11 +1,11 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
+import Shell from '@/components/Shell';
 
 const MAPS = [
   {
     id: 'divisions',
-    label: 'Division Choropleth',
+    label: 'Division Map',
     icon: '🗺️',
     src: '/lapd-map.html',
     title: 'Crime Volume by LAPD Division',
@@ -18,14 +18,14 @@ const MAPS = [
   },
   {
     id: 'per1000',
-    label: 'Crime per 1,000 Inhabitants',
+    label: 'Crime / 1,000',
     icon: '👥',
     src: '/maps/tract-choropleth.html',
     title: 'Relative Crime Risk by Census Tract',
     badge: '~2,500 Tracts',
     insight: [
       { icon: '🔎', text: 'Normalising by population exposes true hotspots: some tracts with low absolute crime numbers have very high per-capita risk due to sparse population.' },
-      { icon: '📍', text: 'Downtown and South LA tracts show the highest density, but certain industrial/commercial tracts with near-zero residents show extreme ratios — a data artefact worth noting.' },
+      { icon: '📍', text: 'Downtown and South LA tracts show the highest density, but certain industrial/commercial tracts with near-zero residents show extreme ratios.' },
       { icon: '🏘️', text: 'This layer enables equity analysis: identifying communities that disproportionately bear crime risk relative to their size.' },
     ],
   },
@@ -44,33 +44,33 @@ const MAPS = [
   },
   {
     id: 'neighborhoods',
-    label: 'Neighborhood Spotlight',
+    label: 'Neighborhoods',
     icon: '🏘️',
     src: '/maps/neighborhood-choropleth.html',
     title: '114 LA Times Neighborhoods — Crime & Socioeconomics',
     badge: '114 Neighborhoods',
     insight: [
-      { icon: '🏙️', text: 'Downtown leads with 71,808 crimes (2020–2024) — over 1,000 per 1,000 inhabitants. Hollywood, Westlake and Koreatown follow. Toggle "Crimes/1,000" to see relative risk independent of neighborhood size.' },
+      { icon: '🏙️', text: 'Downtown leads with 71,808 crimes (2020–2024) — over 1,000 per 1,000 inhabitants. Hollywood, Westlake and Koreatown follow.' },
       { icon: '🏢', text: 'Blue dots mark the 21 LAPD station locations. Dashed blue lines show division boundaries. Both overlays can be toggled with the controls in the top-right corner.' },
       { icon: '🔗', text: 'Each neighborhood popup cross-references its LAPD division clearance rate and top crime category — linking street-level geography to operational police data.' },
     ],
   },
   {
     id: 'mortality',
-    label: 'Business Stability',
+    label: 'Biz Stability',
     icon: '📉',
     src: '/maps/mortality-choropleth.html',
     title: 'Business Mortality & Crime — Stability Quadrant Analysis',
     badge: '544k Businesses · 4 Quadrants',
     insight: [
       { icon: '🟥', text: '"Stressed" neighborhoods (high crime + low stability): Hollywood, Venice, Vermont-Slauson. High churn despite — or because of — sustained criminal pressure on commercial activity.' },
-      { icon: '🟠', text: '"Resilient" neighborhoods: Chinatown, Wilmington, Rancho Park — anchor businesses (15+ years) persist despite elevated crime. Commercial roots pre-date the crime pattern.' },
-      { icon: '📊', text: 'Counterintuitive: 2017 was LA\'s peak closure year (53,665 closures) — not COVID 2020 (29,145). The 2020 dip reflects deferred closures, not resilience. Sparkline visible in every popup.' },
+      { icon: '🟠', text: '"Resilient" neighborhoods: Chinatown, Wilmington, Rancho Park — anchor businesses (15+ years) persist despite elevated crime.' },
+      { icon: '📊', text: 'Counterintuitive: 2017 was LA\'s peak closure year (53,665 closures) — not COVID 2020 (29,145). The 2020 dip reflects deferred closures, not resilience.' },
     ],
   },
   {
     id: 'business',
-    label: 'Business & Crime',
+    label: 'Biz & Crime',
     icon: '🏪',
     src: '/maps/business-choropleth.html',
     title: 'Active Businesses vs. Crime by Neighborhood',
@@ -83,43 +83,18 @@ const MAPS = [
   },
 ];
 
-const S = {
-  page:     { minHeight: '100vh', background: '#0f1117', color: '#e8eaf0', fontFamily: 'Inter,system-ui,sans-serif' },
-  header:   { background: 'rgba(15,17,23,.96)', borderBottom: '1px solid #2a2d3a', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 50, padding: '0 24px' },
-  hInner:   { maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 58 },
-  brand:    { display: 'flex', alignItems: 'center', gap: 10 },
-  dot:      { width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg,#4f8ef7,#7c5cbf)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 },
-  back:     { fontSize: 13, color: '#7b82a0', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 7, border: '1px solid #2a2d3a', transition: 'all .15s' },
-  wrap:     { maxWidth: 1200, margin: '0 auto', padding: '32px 24px 80px' },
-  pageTitle:{ fontSize: 11, color: '#4f8ef7', fontWeight: 700, letterSpacing: '0.12em', marginBottom: 6 },
-  h1:       { fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 6 },
-  sub:      { color: '#7b82a0', fontSize: 14, marginBottom: 28 },
-  tabs:     { display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' },
-  card:     { background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 16, overflow: 'hidden' },
-  mapWrap:  { width: '100%', lineHeight: 0, position: 'relative' },
-  iframe:   { width: '100%', height: 580, border: 'none', display: 'block' },
-  analysis: { padding: '24px 28px' },
-  aHeader:  { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 },
-  aTitle:   { fontSize: 17, fontWeight: 700, color: '#e8eaf0' },
-  badge:    { fontSize: 11, color: '#4f8ef7', background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)', borderRadius: 6, padding: '3px 10px', fontWeight: 600 },
-  insights: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 },
-  insightCard: { background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 10, padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' },
-  insightIcon: { fontSize: 18, flexShrink: 0, marginTop: 1 },
-  insightText: { fontSize: 13, color: '#7b82a0', lineHeight: 1.55 },
-};
-
-function Tab({ map, active, onClick }) {
+function MapTab({ map, active, onClick }) {
   return (
     <button onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 8,
-      padding: '9px 18px', borderRadius: 10,
+      display: 'flex', alignItems: 'center', gap: 7,
+      padding: '8px 16px', borderRadius: 9,
       border: active ? '1px solid rgba(79,142,247,.4)' : '1px solid #2a2d3a',
       background: active ? 'rgba(79,142,247,.1)' : '#1a1d27',
       color: active ? '#4f8ef7' : '#7b82a0',
-      fontSize: 13, fontWeight: active ? 600 : 400,
-      cursor: 'pointer', transition: 'all .15s',
+      fontSize: 12, fontWeight: active ? 600 : 400,
+      cursor: 'pointer', transition: 'all .15s', whiteSpace: 'nowrap',
     }}>
-      <span style={{ fontSize: 16 }}>{map.icon}</span>
+      <span style={{ fontSize: 15 }}>{map.icon}</span>
       {map.label}
     </button>
   );
@@ -130,60 +105,86 @@ export default function GeoPage() {
   const current = MAPS.find(m => m.id === active);
 
   return (
-    <div style={S.page}>
-      {/* Header */}
-      <header style={S.header}>
-        <div style={S.hInner}>
-          <div style={S.brand}>
-            <div style={S.dot}>🏛️</div>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#e8eaf0' }}>LAPD</span>
-            <span style={{ fontSize: 14, color: '#7b82a0' }}>Crime Dashboard</span>
-            <span style={{ fontSize: 10, color: '#4f8ef7', background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)', borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>GEO</span>
-          </div>
-          <Link href="/" style={S.back}>← Dashboard</Link>
+    <Shell geoActiveTab={active}>
+
+      {/* ── Page top bar ─────────────────────────────────────────────────── */}
+      <div style={{
+        padding: '22px 32px 0',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 12,
+      }}>
+        <div>
+          <p style={{ fontSize: 11, color: '#4f8ef7', fontWeight: 700, letterSpacing: '.1em', marginBottom: 5 }}>
+            GEOSPATIAL ANALYSIS
+          </p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+            Crime Cartography <span style={{ color: '#4f8ef7' }}>2020–2024</span>
+          </h1>
         </div>
-      </header>
-
-      <div style={S.wrap}>
-        {/* Page title */}
-        <p style={S.pageTitle}>GEOSPATIAL ANALYSIS</p>
-        <h1 style={S.h1}>Crime Cartography<span style={{ color: '#4f8ef7' }}> 2020–2024</span></h1>
-        <p style={S.sub}>Multi-layer geographic analysis of crime patterns across Los Angeles</p>
-
-        {/* Map tabs */}
-        <div style={S.tabs}>
-          {MAPS.map(m => (
-            <Tab key={m.id} map={m} active={active === m.id} onClick={() => setActive(m.id)} />
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            fontSize: 11, color: '#4f8ef7', fontWeight: 700,
+            background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
+            borderRadius: 6, padding: '4px 11px',
+          }}>6 Layers</span>
+          <span style={{
+            fontSize: 11, color: '#7b82a0',
+            background: '#1a1d27', border: '1px solid #2a2d3a',
+            borderRadius: 6, padding: '4px 11px',
+          }}>114 Neighborhoods</span>
         </div>
+      </div>
 
-        {/* Map card */}
-        <div style={S.card}>
-          <div style={S.mapWrap}>
+      {/* ── Map selector tabs ─────────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', gap: 7, padding: '18px 32px 0',
+        overflowX: 'auto', scrollbarWidth: 'none',
+        borderBottom: '1px solid #1e2030',
+        paddingBottom: 18,
+      }}>
+        {MAPS.map(m => (
+          <MapTab key={m.id} map={m} active={active === m.id} onClick={() => setActive(m.id)} />
+        ))}
+      </div>
+
+      {/* ── Map content ──────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, padding: '24px 32px 40px', maxWidth: 1160, width: '100%' }}>
+        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 16, overflow: 'hidden' }}>
+
+          {/* Map iframe (all pre-loaded, toggled via display) */}
+          <div style={{ width: '100%', lineHeight: 0, position: 'relative' }}>
             {MAPS.map(m => (
               <div key={m.id} style={{ display: m.id === active ? 'block' : 'none' }}>
-                <iframe src={m.src} style={S.iframe} title={m.label} loading="lazy" />
+                <iframe src={m.src} style={{ width: '100%', height: 560, border: 'none', display: 'block' }} title={m.label} loading="lazy" />
               </div>
             ))}
           </div>
 
           {/* Analysis panel */}
-          <div style={S.analysis}>
-            <div style={S.aHeader}>
-              <p style={S.aTitle}>{current.title}</p>
-              <span style={S.badge}>{current.badge}</span>
+          <div style={{ padding: '20px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+              <p style={{ fontSize: 16, fontWeight: 700, color: '#e8eaf0' }}>{current.title}</p>
+              <span style={{
+                fontSize: 11, color: '#4f8ef7',
+                background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
+                borderRadius: 6, padding: '3px 10px', fontWeight: 600,
+              }}>{current.badge}</span>
             </div>
-            <div style={S.insights}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 10 }}>
               {current.insight.map((ins, i) => (
-                <div key={i} style={S.insightCard}>
-                  <span style={S.insightIcon}>{ins.icon}</span>
-                  <span style={S.insightText}>{ins.text}</span>
+                <div key={i} style={{
+                  background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 10,
+                  padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start',
+                }}>
+                  <span style={{ fontSize: 17, flexShrink: 0, marginTop: 1 }}>{ins.icon}</span>
+                  <span style={{ fontSize: 12, color: '#7b82a0', lineHeight: 1.55 }}>{ins.text}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+    </Shell>
   );
 }

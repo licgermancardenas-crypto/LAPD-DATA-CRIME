@@ -90,7 +90,8 @@ print("\n[2/6] monthly.json ...")
 # ── Load fact_crimes ONCE — lag + part splits + premises ─────────────────
 print("  Loading fact_crimes (161 MB) for lag, Part 1/2 splits, premises...")
 fc_raw = pd.read_csv(DATA / "fact_crimes.csv",
-                     usecols=["date_key", "days_to_report", "cat_id", "cleared", "premises_group"])
+                     usecols=["date_key", "days_to_report", "cat_id", "cleared",
+                               "premises_group", "age_group"])
 fc_raw["date_key"] = fc_raw["date_key"].astype(str)
 fc_raw["year"]  = fc_raw["date_key"].str[:4].astype(int)
 fc_raw["month"] = fc_raw["date_key"].str[4:6].astype(int)
@@ -422,15 +423,25 @@ for _, r in cat_sex_pivot.iterrows():
         "female_pct": round(female / total * 100, 1) if total else 0,
     })
 
+# ── No-victim records (age_group is null = business/vehicle/institutional) ──
+total_crimes_fc  = len(fc_raw)
+no_victim_count  = int(fc_raw["age_group"].isna().sum())
+no_victim_pct    = round(no_victim_count / total_crimes_fc * 100, 1)
+
 victims_out = {
-    "by_sex":     by_sex,
-    "by_age":     by_age,
-    "by_descent": by_descent,
-    "by_cat_sex": by_cat_sex,
+    "total_crimes":    total_crimes_fc,
+    "victim_count":    total_crimes_fc - no_victim_count,
+    "no_victim_count": no_victim_count,
+    "no_victim_pct":   no_victim_pct,
+    "by_sex":          by_sex,
+    "by_age":          by_age,
+    "by_descent":      by_descent,
+    "by_cat_sex":      by_cat_sex,
 }
 
 (OUT / "victims.json").write_text(json.dumps(victims_out, indent=2))
 print(f"  by_sex={len(by_sex)}  by_age={len(by_age)}  by_descent={len(by_descent)}  by_cat_sex={len(by_cat_sex)}")
+print(f"  no_victim={no_victim_count:,} ({no_victim_pct}%) <- sin datos de victima (empresas/vehiculos)")
 for d in by_descent:
     print(f"    {d['descent']:<18} {d['crimes']:>7,}  vio={d['violent_pct']}%")
 

@@ -1,4 +1,8 @@
 {
+  "total_crimes": 1004894,
+  "victim_count": 735579,
+  "no_victim_count": 269315,
+  "no_victim_pct": 26.8,
   "by_sex": [
     {
       "sex": "Male",

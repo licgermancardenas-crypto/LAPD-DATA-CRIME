@@ -287,7 +287,7 @@ fetch('/data/neighborhood_business_enriched.geojson')
         layer.bindTooltip(
           '<b>'+p.name+'</b><br><span style="font-size:11px;opacity:.75">'+
           (p.biz_count?Number(p.biz_count).toLocaleString()+' businesses':'')+' · '+
-          (p.crimes_per_biz?p.crimes_per_biz.toFixed(1)+' crimes/biz':'')+'</span>',
+          (p.crimes_per_biz?Number(p.crimes_per_biz).toFixed(1)+' crimes/biz':'')+'</span>',
           {sticky:true,direction:'top',className:'nb-tip',opacity:1}
         );
         layer.on({

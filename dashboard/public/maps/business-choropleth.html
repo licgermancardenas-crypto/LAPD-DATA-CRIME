@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<style>
+  :root{--bg:#0a0c12;--surface:rgba(10,12,18,.92);--surface-s:#1a1d27;--border:#2a2d3a;--text:#e8eaf0;--muted:#7b82a0;--popup-bg:rgba(10,12,18,.97)}
+  .lm{--bg:#eef0f4;--surface:rgba(255,255,255,.95);--surface-s:#fff;--border:#d4d8e2;--text:#1a1d27;--muted:#6b7280;--popup-bg:rgba(255,255,255,.98)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);transition:background .25s}
+  #map{position:absolute;top:0;left:0;right:0;bottom:0}
+
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2)!important}
+  .leaflet-control-attribution{background:var(--surface)!important;color:var(--muted)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:#4f8ef7!important}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;border:1px solid var(--border)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.3)!important;color:var(--text)!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important}
+  .leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;padding:6px 8px!important}
+  .leaflet-popup-content{margin:14px 16px!important;min-width:250px}
+
+  /* Popup */
+  .p-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+  .p-title{font-weight:700;font-size:15px;color:var(--text);flex:1}
+  .p-ranks{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+  .p-rank{font-size:10px;font-weight:700;color:#4f8ef7;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3);border-radius:5px;padding:1px 7px;white-space:nowrap}
+  .p-rank.crime{color:#e07830;background:rgba(224,120,48,.1);border-color:rgba(224,120,48,.3)}
+  .p-section{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;margin:10px 0 5px;text-transform:uppercase}
+  .p-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+  .p-label{font-size:11px;color:var(--muted)}
+  .p-val{font-size:12px;font-weight:600}
+  .p-sep{height:1px;background:var(--border);margin:8px 0}
+  .p-bar-bg{height:4px;border-radius:2px;background:var(--surface-s);overflow:hidden;margin-top:2px}
+  .p-bar-fill{height:100%;border-radius:2px}
+
+  /* Sector breakdown */
+  .sector-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:4px}
+  .sector-item{display:flex;align-items:center;gap:5px}
+  .sector-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .sector-name{font-size:10px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sector-cnt{font-size:10px;font-weight:600;color:var(--text);white-space:nowrap}
+
+  /* Toolbar */
+  #toolbar{position:fixed;top:12px;left:12px;z-index:1000;display:flex;flex-direction:column;gap:5px}
+  .metric-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left}
+  .metric-btn.active{border-color:rgba(79,142,247,.5);background:rgba(79,142,247,.12);color:#4f8ef7;font-weight:600}
+
+  /* Controls */
+  #controls{position:fixed;top:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  .ctrl-btn{padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .ctrl-btn.on{border-color:rgba(79,142,247,.4);color:#4f8ef7;background:rgba(79,142,247,.08)}
+  #tt{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0}
+
+  /* Legend */
+  #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;z-index:1000;min-width:160px}
+  #leg-title{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+
+  /* Loading */
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2000}
+  #loading p{color:var(--muted);font-size:13px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="loading"><div class="spinner"></div><p>Loading business data...</p></div>
+
+<div id="toolbar">
+  <button class="metric-btn active" data-metric="biz_count">Active Businesses</button>
+  <button class="metric-btn" data-metric="biz_rate">Businesses / 1,000</button>
+  <button class="metric-btn" data-metric="crimes_per_biz">Crimes per Business</button>
+  <button class="metric-btn" data-metric="crime_abs">Total Crimes</button>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="tt">🌙</button>
+  <button class="ctrl-btn on" id="stn-toggle">🏢 Stations</button>
+  <button class="ctrl-btn on" id="div-toggle">〰️ Divisions</button>
+</div>
+
+<div id="legend">
+  <div id="leg-title">ACTIVE BUSINESSES</div>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span>Low</span><span>High</span></div>
+</div>
+
+<script>
+// ── Color scales ───────────────────────────────────────────────────────────
+// Business density: navy → teal → gold
+var S_BIZ   = [[20,60,120],[30,120,180],[40,180,160],[100,210,120],[220,200,60]];
+// Crimes per business: green → orange → red
+var S_RISK  = [[40,200,120],[79,207,142],[224,200,90],[224,120,50],[200,50,50]];
+
+function lerp(stops, t) {
+  t = Math.max(0, Math.min(1, t));
+  var n=stops.length-1, s=t*n, i=Math.min(Math.floor(s),n-1), f=s-i;
+  var a=stops[i], b=stops[i+1]||stops[n];
+  return 'rgb('+Math.round(a[0]+f*(b[0]-a[0]))+','+Math.round(a[1]+f*(b[1]-a[1]))+','+Math.round(a[2]+f*(b[2]-a[2]))+')';
+}
+
+// ── Sector colors ──────────────────────────────────────────────────────────
+var SEC_COLOR = {
+  'Food & Restaurants':    '#f59e0b',
+  'Retail':                '#3b82f6',
+  'Real Estate':           '#8b5cf6',
+  'Professional Services': '#06b6d4',
+  'Construction':          '#f97316',
+  'Entertainment':         '#ec4899',
+  'Personal Services':     '#10b981',
+  'Health':                '#ef4444',
+  'Education':             '#84cc16',
+  'Other':                 '#6b7280',
+};
+var SEC_KEYS = ['biz_food_restaurants','biz_retail','biz_real_estate',
+                'biz_professional_services','biz_construction','biz_entertainment',
+                'biz_personal_services','biz_health','biz_education','biz_other'];
+var SEC_NAMES = ['Food & Restaurants','Retail','Real Estate','Professional Services',
+                 'Construction','Entertainment','Personal Services','Health','Education','Other'];
+
+// ── Metric config ──────────────────────────────────────────────────────────
+var METRICS = {
+  biz_count:     {label:'ACTIVE BUSINESSES',    normKey:'norm_biz_count',   scale:S_BIZ},
+  biz_rate:      {label:'BUSINESSES / 1,000',   normKey:'norm_biz_rate',    scale:S_BIZ},
+  crimes_per_biz:{label:'CRIMES PER BUSINESS',  normKey:'norm_crimes_pbiz', scale:S_RISK},
+  crime_abs:     {label:'TOTAL CRIMES',          normKey:'norm_crime_abs',   scale:S_RISK},
+};
+
+var metric = 'biz_count';
+var dark = true;
+var geoLayer, stnLayer, divLayer;
+var showStations = true, showDivisions = true;
+
+// ── Map ────────────────────────────────────────────────────────────────────
+var map = L.map('map',{center:[34.05,-118.35],zoom:11,zoomControl:false,attributionControl:true});
+setTimeout(function(){map.invalidateSize();},100);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+var tOpts={subdomains:'abcd',maxZoom:19,attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+// ── Legend ─────────────────────────────────────────────────────────────────
+function buildLegend(m) {
+  var cfg = METRICS[m];
+  var lb = document.getElementById('leg-bar');
+  lb.innerHTML = '';
+  for(var k=0;k<28;k++){var d=document.createElement('div');d.style.flex='1';d.style.background=lerp(cfg.scale,k/27);lb.appendChild(d);}
+  document.getElementById('leg-title').textContent = cfg.label;
+}
+buildLegend(metric);
+
+// ── Style ──────────────────────────────────────────────────────────────────
+function fStyle(f) {
+  var p=f.properties, cfg=METRICS[metric];
+  var t=p[cfg.normKey]||0;
+  return{fillColor:lerp(cfg.scale,t),fillOpacity:.72,color:dark?'#0a0c12':'#b0b6c8',weight:.8,opacity:.9};
+}
+
+// ── Popup ──────────────────────────────────────────────────────────────────
+function fmtNum(v,d){return Number(v||0).toFixed(d!=null?d:0);}
+function fmtUSD(v){return '$'+Number(v||0).toLocaleString('en-US');}
+function bar(pct,color){return '<div class="p-bar-bg"><div class="p-bar-fill" style="width:'+Math.min(pct||0,100)+'%;background:'+color+'"></div></div>';}
+
+function buildPopup(p) {
+  var bizColor   = lerp(S_BIZ,  p.norm_biz_count||0);
+  var rateColor  = lerp(S_BIZ,  p.norm_biz_rate||0);
+  var crimeColor = lerp(S_RISK, p.norm_crime_abs||0);
+  var cpbColor   = lerp(S_RISK, p.norm_crimes_pbiz||0);
+
+  // Sector breakdown — sorted by count descending
+  var sectors = SEC_KEYS.map(function(k,i){return{name:SEC_NAMES[i],count:p[k]||0,color:SEC_COLOR[SEC_NAMES[i]]};});
+  sectors.sort(function(a,b){return b.count-a.count;});
+  var totalSec = sectors.reduce(function(s,x){return s+x.count;},0)||1;
+  var secRows = sectors.slice(0,8).map(function(s){
+    return '<div class="sector-item">'+
+      '<div class="sector-dot" style="background:'+s.color+'"></div>'+
+      '<span class="sector-name">'+s.name+'</span>'+
+      '<span class="sector-cnt">'+s.count.toLocaleString()+'</span>'+
+    '</div>';
+  }).join('');
+
+  return (
+    '<div class="p-head">'+
+      '<span class="p-title">'+p.name+'</span>'+
+      '<div class="p-ranks">'+
+        '<span class="p-rank">#'+p.biz_rank+' bizs</span>'+
+        '<span class="p-rank crime">#'+p.crime_rank+' crimes</span>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="p-section">Business Activity</div>'+
+    '<div class="p-row"><span class="p-label">Active businesses (2026)</span>'+
+      '<span class="p-val" style="color:'+bizColor+'">'+Number(p.biz_count||0).toLocaleString()+'</span></div>'+
+    bar((p.norm_biz_count||0)*100, bizColor)+
+    '<div class="p-row" style="margin-top:6px"><span class="p-label">Businesses per 1,000 inhab.</span>'+
+      '<span class="p-val" style="color:'+rateColor+'">'+fmtNum(p.biz_per_1000,1)+'</span></div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Sector Breakdown</div>'+
+    '<div class="sector-grid">'+secRows+'</div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Crime × Business Cross</div>'+
+    '<div class="p-row"><span class="p-label">Crimes per active business</span>'+
+      '<span class="p-val" style="color:'+cpbColor+'">'+(p.crimes_per_biz ? fmtNum(p.crimes_per_biz,2) : 'N/A')+'</span></div>'+
+    bar((p.norm_crimes_pbiz||0)*100, cpbColor)+
+    '<div class="p-row" style="margin-top:6px"><span class="p-label">Total crimes (2020–2024)</span>'+
+      '<span class="p-val" style="color:'+crimeColor+'">'+Number(p.crime_count||0).toLocaleString()+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Crimes per 1,000 inhab.</span>'+
+      '<span class="p-val">'+fmtNum(p.crimes_per_1000,1)+'</span></div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Division & Socioeconomic</div>'+
+    '<div class="p-row"><span class="p-label">LAPD Division</span><span class="p-val">'+(p.division||'N/A')+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Median household income</span><span class="p-val">'+fmtUSD(p.median_income)+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Poverty rate</span><span class="p-val">'+fmtNum(p.poverty_rate,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">Population</span><span class="p-val">'+Number(p.population||0).toLocaleString()+'</span></div>'
+  );
+}
+
+// ── Toolbar ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.metric-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    metric=this.dataset.metric;
+    document.querySelectorAll('.metric-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    buildLegend(metric);
+    if(geoLayer) geoLayer.setStyle(fStyle);
+  });
+});
+
+// ── Theme toggle ───────────────────────────────────────────────────────────
+document.getElementById('tt').addEventListener('click',function(){
+  dark=!dark;
+  document.body.classList.toggle('lm',!dark);
+  this.textContent=dark?'🌙':'☀️';
+  if(dark){map.removeLayer(tLight);tDark.addTo(map);}
+  else{map.removeLayer(tDark);tLight.addTo(map);}
+  if(geoLayer) geoLayer.setStyle(fStyle);
+  if(divLayer) divLayer.setStyle(divStyle());
+});
+
+document.getElementById('stn-toggle').addEventListener('click',function(){
+  showStations=!showStations;this.classList.toggle('on',showStations);
+  if(!stnLayer) return;
+  if(showStations) stnLayer.addTo(map); else map.removeLayer(stnLayer);
+});
+document.getElementById('div-toggle').addEventListener('click',function(){
+  showDivisions=!showDivisions;this.classList.toggle('on',showDivisions);
+  if(!divLayer) return;
+  if(showDivisions) divLayer.addTo(map); else map.removeLayer(divLayer);
+});
+
+function divStyle(){return{fillOpacity:0,color:dark?'rgba(79,142,247,.5)':'rgba(26,86,219,.5)',weight:2,opacity:1,dashArray:'5,4'};}
+
+var stnIcon=L.divIcon({html:'<div style="width:12px;height:12px;background:#4f8ef7;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 8px rgba(79,142,247,.7)"></div>',className:'',iconSize:[12,12],iconAnchor:[6,6]});
+
+// ── Load data ──────────────────────────────────────────────────────────────
+var loaded=0;
+function tick(){loaded++;if(loaded===3)document.getElementById('loading').style.display='none';}
+
+fetch('/data/neighborhood_business_enriched.geojson')
+  .then(function(r){if(!r.ok)throw new Error('Data not found');return r.json();})
+  .then(function(gj){
+    geoLayer=L.geoJSON(gj,{
+      style:fStyle,
+      onEachFeature:function(feat,layer){
+        layer.bindPopup(buildPopup(feat.properties),{maxWidth:340,closeButton:true});
+        layer.on({
+          mouseover:function(e){e.target.setStyle({fillOpacity:.90,weight:2,color:'#4f8ef7'});e.target.bringToFront();},
+          mouseout: function(e){geoLayer.resetStyle(e.target);}
+        });
+      }
+    }).addTo(map);
+    tick();
+  })
+  .catch(function(e){document.getElementById('loading').innerHTML='<p style="color:#e05252;text-align:center;padding:24px">'+e.message+'</p>';});
+
+fetch('/data/lapd_divisions_crimes.geojson')
+  .then(function(r){return r.json();})
+  .then(function(gj){
+    divLayer=L.geoJSON(gj,{style:divStyle,onEachFeature:function(feat,layer){
+      var p=feat.properties;
+      layer.bindTooltip('<b>'+p.name+' DIVISION</b><br>'+Number(p.total_crimes).toLocaleString()+' crimes | '+p.clearance+'% clearance',{sticky:true,direction:'top'});
+    }});
+    if(showDivisions)divLayer.addTo(map);
+    tick();
+  }).catch(function(){tick();});
+
+fetch('/data/lapd_stations.geojson')
+  .then(function(r){return r.json();})
+  .then(function(gj){
+    stnLayer=L.geoJSON(gj,{
+      pointToLayer:function(feat,ll){return L.marker(ll,{icon:stnIcon,zIndexOffset:1000});},
+      onEachFeature:function(feat,layer){
+        var p=feat.properties;
+        layer.bindPopup('<div style="font-weight:700;font-size:13px;margin-bottom:4px;color:var(--text)">'+p.division+' Division</div><div style="font-size:11px;color:var(--muted)">'+p.address+'</div>',{maxWidth:220});
+      }
+    });
+    if(showStations)stnLayer.addTo(map);
+    tick();
+  }).catch(function(){tick();});
+</script>
+</body>
+</html>

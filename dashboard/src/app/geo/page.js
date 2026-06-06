@@ -55,6 +55,19 @@ const MAPS = [
       { icon: '🔗', text: 'Each neighborhood popup cross-references its LAPD division clearance rate and top crime category — linking street-level geography to operational police data.' },
     ],
   },
+  {
+    id: 'business',
+    label: 'Business & Crime',
+    icon: '🏪',
+    src: '/maps/business-choropleth.html',
+    title: 'Active Businesses vs. Crime by Neighborhood',
+    badge: '545k Businesses · 114 Neighborhoods',
+    insight: [
+      { icon: '🏪', text: 'Downtown concentrates 33,167 active businesses — 470 per 1,000 inhabitants. But with 2.2 crimes per business, Hollywood (2.5) and Westlake (2.7) show higher commercial crime intensity.' },
+      { icon: '📊', text: 'The "Crimes per Business" metric reveals where criminal activity disproportionately burdens commercial areas — a key indicator for business viability and insurance risk.' },
+      { icon: '🗂️', text: 'Each popup breaks down the 10 business sectors (Food, Retail, Real Estate, Entertainment, etc.) and cross-references income, poverty and LAPD division clearance rate.' },
+    ],
+  },
 ];
 
 const S = {

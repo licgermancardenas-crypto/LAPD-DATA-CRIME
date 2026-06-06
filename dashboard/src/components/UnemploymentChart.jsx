@@ -12,8 +12,12 @@ const CustomTooltip = ({ active, payload, label }) => {
       <p style={{ color: '#7b82a0', fontSize: 12, marginBottom: 4 }}>{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} style={{ color: p.color, fontSize: 13, margin: '2px 0' }}>
-          {p.name}: <strong>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</strong>
-          {p.name === 'Unemployment %' ? '%' : ''}
+          {p.name}:{' '}
+          <strong>
+            {p.name === 'Unemployment %'
+              ? `${parseFloat(p.value ?? 0).toFixed(1)}%`
+              : typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
+          </strong>
         </p>
       ))}
     </div>

@@ -48,8 +48,8 @@ const CustomTooltip = ({ active, payload }) => {
         {d.part === 'p1' ? '🔴 Part 1 — Delito Grave (FBI UCR)' : '🔵 Part 2 — Delito Menor'}
       </p>
       <p style={{ color: '#4f8ef7', fontSize: 12 }}>Crímenes: <strong>{d.crimes.toLocaleString()}</strong></p>
-      <p style={{ color: '#7b82a0', fontSize: 12 }}>Participación: <strong>{d.share_pct}%</strong></p>
-      <p style={{ color: '#3ecf8e', fontSize: 12 }}>Esclarecimiento: <strong>{d.clearance_rate}%</strong></p>
+      <p style={{ color: '#7b82a0', fontSize: 12 }}>Participación: <strong>{parseFloat(d.share_pct ?? 0).toFixed(1)}%</strong></p>
+      <p style={{ color: '#3ecf8e', fontSize: 12 }}>Esclarecimiento: <strong>{parseFloat(d.clearance_rate ?? 0).toFixed(1)}%</strong></p>
       {d.is_violent && <p style={{ color: '#e05252', fontSize: 11, marginTop: 4 }}>Crimen violento</p>}
       <p style={{ color: '#7c5cbf', fontSize: 11, marginTop: 6, fontStyle: 'italic' }}>
         Click para filtrar dashboard por esta categoría

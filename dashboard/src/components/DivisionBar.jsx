@@ -14,12 +14,12 @@ const CustomTooltip = ({ active, payload, activePart, hasFilter }) => {
     <div style={{ background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 8, padding: '10px 14px' }}>
       <p style={{ color: '#e8eaf0', fontWeight: 600, marginBottom: 6 }}>{d.name}</p>
       <p style={{ color: '#4f8ef7', fontSize: 13 }}>Crímenes: <strong>{crimes.toLocaleString()}</strong></p>
-      <p style={{ color: '#3ecf8e', fontSize: 13 }}>Esclarecimiento: <strong>{clr}%</strong></p>
+      <p style={{ color: '#3ecf8e', fontSize: 13 }}>Esclarecimiento: <strong>{parseFloat(clr ?? 0).toFixed(1)}%</strong></p>
       {activePart === 'all' && (
         <>
           <p style={{ color: '#e0883a', fontSize: 12, marginTop: 4 }}>Part 1: {(d.crimes_p1 ?? 0).toLocaleString()}</p>
           <p style={{ color: '#4f8ef7', fontSize: 12 }}>Part 2: {(d.crimes_p2 ?? 0).toLocaleString()}</p>
-          <p style={{ color: '#e05252', fontSize: 12 }}>Violentos: {d.violent_pct ?? 0}%</p>
+          <p style={{ color: '#e05252', fontSize: 12 }}>Violentos: {parseFloat(d.violent_pct ?? 0).toFixed(1)}%</p>
         </>
       )}
       {hasFilter && (

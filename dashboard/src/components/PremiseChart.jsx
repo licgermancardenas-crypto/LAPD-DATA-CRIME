@@ -19,8 +19,8 @@ function PremTip({ active, payload }) {
   return (
     <div style={{ background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 8, padding: '10px 14px' }}>
       <p style={{ color: '#e8eaf0', fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{d.premise}</p>
-      <p style={{ color: '#4f8ef7', fontSize: 12 }}>Total: <strong>{d.crimes.toLocaleString()}</strong> ({d.share_pct}%)</p>
-      <p style={{ color: '#e05252', fontSize: 12 }}>Part 1 (graves): <strong>{d.p1.toLocaleString()}</strong> ({d.p1_pct}%)</p>
+      <p style={{ color: '#4f8ef7', fontSize: 12 }}>Total: <strong>{d.crimes.toLocaleString()}</strong> ({parseFloat(d.share_pct ?? 0).toFixed(1)}%)</p>
+      <p style={{ color: '#e05252', fontSize: 12 }}>Part 1 (graves): <strong>{d.p1.toLocaleString()}</strong> ({parseFloat(d.p1_pct ?? 0).toFixed(1)}%)</p>
       <p style={{ color: '#7b82a0', fontSize: 12 }}>Part 2 (menores): <strong>{d.p2.toLocaleString()}</strong></p>
     </div>
   );
@@ -61,7 +61,7 @@ export default function PremiseChart({ data, activePart = 'all' }) {
               <Cell key={d.premise} fill={COLORS[d.premise] ?? '#7b82a0'} opacity={0.85} />
             ))}
             <LabelList dataKey="share_pct" position="right"
-              formatter={v => `${v}%`} style={{ fontSize: 10, fill: '#7b82a0' }} />
+              formatter={v => `${parseFloat(v ?? 0).toFixed(1)}%`} style={{ fontSize: 10, fill: '#7b82a0' }} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

@@ -50,8 +50,8 @@ function AgeTip({ active, payload }) {
   const d = payload[0]?.payload;
   return tipBox(<>
     <p style={{ color: '#c0c4d4', fontSize: 12, marginBottom: 6 }}>{AGE_ES[d.age] ?? d.age}</p>
-    <p style={{ color: CYAN, fontSize: 13, margin: '2px 0' }}>Total: <strong>{d.crimes.toLocaleString()}</strong> ({d.share_pct}%)</p>
-    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Violentos: <strong>{d.violent.toLocaleString()}</strong> ({d.violent_pct}%)</p>
+    <p style={{ color: CYAN, fontSize: 13, margin: '2px 0' }}>Total: <strong>{d.crimes.toLocaleString()}</strong> ({parseFloat(d.share_pct ?? 0).toFixed(1)}%)</p>
+    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Violentos: <strong>{d.violent.toLocaleString()}</strong> ({parseFloat(d.violent_pct ?? 0).toFixed(1)}%)</p>
     <p style={{ color: '#7b82a0', fontSize: 11, marginTop: 4 }}>
       Click para filtrar por este grupo etario
     </p>
@@ -64,7 +64,7 @@ function DescentTip({ active, payload }) {
   return tipBox(<>
     <p style={{ color: '#c0c4d4', fontSize: 12, marginBottom: 6 }}>{DESCENT_ES[d.descent] ?? d.descent}</p>
     <p style={{ color: CYAN, fontSize: 13, margin: '2px 0' }}>Víctimas: <strong>{d.crimes.toLocaleString()}</strong></p>
-    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Violentos: <strong>{d.violent.toLocaleString()}</strong> ({d.violent_pct}%)</p>
+    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Violentos: <strong>{d.violent.toLocaleString()}</strong> ({parseFloat(d.violent_pct ?? 0).toFixed(1)}%)</p>
   </>);
 }
 
@@ -73,8 +73,8 @@ function CatSexTip({ active, payload }) {
   const d = payload[0]?.payload;
   return tipBox(<>
     <p style={{ color: '#c0c4d4', fontSize: 12, marginBottom: 6 }}>{d.label}</p>
-    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Femenino: <strong>{d.Female.toLocaleString()}</strong> ({d.female_pct}%)</p>
-    <p style={{ color: CYAN,    fontSize: 13, margin: '2px 0' }}>Masculino: <strong>{d.Male.toLocaleString()}</strong> ({(100 - d.female_pct).toFixed(1)}%)</p>
+    <p style={{ color: MAGENTA, fontSize: 13, margin: '2px 0' }}>Femenino: <strong>{d.Female.toLocaleString()}</strong> ({parseFloat(d.female_pct ?? 0).toFixed(1)}%)</p>
+    <p style={{ color: CYAN,    fontSize: 13, margin: '2px 0' }}>Masculino: <strong>{d.Male.toLocaleString()}</strong> ({(100 - parseFloat(d.female_pct ?? 0)).toFixed(1)}%)</p>
     <p style={{ color: '#7b82a0', fontSize: 12, marginTop: 4 }}>Total: {d.total.toLocaleString()}</p>
   </>);
 }
@@ -159,15 +159,15 @@ export default function VictimChart({ data, filters, onFilter }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
         <KpiMini
           label="Víctimas Masculinas"
-          value={`${male?.share_pct ?? '—'}%`}
-          sub={`${male?.crimes.toLocaleString() ?? '—'} · ${male?.violent_pct}% violento`}
+          value={`${parseFloat(male?.share_pct ?? 0).toFixed(1)}%`}
+          sub={`${male?.crimes.toLocaleString() ?? '—'} · ${parseFloat(male?.violent_pct ?? 0).toFixed(1)}% violento`}
           color={CYAN}
           border="rgba(76,201,240,.2)"
         />
         <KpiMini
           label="Víctimas Femeninas"
-          value={`${female?.share_pct ?? '—'}%`}
-          sub={`${female?.crimes.toLocaleString() ?? '—'} · ${female?.violent_pct}% violento`}
+          value={`${parseFloat(female?.share_pct ?? 0).toFixed(1)}%`}
+          sub={`${female?.crimes.toLocaleString() ?? '—'} · ${parseFloat(female?.violent_pct ?? 0).toFixed(1)}% violento`}
           color={MAGENTA}
           border="rgba(247,37,133,.2)"
         />
@@ -180,7 +180,7 @@ export default function VictimChart({ data, filters, onFilter }) {
         />
         <KpiMini
           label="Sin datos de víctima"
-          value={`${no_victim_pct}%`}
+          value={`${parseFloat(no_victim_pct ?? 0).toFixed(1)}%`}
           sub={`${no_victim_count?.toLocaleString()} delitos contra empresas/vehículos`}
           color={VIOLET}
           border="rgba(124,92,191,.2)"
@@ -233,7 +233,7 @@ export default function VictimChart({ data, filters, onFilter }) {
                   stroke={isActive ? MAGENTA : 'none'} strokeWidth={isActive ? 2 : 0} />;
               })}
               <LabelList dataKey="violent_pct" position="top"
-                formatter={v => `${v}%`} style={{ fontSize: 9, fill: '#9b82c8' }} />
+                formatter={v => `${parseFloat(v ?? 0).toFixed(1)}%`} style={{ fontSize: 9, fill: '#9b82c8' }} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -266,7 +266,7 @@ export default function VictimChart({ data, filters, onFilter }) {
                 <Cell key={d.descent} fill={DESCENT_COLORS[d.descent] ?? VIOLET} opacity={0.7} />
               ))}
               <LabelList dataKey="violent_pct" position="right"
-                formatter={v => `${v}% vio`} style={{ fontSize: 10, fill: '#7b82a0' }} />
+                formatter={v => `${parseFloat(v ?? 0).toFixed(1)}% vio`} style={{ fontSize: 10, fill: '#7b82a0' }} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -289,7 +289,7 @@ export default function VictimChart({ data, filters, onFilter }) {
             <Bar dataKey="Female" stackId="a" fill={MAGENTA} opacity={0.85} />
             <Bar dataKey="Male"   stackId="a" fill={CYAN}    opacity={0.75} radius={[0,4,4,0]}>
               <LabelList dataKey="female_pct" position="right"
-                formatter={v => `${v}% F`} style={{ fontSize: 9, fill: '#7b82a0' }} />
+                formatter={v => `${parseFloat(v ?? 0).toFixed(1)}% F`} style={{ fontSize: 9, fill: '#7b82a0' }} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

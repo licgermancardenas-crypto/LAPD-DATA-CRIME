@@ -19,6 +19,40 @@ body {
 ::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #4f8ef7; }
 
+/* ── Unified control reset & focus ring ─────────────────────────────────── */
+*:focus { outline: none; }
+
+button:focus-visible,
+select:focus-visible,
+input[type="range"]:focus-visible,
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76,201,240,.45), 0 0 8px rgba(76,201,240,.15) !important;
+}
+
+/* Native select/input dark base (for any that slip through) */
+select, input[type="text"], input[type="number"], input[type="search"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #1e2230;
+  border: 1px solid #2e334d;
+  color: #e4e6f0;
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  transition: border-color .15s, box-shadow .15s;
+}
+select:hover, input:hover {
+  border-color: rgba(76,201,240,.5);
+  box-shadow: 0 0 0 1px rgba(76,201,240,.18);
+}
+select:focus, input:focus {
+  border-color: #4cc9f0;
+  box-shadow: 0 0 0 2px rgba(76,201,240,.3);
+}
+
 /* Recharts tooltip */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   background: #1a1d27 !important;

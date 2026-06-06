@@ -7,9 +7,9 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <style>
   :root {
-    --bg:#0a0c12; --surface:rgba(10,12,18,.92); --surface-s:#1a1d27;
-    --border:#2a2d3a; --text:#e8eaf0; --muted:#7b82a0;
-    --popup-bg:#1a1d27; --outline:#0a0c12;
+    --bg:#0a0c12; --surface:rgba(10,12,18,.92); --surface-s:#1e2230;
+    --border:#2e334d; --text:#e4e6f0; --muted:#7b82a0;
+    --popup-bg:#1e2230; --outline:#0a0c12;
   }
   .lm {
     --bg:#eef0f4; --surface:rgba(255,255,255,.95); --surface-s:#ffffff;
@@ -50,7 +50,8 @@
       border:1px solid var(--border);background:var(--surface-s);color:var(--muted);
       transition:all .15s;letter-spacing:.03em;white-space:nowrap}
   .mb.on{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
-  .mb:hover:not(.on){color:var(--text)}
+  .mb:hover:not(.on){color:var(--text);border-color:rgba(76,201,240,.45);box-shadow:0 0 0 1px rgba(76,201,240,.2)}
+  .mb:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
 
   /* ── Top-right controls ── */
   #top-right{position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:6px;align-items:center}
@@ -58,7 +59,8 @@
       color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;
       transition:all .15s}
   #tt{width:34px;font-size:15px}
-  #tt:hover,#nb-btn:hover{opacity:.8}
+  #tt:hover,#nb-btn:hover{border-color:rgba(76,201,240,.45);box-shadow:0 0 0 1px rgba(76,201,240,.2)}
+  #tt:focus-visible,#nb-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
   #nb-btn{padding:0 11px;font-size:11px;font-weight:600;color:var(--muted);gap:6px;white-space:nowrap}
   #nb-btn.on{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.45);color:#4f8ef7}
 
@@ -89,7 +91,9 @@
     font-size:13px;display:flex;align-items:center;justify-content:center;
     transition:all .12s;flex-shrink:0;
   }
-  #play-btn:hover:not(:disabled){border-color:#4f8ef7;color:#4f8ef7}
+  #play-btn:hover:not(:disabled){border-color:#4cc9f0;color:#4cc9f0;box-shadow:0 0 0 1px rgba(76,201,240,.2)}
+  #play-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
+  #hour-reset:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
   #play-btn:disabled{opacity:.35;cursor:default}
   #play-btn.playing{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
   #hc-track{display:flex;flex-direction:column;gap:4px;align-items:stretch}
@@ -214,7 +218,8 @@
     cursor:pointer;outline:none;transition:all .15s;
     min-width:160px;font-family:inherit;
   }
-  #cat-select:focus{border-color:#4f8ef7}
+  #cat-select:hover{border-color:rgba(76,201,240,.5);box-shadow:0 0 0 1px rgba(76,201,240,.18)}
+  #cat-select:focus{border-color:#4cc9f0;box-shadow:0 0 0 2px rgba(76,201,240,.3)}
   #cat-select.active{border-color:rgba(224,136,58,.7);color:#e0883a;background-color:rgba(224,136,58,.08)}
   #cat-clear{
     display:none;padding:5px 10px;border-radius:7px;

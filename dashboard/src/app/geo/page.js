@@ -56,6 +56,19 @@ const MAPS = [
     ],
   },
   {
+    id: 'mortality',
+    label: 'Business Stability',
+    icon: '📉',
+    src: '/maps/mortality-choropleth.html',
+    title: 'Business Mortality & Crime — Stability Quadrant Analysis',
+    badge: '544k Businesses · 4 Quadrants',
+    insight: [
+      { icon: '🟥', text: '"Stressed" neighborhoods (high crime + low stability): Hollywood, Venice, Vermont-Slauson. High churn despite — or because of — sustained criminal pressure on commercial activity.' },
+      { icon: '🟠', text: '"Resilient" neighborhoods: Chinatown, Wilmington, Rancho Park — anchor businesses (15+ years) persist despite elevated crime. Commercial roots pre-date the crime pattern.' },
+      { icon: '📊', text: 'Counterintuitive: 2017 was LA\'s peak closure year (53,665 closures) — not COVID 2020 (29,145). The 2020 dip reflects deferred closures, not resilience. Sparkline visible in every popup.' },
+    ],
+  },
+  {
     id: 'business',
     label: 'Business & Crime',
     icon: '🏪',

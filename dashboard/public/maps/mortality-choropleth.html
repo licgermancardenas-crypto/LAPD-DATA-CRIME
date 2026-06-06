@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<style>
+  :root{--bg:#0a0c12;--surface:rgba(10,12,18,.92);--surface-s:#1a1d27;--border:#2a2d3a;--text:#e8eaf0;--muted:#7b82a0;--popup-bg:rgba(10,12,18,.97)}
+  .lm{--bg:#eef0f4;--surface:rgba(255,255,255,.95);--surface-s:#fff;--border:#d4d8e2;--text:#1a1d27;--muted:#6b7280;--popup-bg:rgba(255,255,255,.98)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);transition:background .25s}
+  #map{position:absolute;top:0;left:0;right:0;bottom:0}
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2)!important}
+  .leaflet-control-attribution{background:var(--surface)!important;color:var(--muted)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:#4f8ef7!important}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;border:1px solid var(--border)!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.3)!important;color:var(--text)!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important}
+  .leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;padding:6px 8px!important}
+  .leaflet-popup-content{margin:14px 16px!important;min-width:250px}
+
+  /* Popup */
+  .p-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+  .p-title{font-weight:700;font-size:15px;color:var(--text);flex:1}
+  .p-badge{display:inline-block;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap}
+  .p-section{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;margin:10px 0 5px;text-transform:uppercase}
+  .p-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+  .p-label{font-size:11px;color:var(--muted)}
+  .p-val{font-size:12px;font-weight:600}
+  .p-sep{height:1px;background:var(--border);margin:8px 0}
+
+  /* Cohort bars */
+  .cohort-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
+  .cohort-item{background:var(--surface-s);border:1px solid var(--border);border-radius:6px;padding:5px 8px}
+  .cohort-label{font-size:10px;color:var(--muted);margin-bottom:3px}
+  .cohort-val{font-size:13px;font-weight:700}
+  .cohort-sub{font-size:9px;color:var(--muted)}
+
+  /* Annual closure sparkline */
+  .spark-wrap{display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:6px}
+  .spark-bar{flex:1;border-radius:2px 2px 0 0;min-width:8px;transition:opacity .15s;position:relative}
+  .spark-bar:hover{opacity:.8}
+  .spark-labels{display:flex;justify-content:space-between;margin-top:2px}
+  .spark-labels span{font-size:8px;color:var(--muted)}
+
+  /* Toolbar */
+  #toolbar{position:fixed;top:12px;left:12px;z-index:1000;display:flex;flex-direction:column;gap:5px}
+  .metric-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left}
+  .metric-btn.active{border-color:rgba(79,142,247,.5);background:rgba(79,142,247,.12);color:#4f8ef7;font-weight:600}
+
+  /* Controls */
+  #controls{position:fixed;top:12px;right:12px;z-index:1000;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  .ctrl-btn{padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .ctrl-btn.on{border-color:rgba(79,142,247,.4);color:#4f8ef7;background:rgba(79,142,247,.08)}
+  #tt{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0}
+
+  /* Legend */
+  #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;z-index:1000;min-width:160px}
+  #leg-title{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+  .leg-quad{display:none;grid-template-columns:1fr 1fr;gap:4px}
+  .leg-quad-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+  .leg-quad-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+  /* Loading */
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2000}
+  #loading p{color:var(--muted);font-size:13px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="loading"><div class="spinner"></div><p>Loading stability data...</p></div>
+
+<div id="toolbar">
+  <button class="metric-btn active" data-metric="quadrant">Crime × Stability</button>
+  <button class="metric-btn" data-metric="median_age">Median Business Age</button>
+  <button class="metric-btn" data-metric="pct_anchor">% Anchor Businesses</button>
+  <button class="metric-btn" data-metric="churn">Business Churn</button>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="tt">🌙</button>
+  <button class="ctrl-btn on" id="stn-toggle">🏢 Stations</button>
+  <button class="ctrl-btn on" id="div-toggle">〰️ Divisions</button>
+</div>
+
+<div id="legend">
+  <div id="leg-title">CRIME × STABILITY QUADRANT</div>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span></span><span></span></div>
+  <div class="leg-quad" id="leg-quad">
+    <div class="leg-quad-item"><div class="leg-quad-dot" style="background:#e04040"></div>Stressed</div>
+    <div class="leg-quad-item"><div class="leg-quad-dot" style="background:#e08030"></div>Resilient</div>
+    <div class="leg-quad-item"><div class="leg-quad-dot" style="background:#e0c040"></div>Emerging</div>
+    <div class="leg-quad-item"><div class="leg-quad-dot" style="background:#28c77a"></div>Thriving</div>
+  </div>
+</div>
+
+<script>
+// ── City-wide annual closures (pre-computed) ───────────────────────────────
+var CLOSURES_BY_YEAR = {
+  2015:40405, 2016:38714, 2017:53665, 2018:34089, 2019:30015,
+  2020:29145, 2021:25019, 2022:27285, 2023:24160, 2024:29078, 2025:26554
+};
+var CLOSURE_MAX = Math.max.apply(null, Object.values(CLOSURES_BY_YEAR));
+
+// ── Color scales ───────────────────────────────────────────────────────────
+var S_AGE    = [[200,80,80],[224,150,60],[224,210,80],[100,200,130],[40,180,120]]; // young=red → old=green
+var S_ANCHOR = [[200,80,80],[224,150,60],[224,210,80],[100,200,130],[40,180,120]]; // low=red → high=green
+var S_CHURN  = [[40,180,120],[100,200,130],[224,210,80],[224,150,60],[200,80,80]]; // low=green → high=red
+
+// Quadrant colors
+var Q_COLORS = {
+  'Stressed':  '#e04040',
+  'Resilient': '#e08030',
+  'Emerging':  '#e0c040',
+  'Thriving':  '#28c77a',
+};
+
+function lerp(stops, t) {
+  t = Math.max(0, Math.min(1, t));
+  var n=stops.length-1, s=t*n, i=Math.min(Math.floor(s),n-1), f=s-i;
+  var a=stops[i], b=stops[i+1]||stops[n];
+  return 'rgb('+Math.round(a[0]+f*(b[0]-a[0]))+','+Math.round(a[1]+f*(b[1]-a[1]))+','+Math.round(a[2]+f*(b[2]-a[2]))+')';
+}
+
+// ── Metric config ──────────────────────────────────────────────────────────
+var METRICS = {
+  quadrant:   { label:'CRIME × STABILITY',     normKey:null,                scale:null },
+  median_age: { label:'MEDIAN BUSINESS AGE',   normKey:'norm_median_age',   scale:S_AGE },
+  pct_anchor: { label:'% ANCHOR BUSINESSES',   normKey:'norm_anchor',       scale:S_ANCHOR },
+  churn:      { label:'BUSINESS CHURN SCORE',  normKey:'norm_churn',        scale:S_CHURN },
+};
+
+var metric = 'quadrant';
+var dark = true;
+var geoLayer, stnLayer, divLayer;
+var showStations = true, showDivisions = true;
+
+// ── Map ────────────────────────────────────────────────────────────────────
+var map = L.map('map',{center:[34.05,-118.35],zoom:11,zoomControl:false,attributionControl:true});
+setTimeout(function(){map.invalidateSize();},100);
+L.control.zoom({position:'bottomright'}).addTo(map);
+var tOpts={subdomains:'abcd',maxZoom:19,attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',  tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+// ── Legend ─────────────────────────────────────────────────────────────────
+function buildLegend(m) {
+  var cfg = METRICS[m];
+  var bar = document.getElementById('leg-bar');
+  var quad = document.getElementById('leg-quad');
+  var labs = document.getElementById('leg-labs');
+  document.getElementById('leg-title').textContent = cfg.label;
+  if (m === 'quadrant') {
+    bar.style.display = 'none'; labs.style.display = 'none';
+    quad.style.display = 'grid';
+  } else {
+    bar.style.display = 'flex'; labs.style.display = 'flex';
+    quad.style.display = 'none';
+    bar.innerHTML = '';
+    for(var k=0;k<28;k++){var d=document.createElement('div');d.style.flex='1';d.style.background=lerp(cfg.scale,k/27);bar.appendChild(d);}
+    if (m === 'churn') { labs.children[0].textContent='Low'; labs.children[1].textContent='High'; }
+    else { labs.children[0].textContent='Young/Few'; labs.children[1].textContent='Mature/Many'; }
+  }
+}
+buildLegend(metric);
+
+// ── Style ──────────────────────────────────────────────────────────────────
+function fStyle(f) {
+  var p = f.properties, cfg = METRICS[metric];
+  var color;
+  if (metric === 'quadrant') {
+    color = Q_COLORS[p.quadrant] || '#7b82a0';
+  } else {
+    color = lerp(cfg.scale, p[cfg.normKey] || 0);
+  }
+  return {fillColor:color, fillOpacity:.75, color:dark?'#0a0c12':'#b0b6c8', weight:.8, opacity:.9};
+}
+
+// ── Sparkline ──────────────────────────────────────────────────────────────
+function buildSparkline() {
+  var years = Object.keys(CLOSURES_BY_YEAR).sort();
+  var bars = years.map(function(yr) {
+    var h = Math.round((CLOSURES_BY_YEAR[yr] / CLOSURE_MAX) * 100);
+    var color = yr == '2017' ? '#e04040' : yr == '2020' ? '#e07030' : '#4f8ef7';
+    return '<div class="spark-bar" style="height:'+h+'%;background:'+color+'" title="'+yr+': '+CLOSURES_BY_YEAR[yr].toLocaleString()+' closures"></div>';
+  }).join('');
+  return (
+    '<div style="font-size:10px;color:var(--muted);margin-bottom:2px">LA-wide closures/year</div>'+
+    '<div class="spark-wrap">'+bars+'</div>'+
+    '<div class="spark-labels"><span>2015</span><span style="color:#e04040">2017 peak</span><span>2025</span></div>'+
+    '<div style="font-size:9px;color:var(--muted);margin-top:3px">2017: 53,665 closures (peak) · 2020: 29,145 (COVID was not the worst year)</div>'
+  );
+}
+var SPARKLINE = buildSparkline();
+
+// ── Popup ──────────────────────────────────────────────────────────────────
+function fmtNum(v,d){return Number(v||0).toFixed(d!=null?d:0);}
+function fmtUSD(v){return '$'+Number(v||0).toLocaleString('en-US');}
+
+function buildPopup(p) {
+  var qc = Q_COLORS[p.quadrant] || '#7b82a0';
+  var crimeC = p.crimes_per_1000 > 400 ? '#e04040' : p.crimes_per_1000 > 200 ? '#e08030' : '#28c77a';
+
+  var QDESC = {
+    'Stressed':  'High crime + low business stability. Commercial ecosystem is under pressure.',
+    'Resilient': 'High crime but businesses endure. Strong anchors resist adverse conditions.',
+    'Emerging':  'Low crime but high churn. Market in flux — possibly growth or post-crisis reset.',
+    'Thriving':  'Low crime + stable ecosystem. Conditions favorable for long-term investment.',
+  };
+
+  return (
+    '<div class="p-head">'+
+      '<span class="p-title">'+p.name+'</span>'+
+    '</div>'+
+    '<div style="margin-bottom:10px">'+
+      '<span class="p-badge" style="background:'+qc+'22;color:'+qc+';border:1px solid '+qc+'44">'+p.quadrant+'</span>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">'+QDESC[p.quadrant]+'</div>'+
+    '</div>'+
+
+    '<div class="p-section">Business Stability</div>'+
+    '<div class="cohort-wrap">'+
+      '<div class="cohort-item">'+
+        '<div class="cohort-label">Median active age</div>'+
+        '<div class="cohort-val" style="color:#4f8ef7">'+fmtNum(p.median_age_yrs,1)+'<span style="font-size:10px;font-weight:400"> yr</span></div>'+
+      '</div>'+
+      '<div class="cohort-item">'+
+        '<div class="cohort-label">Stability score</div>'+
+        '<div class="cohort-val" style="color:'+qc+'">'+fmtNum(p.stability_score,3)+'</div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="p-section" style="margin-top:10px">Cohort Breakdown</div>'+
+    '<div class="cohort-wrap">'+
+      '<div class="cohort-item">'+
+        '<div class="cohort-label">🌱 New (< 3 yr)</div>'+
+        '<div class="cohort-val">'+fmtNum(p.pct_new,1)+'%</div>'+
+      '</div>'+
+      '<div class="cohort-item">'+
+        '<div class="cohort-label">📈 Growing (3–7 yr)</div>'+
+        '<div class="cohort-val">'+fmtNum(p.pct_growing,1)+'%</div>'+
+      '</div>'+
+      '<div class="cohort-item">'+
+        '<div class="cohort-label">🏢 Established (7–15)</div>'+
+        '<div class="cohort-val">'+fmtNum(p.pct_established,1)+'%</div>'+
+      '</div>'+
+      '<div class="cohort-item">'+
+        '<div class="cohort-label">⚓ Anchor (15+ yr)</div>'+
+        '<div class="cohort-val" style="color:#28c77a">'+fmtNum(p.pct_anchor,1)+'%</div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Crime Context</div>'+
+    '<div class="p-row"><span class="p-label">Crimes per 1,000 inhab.</span><span class="p-val" style="color:'+crimeC+'">'+fmtNum(p.crimes_per_1000,1)+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Crimes per business</span><span class="p-val">'+(p.crimes_per_biz ? fmtNum(p.crimes_per_biz,2) : 'N/A')+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Division</span><span class="p-val">'+(p.division||'N/A')+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Division clearance rate</span><span class="p-val">'+fmtNum(p.div_clearance,1)+'%</span></div>'+
+
+    '<div class="p-sep"></div>'+
+    '<div class="p-section">Socioeconomic</div>'+
+    '<div class="p-row"><span class="p-label">Median income</span><span class="p-val">'+fmtUSD(p.median_income)+'</span></div>'+
+    '<div class="p-row"><span class="p-label">Poverty rate</span><span class="p-val">'+fmtNum(p.poverty_rate,1)+'%</span></div>'+
+    '<div class="p-row"><span class="p-label">Active businesses</span><span class="p-val">'+Number(p.biz_count||0).toLocaleString()+'</span></div>'+
+
+    '<div class="p-sep"></div>'+
+    SPARKLINE
+  );
+}
+
+// ── Toolbar ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.metric-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    metric=this.dataset.metric;
+    document.querySelectorAll('.metric-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    buildLegend(metric);
+    if(geoLayer) geoLayer.setStyle(fStyle);
+  });
+});
+
+document.getElementById('tt').addEventListener('click',function(){
+  dark=!dark; document.body.classList.toggle('lm',!dark);
+  this.textContent=dark?'🌙':'☀️';
+  if(dark){map.removeLayer(tLight);tDark.addTo(map);}
+  else{map.removeLayer(tDark);tLight.addTo(map);}
+  if(geoLayer) geoLayer.setStyle(fStyle);
+  if(divLayer) divLayer.setStyle(divStyle());
+});
+document.getElementById('stn-toggle').addEventListener('click',function(){
+  showStations=!showStations; this.classList.toggle('on',showStations);
+  if(!stnLayer) return;
+  if(showStations) stnLayer.addTo(map); else map.removeLayer(stnLayer);
+});
+document.getElementById('div-toggle').addEventListener('click',function(){
+  showDivisions=!showDivisions; this.classList.toggle('on',showDivisions);
+  if(!divLayer) return;
+  if(showDivisions) divLayer.addTo(map); else map.removeLayer(divLayer);
+});
+function divStyle(){return{fillOpacity:0,color:dark?'rgba(79,142,247,.5)':'rgba(26,86,219,.5)',weight:2,opacity:1,dashArray:'5,4'};}
+var stnIcon=L.divIcon({html:'<div style="width:12px;height:12px;background:#4f8ef7;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 8px rgba(79,142,247,.7)"></div>',className:'',iconSize:[12,12],iconAnchor:[6,6]});
+
+// ── Load data ──────────────────────────────────────────────────────────────
+var loaded=0;
+function tick(){loaded++;if(loaded===3)document.getElementById('loading').style.display='none';}
+
+fetch('/data/neighborhood_mortality.geojson')
+  .then(function(r){if(!r.ok)throw new Error('Data not found');return r.json();})
+  .then(function(gj){
+    geoLayer=L.geoJSON(gj,{
+      style:fStyle,
+      onEachFeature:function(feat,layer){
+        layer.bindPopup(buildPopup(feat.properties),{maxWidth:340,closeButton:true});
+        layer.on({
+          mouseover:function(e){e.target.setStyle({fillOpacity:.92,weight:2,color:'#4f8ef7'});e.target.bringToFront();},
+          mouseout: function(e){geoLayer.resetStyle(e.target);}
+        });
+      }
+    }).addTo(map);
+    tick();
+  })
+  .catch(function(e){document.getElementById('loading').innerHTML='<p style="color:#e05252;text-align:center;padding:24px">'+e.message+'</p>';});
+
+fetch('/data/lapd_divisions_crimes.geojson')
+  .then(function(r){return r.json();})
+  .then(function(gj){
+    divLayer=L.geoJSON(gj,{style:divStyle,onEachFeature:function(feat,layer){
+      var p=feat.properties;
+      layer.bindTooltip('<b>'+p.name+' DIVISION</b><br>'+Number(p.total_crimes).toLocaleString()+' crimes | '+p.clearance+'% clearance',{sticky:true,direction:'top'});
+    }});
+    if(showDivisions)divLayer.addTo(map);
+    tick();
+  }).catch(function(){tick();});
+
+fetch('/data/lapd_stations.geojson')
+  .then(function(r){return r.json();})
+  .then(function(gj){
+    stnLayer=L.geoJSON(gj,{
+      pointToLayer:function(feat,ll){return L.marker(ll,{icon:stnIcon,zIndexOffset:1000});},
+      onEachFeature:function(feat,layer){
+        var p=feat.properties;
+        layer.bindPopup('<div style="font-weight:700;font-size:13px;margin-bottom:4px;color:var(--text)">'+p.division+' Division</div><div style="font-size:11px;color:var(--muted)">'+p.address+'</div>',{maxWidth:220});
+      }
+    });
+    if(showStations)stnLayer.addTo(map);
+    tick();
+  }).catch(function(){tick();});
+</script>
+</body>
+</html>

@@ -24,20 +24,11 @@ const AGE_ES = {
   'Senior (65+)':        'Mayor (65+)',
 };
 
-const MAGENTA = '#f72585';
-const CYAN    = '#4cc9f0';
-const TEAL    = '#00b4d8';
-const VIOLET  = '#7c5cbf';
-const GOLD    = '#e0c066';
+const MAGENTA = '#d946ef'; // fuchsia — alarming / violent
+const CYAN    = '#00f3ff'; // electric cyan — total / neutral
 
-const DESCENT_COLORS = {
-  'Hispanic/Latino': MAGENTA,
-  'White':           CYAN,
-  'Black':           '#e05252',
-  'Asian':           TEAL,
-  'Other':           VIOLET,
-  'Pacific Islander': GOLD,
-};
+// Rank-based cyberpunk palette for descent chart (sorted descending by crimes)
+const DESCENT_CYBER = ['#00f3ff', '#d946ef', '#a21caf', '#6d28d9', '#4c1d95', '#3b0764'];
 
 const tipBox = (children) => (
   <div style={{ background: '#0f1117', border: '1px solid #2a2d3a', borderRadius: 8, padding: '10px 14px', minWidth: 200 }}>
@@ -107,10 +98,9 @@ export default function VictimChart({ data, filters, onFilter }) {
     ? (female.violent_pct - male.violent_pct).toFixed(1)
     : '—';
 
-  const descentData = (by_descent ?? []).map(d => ({
-    ...d,
-    label: DESCENT_ES[d.descent] ?? d.descent,
-  }));
+  const descentData = (by_descent ?? [])
+    .sort((a, b) => b.crimes - a.crimes)
+    .map(d => ({ ...d, label: DESCENT_ES[d.descent] ?? d.descent }));
 
   const ageData = (by_age ?? []).map(d => ({
     ...d,
@@ -210,7 +200,7 @@ export default function VictimChart({ data, filters, onFilter }) {
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={ageData} margin={{ top: 18, right: 20, left: 10, bottom: 4 }}
             onClick={handleAgeClick}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e2030" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
             <XAxis dataKey="label" tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false} tickLine={false}
               tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
@@ -255,15 +245,15 @@ export default function VictimChart({ data, filters, onFilter }) {
         </p>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={descentData} layout="vertical" margin={{ top: 4, right: 68, left: 110, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e2030" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
             <XAxis type="number" tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false}
               tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
             <YAxis type="category" dataKey="label" tick={{ fill: '#c0c4d4', fontSize: 12 }}
               axisLine={false} tickLine={false} width={108} />
             <Tooltip content={<DescentTip />} />
             <Bar dataKey="crimes" radius={[0,4,4,0]}>
-              {descentData.map(d => (
-                <Cell key={d.descent} fill={DESCENT_COLORS[d.descent] ?? VIOLET} opacity={0.7} />
+              {descentData.map((d, i) => (
+                <Cell key={d.descent} fill={DESCENT_CYBER[i] ?? '#3b0764'} opacity={i === 0 ? 1 : 0.82} />
               ))}
               <LabelList dataKey="violent_pct" position="right"
                 formatter={v => `${parseFloat(v ?? 0).toFixed(1)}% vio`} style={{ fontSize: 10, fill: '#7b82a0' }} />
@@ -280,7 +270,7 @@ export default function VictimChart({ data, filters, onFilter }) {
         </p>
         <ResponsiveContainer width="100%" height={340}>
           <BarChart data={catData} layout="vertical" margin={{ top: 4, right: 72, left: 116, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e2030" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
             <XAxis type="number" tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false}
               tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
             <YAxis type="category" dataKey="label" tick={{ fill: '#c0c4d4', fontSize: 11 }}

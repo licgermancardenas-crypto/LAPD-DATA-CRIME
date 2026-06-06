@@ -5,12 +5,13 @@ import {
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 
+// Cyberpunk year palette — deep indigo (oldest) → fuchsia (most recent)
 const YEAR_COLORS = {
-  2020: '#7c5cbf',
-  2021: '#4f8ef7',
-  2022: '#3ecf8e',
-  2023: '#e0883a',
-  2024: '#e05252',
+  2020: '#3b0764',
+  2021: '#4c1d95',
+  2022: '#6d28d9',
+  2023: '#a21caf',
+  2024: '#d946ef',
 };
 
 const CustomTooltip = ({ active, payload }) => {
@@ -49,7 +50,7 @@ export default function WeatherChart({ data }) {
 
       <ResponsiveContainer width="100%" height={280}>
         <ScatterChart margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis
             dataKey="temp"
             name="Avg Temp"
@@ -73,9 +74,9 @@ export default function WeatherChart({ data }) {
             {sampled.map((entry, i) => (
               <Cell
                 key={i}
-                fill={YEAR_COLORS[entry.year] ?? '#7b82a0'}
-                opacity={entry.isHot ? 0.9 : 0.4}
-                r={entry.isHot ? 4 : 2.5}
+                fill={entry.isHot ? '#00f3ff' : (YEAR_COLORS[entry.year] ?? '#3b0764')}
+                opacity={entry.isHot ? 0.95 : 0.35}
+                r={entry.isHot ? 4.5 : 2.5}
               />
             ))}
           </Scatter>

@@ -38,7 +38,7 @@ export default function DivisionBar({ data, activePart = 'all', filters, onFilte
   const isFiltered   = !!filters?.category;
 
   const colorFor = (rate) =>
-    rate >= 20 ? '#3ecf8e' : rate >= 10 ? '#e0c066' : '#e05252';
+    rate >= 20 ? '#00f3ff' : rate >= 10 ? '#7c3aed' : '#d946ef';
 
   const getValue = (d) =>
     activePart === 'p1' ? d.crimes_p1 : activePart === 'p2' ? d.crimes_p2 : d.crimes;
@@ -63,8 +63,8 @@ export default function DivisionBar({ data, activePart = 'all', filters, onFilte
     <div className="card">
       <p className="section-title">¿Qué División Concentra el Problema?</p>
       <p className="section-sub">
-        Ranking por volumen 2020-2024 {partSub} · el color revela la tasa de esclarecimiento: verde ≥ 20 %, ámbar 10-20 %, rojo &lt; 10 %
-        {isFiltered && <span style={{ color: '#4cc9f0' }}> · Filtrado por categoría</span>}
+        Ranking por volumen 2020-2024 {partSub} · el color revela la tasa de esclarecimiento: cian ≥ 20 %, violeta 10-20 %, fucsia &lt; 10 %
+        {isFiltered && <span style={{ color: '#00f3ff' }}> · Filtrado por categoría</span>}
         {onFilter && <span style={{ color: '#7b82a0' }}> · Clic para cross-filtrar</span>}
       </p>
       <ResponsiveContainer width="100%" height={420}>
@@ -74,7 +74,7 @@ export default function DivisionBar({ data, activePart = 'all', filters, onFilte
           margin={{ top: 5, right: 20, left: 80, bottom: 5 }}
           onClick={handleClick}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" horizontal={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
           <XAxis type="number" tick={{ fill: '#7b82a0', fontSize: 11 }} axisLine={false}
             tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
           <YAxis type="category" dataKey="name" tick={{ fill: '#e8eaf0', fontSize: 12 }}

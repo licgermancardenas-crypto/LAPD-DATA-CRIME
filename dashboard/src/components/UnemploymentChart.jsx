@@ -35,7 +35,7 @@ export default function UnemploymentChart({ data }) {
       <p className="section-sub">LA-Long Beach-Anaheim MSA unemployment (BLS) · COVID spike visible April 2020</p>
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={data} margin={{ top: 5, right: 40, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis
             dataKey="period"
             ticks={ticks}
@@ -54,7 +54,7 @@ export default function UnemploymentChart({ data }) {
           <YAxis
             yAxisId="unemp"
             orientation="right"
-            tick={{ fill: '#e0883a', fontSize: 11 }}
+            tick={{ fill: '#d946ef', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={v => `${v}%`}
@@ -66,9 +66,9 @@ export default function UnemploymentChart({ data }) {
             yAxisId="crimes"
             dataKey="crimes"
             name="Monthly Crimes"
-            stroke="#4f8ef7"
-            fill="#4f8ef7"
-            fillOpacity={0.15}
+            stroke="#7c3aed"
+            fill="#7c3aed"
+            fillOpacity={0.12}
             strokeWidth={2}
             dot={false}
           />
@@ -76,7 +76,7 @@ export default function UnemploymentChart({ data }) {
             yAxisId="unemp"
             dataKey="unemp_rate"
             name="Unemployment %"
-            stroke="#e0883a"
+            stroke="#d946ef"
             strokeWidth={2.5}
             dot={false}
             strokeDasharray="5 3"

@@ -5,13 +5,8 @@ import {
   ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 
-const COLORS = {
-  'Via Publica':  '#4f8ef7',
-  'Residencial':  '#e0883a',
-  'Comercial':    '#3ecf8e',
-  'Otros':        '#7c5cbf',
-  'Transporte':   '#e0c066',
-};
+// Cyberpunk rank palette: top-1 = electric cyan, rest = fuchsia → deep indigo
+const PREMISE_CYBER = ['#00f3ff', '#d946ef', '#a21caf', '#6d28d9', '#3b0764'];
 
 function PremTip({ active, payload }) {
   if (!active || !payload?.length) return null;
@@ -50,15 +45,15 @@ export default function PremiseChart({ data, activePart = 'all' }) {
       <p className="section-sub">5 macro-categorías de lugar · Vía Pública = 72% delitos graves · Residencial = mayormente Part 2</p>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 70, left: 82, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" horizontal={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
           <XAxis type="number" tick={{ fill: '#7b82a0', fontSize: 10 }} axisLine={false} tickLine={false}
             tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
           <YAxis type="category" dataKey="premise" tick={{ fill: '#c0c4d4', fontSize: 12 }}
             axisLine={false} tickLine={false} width={80} />
           <Tooltip content={<PremTip />} />
           <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-            {chartData.map(d => (
-              <Cell key={d.premise} fill={COLORS[d.premise] ?? '#7b82a0'} opacity={0.85} />
+            {chartData.map((d, i) => (
+              <Cell key={d.premise} fill={PREMISE_CYBER[i] ?? '#3b0764'} opacity={i === 0 ? 1 : 0.85} />
             ))}
             <LabelList dataKey="share_pct" position="right"
               formatter={v => `${parseFloat(v ?? 0).toFixed(1)}%`} style={{ fontSize: 10, fill: '#7b82a0' }} />

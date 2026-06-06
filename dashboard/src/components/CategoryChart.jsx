@@ -7,10 +7,10 @@ import {
 } from 'recharts';
 
 function getCategoryColor(index, total) {
-  if (index === 0) return '#4cc9f0'; // Top crime: cyan accent
-  // Bright violet (#8b5cf6) → deep indigo (#3d2a6b) as rank descends
+  if (index === 0) return '#00f3ff'; // Top crime: electric cyan
+  // Fuchsia (#d946ef) → deep indigo (#3b0764) as rank descends
   const t = total > 2 ? (index - 1) / (total - 2) : 0;
-  return `rgb(${Math.round(139+(61-139)*t)},${Math.round(92+(42-92)*t)},${Math.round(246+(107-246)*t)})`;
+  return `rgb(${Math.round(217+(59-217)*t)},${Math.round(70+(7-70)*t)},${Math.round(239+(100-239)*t)})`;
 }
 
 function PartToggle({ value, onChange }) {
@@ -89,7 +89,7 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
           <p className="section-title">Ranking de Delitos por Categoría</p>
           <p className="section-sub">
             {p1count} Part 1 (graves) · {p2count} Part 2 (menores) — de mayor a menor frecuencia · cian = top delito
-            {isFiltered && <span style={{ color: '#4cc9f0' }}> · Filtrado por área</span>}
+            {isFiltered && <span style={{ color: '#00f3ff' }}> · Filtrado por área</span>}
           </p>
         </div>
         {externalPart === undefined && <PartToggle value={localPart} onChange={setLocalPart} />}
@@ -98,16 +98,16 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
       {/* Color legend */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#7b82a0' }}>
-          <div style={{ width: 10, height: 3, borderRadius: 2, background: '#4cc9f0' }} />
+          <div style={{ width: 10, height: 3, borderRadius: 2, background: '#00f3ff' }} />
           <span>Top delito</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#7b82a0' }}>
-          <div style={{ width: 22, height: 3, borderRadius: 2, background: 'linear-gradient(to right, #8b5cf6, #3d2a6b)' }} />
-          <span>Resto — degradado violeta por rango</span>
+          <div style={{ width: 22, height: 3, borderRadius: 2, background: 'linear-gradient(to right, #d946ef, #3b0764)' }} />
+          <span>Resto — fucsia → índigo por rango</span>
         </div>
         {activeCategory && (
           <span style={{ fontSize: 10, color: '#9098b8' }}>
-            Activo: <strong style={{ color: '#4cc9f0' }}>{activeCategory}</strong>
+            Activo: <strong style={{ color: '#00f3ff' }}>{activeCategory}</strong>
           </span>
         )}
       </div>
@@ -115,7 +115,7 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
       <ResponsiveContainer width="100%" height={Math.max(280, sorted.length * 28)}>
         <BarChart data={sorted} layout="vertical" margin={{ top: 5, right: 20, left: 168, bottom: 5 }}
           onClick={(e) => e?.activePayload && handleClick(e.activePayload[0]?.payload)}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" horizontal={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
           <XAxis type="number" tick={{ fill: '#7b82a0', fontSize: 11 }} axisLine={false}
             tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
           <YAxis type="category" dataKey="category" tick={{ fill: '#e8eaf0', fontSize: 11 }}

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 html { scroll-behavior: smooth; }
 
@@ -86,10 +86,16 @@ select:focus, input:focus {
     @apply bg-surface border border-border rounded-xl p-6;
   }
   .section-title {
-    @apply text-lg font-semibold text-text mb-1;
+    @apply text-xl font-bold mb-2;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
   }
   .section-sub {
-    @apply text-sm text-muted mb-4;
+    @apply text-xs mb-4;
+    color: #8a8f9f;
+    line-height: 1.65;
+    font-weight: 400;
   }
   .badge {
     @apply text-xs font-medium px-2 py-0.5 rounded-full;

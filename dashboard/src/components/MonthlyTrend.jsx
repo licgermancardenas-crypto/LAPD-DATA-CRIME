@@ -44,7 +44,7 @@ export default function MonthlyTrend({ data, activePart = 'all' }) {
         )}
       </div>
       <p className="section-sub">
-        Fluctuación mensual del promedio diario — normalizado por días del mes para eliminar el sesgo feb/mar · línea dorada = media móvil 3 meses
+        Monitoreo del comportamiento macro del crimen: la media móvil trimestral (línea cian) revela la tendencia estructural, filtrando las variaciones de calendario. ¿Está bajando o subiendo el problema real?
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <ComposedChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>

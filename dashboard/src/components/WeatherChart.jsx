@@ -36,8 +36,8 @@ export default function WeatherChart({ data }) {
 
   return (
     <div className="card">
-      <p className="section-title">Temperature vs Daily Crime Volume</p>
-      <p className="section-sub">Each dot = 1 day 2020-2024 · colour = year · hot days (&gt;90°F) tend to have more crime</p>
+      <p className="section-title">Temperatura vs. Volumen Diario de Crimen</p>
+      <p className="section-sub">Correlación temperatura-crimen: cada punto = 1 día del período 2020-2024. Los puntos cian (días &gt;90°F) se acumulan sistemáticamente en la zona alta del gráfico, confirmando que el calor extremo amplifica la actividad delictiva urbana.</p>
 
       <div className="flex gap-3 mb-3 flex-wrap">
         {Object.entries(YEAR_COLORS).map(([yr, col]) => (

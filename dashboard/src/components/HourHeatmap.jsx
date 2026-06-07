@@ -101,7 +101,7 @@ export default function HourHeatmap({ data, filters, onFilter }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
         <div>
           <p className="section-title">¿A Qué Hora Atacan?</p>
-          <p className="section-sub">Intensidad relativa hora × día — las celdas en rojo marcan los picos críticos de actividad · clic para cross-filtrar el dashboard</p>
+          <p className="section-sub">Análisis del ciclo diario: identificación de picos críticos de actividad delictiva según franja horaria y día de semana — la tarde-noche del viernes al sábado concentra el mayor volumen acumulado.</p>
         </div>
 
         {/* Controls */}

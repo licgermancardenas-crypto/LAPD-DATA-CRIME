@@ -31,8 +31,8 @@ export default function UnemploymentChart({ data }) {
 
   return (
     <div className="card">
-      <p className="section-title">Unemployment Rate vs Monthly Crime Volume</p>
-      <p className="section-sub">LA-Long Beach-Anaheim MSA unemployment (BLS) · COVID spike visible April 2020</p>
+      <p className="section-title">Desempleo vs. Volumen Mensual de Crimen</p>
+      <p className="section-sub">Paradoja del desempleo COVID: el pico de 20 %+ en Abril 2020 coincidió con una caída del crimen — el confinamiento eliminó la oportunidad delictiva incluso con alta depresión económica. Fuente: BLS área metropolitana LA.</p>
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={data} margin={{ top: 5, right: 40, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />

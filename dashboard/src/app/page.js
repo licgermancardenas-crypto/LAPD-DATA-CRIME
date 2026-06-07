@@ -81,8 +81,8 @@ function SectionHeader({ title, sub, badge }) {
   return (
     <div style={{ marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
       <div>
-        <h2 style={{ fontSize: 19, fontWeight: 700, color: '#e8eaf0', marginBottom: 4 }}>{title}</h2>
-        <p style={{ color: '#7b82a0', fontSize: 13, lineHeight: 1.5 }}>{sub}</p>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#ffffff', marginBottom: 6, letterSpacing: '-0.025em', lineHeight: 1.15 }}>{title}</h2>
+        <p style={{ color: '#8a8f9f', fontSize: 12, lineHeight: 1.65 }}>{sub}</p>
       </div>
       {badge && (
         <span style={{

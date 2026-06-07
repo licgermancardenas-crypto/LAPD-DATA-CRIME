@@ -88,7 +88,7 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
         <div>
           <p className="section-title">Ranking de Delitos por Categoría</p>
           <p className="section-sub">
-            {p1count} Part 1 (graves) · {p2count} Part 2 (menores) — de mayor a menor frecuencia · cian = top delito
+            Jerarquía criminal por frecuencia: el delito #1 (cian) define la prioridad operacional. Los delitos patrimoniales superan en volumen pero tienen tasas de resolución dramáticamente menores que los violentos.
             {isFiltered && <span style={{ color: '#00f3ff' }}> · Filtrado por área</span>}
           </p>
         </div>

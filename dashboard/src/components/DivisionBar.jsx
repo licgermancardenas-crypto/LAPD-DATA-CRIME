@@ -63,7 +63,7 @@ export default function DivisionBar({ data, activePart = 'all', filters, onFilte
     <div className="card">
       <p className="section-title">¿Qué División Concentra el Problema?</p>
       <p className="section-sub">
-        Ranking por volumen 2020-2024 {partSub} · el color revela la tasa de esclarecimiento: cian ≥ 20 %, violeta 10-20 %, fucsia &lt; 10 %
+        Geografía de la impunidad: las divisiones en fucsia resuelven menos de 1 de cada 10 casos. El color no mide volumen — mide la eficacia real del sistema judicial por zona geográfica.
         {isFiltered && <span style={{ color: '#00f3ff' }}> · Filtrado por categoría</span>}
         {onFilter && <span style={{ color: '#7b82a0' }}> · Clic para cross-filtrar</span>}
       </p>

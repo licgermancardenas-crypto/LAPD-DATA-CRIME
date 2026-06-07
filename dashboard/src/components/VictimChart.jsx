@@ -26,6 +26,7 @@ const AGE_ES = {
 
 const MAGENTA = '#d946ef'; // fuchsia — alarming / violent
 const CYAN    = '#00f3ff'; // electric cyan — total / neutral
+const VIOLET  = '#7c3aed'; // deep violet — neutral/unknown
 
 // Rank-based cyberpunk palette for descent chart (sorted descending by crimes)
 const DESCENT_CYBER = ['#00f3ff', '#d946ef', '#a21caf', '#6d28d9', '#4c1d95', '#3b0764'];
@@ -183,8 +184,8 @@ export default function VictimChart({ data, filters, onFilter }) {
           <div>
             <p className="section-title">Victimización por Grupo Etario</p>
             <p className="section-sub">
-              Solo el 73.2% tiene datos de víctima identificable · excluye edad≤0 (empresas/vehículos)
-              {onFilter && <span style={{ color: '#7c5cbf' }}> · Click para filtrar</span>}
+              Análisis de riesgo etario: los grupos con mayor porcentaje de victimización violenta (barras fucsia) revelan qué segmentos poblacionales requieren protección focalizada. Solo el 73.2 % de registros tiene víctima identificable.
+              {onFilter && <span style={{ color: '#00f3ff' }}> · Clic para cross-filtrar</span>}
             </p>
           </div>
           {activeAge && (
@@ -240,8 +241,7 @@ export default function VictimChart({ data, filters, onFilter }) {
       <div className="card">
         <p className="section-title">Perfil por Grupo Étnico</p>
         <p className="section-sub">
-          Víctimas totales y tasa de crimen violento · excluye "Desconocido" ·
-          Hispano/Latino y Afroamericano duplican la exposición violenta de Blancos
+          Brecha étnica de victimización: la comunidad Hispana/Latina concentra la mayor exposición absoluta, mientras el grupo Afroamericano presenta la mayor tasa de violencia proporcional. Las desigualdades son estructurales, no aleatorias.
         </p>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={descentData} layout="vertical" margin={{ top: 4, right: 68, left: 110, bottom: 4 }}>
@@ -266,7 +266,7 @@ export default function VictimChart({ data, filters, onFilter }) {
       <div className="card">
         <p className="section-title">Tipo de Crimen × Género de Víctima</p>
         <p className="section-sub">
-          Participación femenina por categoría — revela patrones de género en la criminalidad (top 14 por volumen)
+          Dimensión de género del crimen: el porcentaje F% revela dónde la mujer es víctima desproporcionada. Violencia Doméstica y Trata exhiben los valores más alarmantes — delitos subregistrados con alto índice de cifra negra.
         </p>
         <ResponsiveContainer width="100%" height={340}>
           <BarChart data={catData} layout="vertical" margin={{ top: 4, right: 72, left: 116, bottom: 4 }}>

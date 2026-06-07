@@ -42,7 +42,7 @@ export default function PremiseChart({ data, activePart = 'all' }) {
           border: '1px solid rgba(79,142,247,.2)', borderRadius: 5, padding: '2px 8px',
         }}>{partLabel}</span>
       </div>
-      <p className="section-sub">5 macro-categorías de lugar · Vía Pública = 72% delitos graves · Residencial = mayormente Part 2</p>
+      <p className="section-sub">Análisis del entorno del delito: Vía Pública lidera con el 72 % de los delitos graves, confirmando que el espacio urbano abierto es el principal escenario de riesgo. Residencial concentra infracciones menores.</p>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 70, left: 82, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />

@@ -106,6 +106,8 @@ export default function GlobalFilterPanel({
       background: '#08091a',
       borderBottom: '1px solid #141628',
     }}>
+      {/* Neon command-line accent */}
+      <div style={{ height: 2, background: 'linear-gradient(90deg, #d946ef, #00f3ff)', flexShrink: 0 }} />
       {/* ── Main filter row ───────────────────────────────────────────────── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 0,

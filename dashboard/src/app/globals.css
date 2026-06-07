@@ -84,6 +84,17 @@ select:focus, input:focus {
 @layer components {
   .card {
     @apply bg-surface border border-border rounded-xl p-6;
+    position: relative;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #d946ef 0%, #00f3ff 100%);
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
+    z-index: 1;
   }
   .section-title {
     @apply text-xl font-bold mb-2;

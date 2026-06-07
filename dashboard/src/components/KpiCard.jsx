@@ -15,7 +15,10 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
       display: 'flex',
       flexDirection: 'column',
       gap: 8,
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #d946ef, #00f3ff)', zIndex: 1, pointerEvents: 'none' }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 10, fontWeight: 600, color: '#5a6070', textTransform: 'uppercase', letterSpacing: '.09em' }}>
           {label}

@@ -24,7 +24,8 @@ export default function LaMap({ category }) {
   };
 
   return (
-    <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #2a2d3a', lineHeight: 0 }}>
+    <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #2a2d3a', lineHeight: 0, position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #d946ef, #00f3ff)', zIndex: 2, pointerEvents: 'none' }} />
       <iframe
         ref={iframeRef}
         src="/lapd-map.html"

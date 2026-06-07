@@ -14,32 +14,77 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
       padding: 24,
       display: 'flex',
       flexDirection: 'column',
-      gap: 8,
       position: 'relative',
       overflow: 'hidden',
     }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #d946ef, #00f3ff)', zIndex: 1, pointerEvents: 'none' }} />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 10, fontWeight: 600, color: '#5a6070', textTransform: 'uppercase', letterSpacing: '.09em' }}>
+
+      {/* Neon gradient top accent */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+        background: 'linear-gradient(90deg, #d946ef, #00f3ff)',
+        zIndex: 1, pointerEvents: 'none',
+      }} />
+
+      {/* ── Header: label + icon ───────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start',
+        justifyContent: 'space-between', marginBottom: 18,
+      }}>
+        <span style={{
+          fontSize: 14, fontWeight: 500, color: '#94a3b8',
+          lineHeight: 1.35, maxWidth: '72%',
+        }}>
           {label}
         </span>
-        {icon && <span style={{ fontSize: 18, opacity: 0.75 }}>{icon}</span>}
+
+        {icon && (
+          <div style={{
+            width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+            background: `${color}18`,
+            border: `1px solid ${color}28`,
+            boxShadow: `0 0 14px ${color}12, inset 0 0 8px ${color}08`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16,
+          }}>
+            {icon}
+          </div>
+        )}
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+
+      {/* ── Main value + trend ─────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 14 }}>
         <span style={{
-          fontSize: 34, fontWeight: 700, color, lineHeight: 1,
-          textShadow: `0 0 24px ${color}55, 0 0 48px ${color}22`,
+          fontSize: '2.25rem', fontWeight: 800,
+          color: '#ffffff', lineHeight: 1,
+          textShadow: `0 0 28px ${color}55, 0 0 60px ${color}20`,
           fontVariantNumeric: 'tabular-nums',
+          letterSpacing: '-0.025em',
         }}>
           {value}
         </span>
         {trend !== undefined && trend !== null && (
-          <span style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, color: trendColor }}>
+          <span style={{
+            fontSize: 13, fontWeight: 700, marginBottom: 4,
+            color: trendColor, letterSpacing: '-0.01em',
+          }}>
             {trendSign}{trend}%
           </span>
         )}
       </div>
-      {sub && <span style={{ fontSize: 11, color: '#5a6070', lineHeight: 1.45 }}>{sub}</span>}
+
+      {/* ── Divider ────────────────────────────────── */}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', marginBottom: 10 }} />
+
+      {/* ── Secondary text ─────────────────────────── */}
+      {sub && (
+        <span style={{
+          fontSize: 11, color: '#64748b',
+          lineHeight: 1.5, letterSpacing: '0.01em',
+        }}>
+          {sub}
+        </span>
+      )}
+
     </div>
   );
 }

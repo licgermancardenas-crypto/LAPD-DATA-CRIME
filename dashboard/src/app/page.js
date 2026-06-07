@@ -313,11 +313,11 @@ export default function Home() {
         <Section id="overview">
           <SectionHeader title="Macro Tendencia" sub="¿Está mejorando o empeorando la seguridad? Indicadores del período 2020-2024 — evolución anual del clearance rate, violencia y volumen total." badge="1 004 894 registros" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 18, marginBottom: 28 }}>
-            <KpiCard label="Total Crimes"    value={summary.total_crimes.toLocaleString()} sub="2020-2024 cumulative" color="#4f8ef7" icon="📋" />
-            <KpiCard label="Clearance Rate"  value={`${summary.clearance_rate}%`} sub="Cases with arrest or exceptional clearance" color={clrColor} icon="✅" />
-            <KpiCard label="Violent Share"   value={`${summary.violent_pct}%`} sub={`${summary.violent_crimes.toLocaleString()} violent incidents`} color="#e05252" icon="⚡" />
-            <KpiCard label="2024 vs 2023"    value={summary.crimes_2024.toLocaleString()} trend={summary.yoy_2024_vs_2023} sub="Year-over-year change" color="#e0883a" icon="📈" />
-            <KpiCard label="Reporting Lag"   value={`${summary.avg_reporting_lag}d`} sub="Avg days: crime occurred → report filed" color="#a78bfa" icon="🕐" />
+            <KpiCard label="Total de Delitos"          value={summary.total_crimes.toLocaleString()}   sub="Incidentes confirmados LAPD 2020-2024"             color="#4f8ef7" icon="📋" />
+            <KpiCard label="Tasa de Esclarecimiento"   value={`${summary.clearance_rate}%`}           sub="Casos con arresto o cierre excepcional"            color={clrColor} icon="✅" />
+            <KpiCard label="Proporción Violenta"       value={`${summary.violent_pct}%`}              sub={`${summary.violent_crimes.toLocaleString()} incidentes violentos registrados`} color="#e05252" icon="⚡" />
+            <KpiCard label="Volumen 2024"              value={summary.crimes_2024.toLocaleString()}   trend={summary.yoy_2024_vs_2023} sub="Variación interanual 2024 vs. 2023"      color="#e0883a" icon="📈" />
+            <KpiCard label="Demora de Reporte"         value={`${summary.avg_reporting_lag}d`}        sub="Días promedio entre ocurrencia y denuncia"         color="#a78bfa" icon="🕐" />
           </div>
           <ExecutiveInsights />
           <ChartWrapper pending={isFiltering} minHeight={280}>

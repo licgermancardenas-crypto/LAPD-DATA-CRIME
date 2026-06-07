@@ -238,18 +238,22 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Unified global filter panel ──────────────────────────────────── */}
-      <GlobalFilterPanel
-        activePart={activePart}
-        setActivePart={setActivePart}
-        filters={filters}
-        setFilters={setFilters}
-        categories={data.categories}
-        divisions={data.division}
-      />
+      {/* ── Two-column body: filter panel + content ─────────────────────── */}
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-start' }}>
 
-      {/* ── Thin section tab nav ─────────────────────────────────────────── */}
-      <div style={{
+        <GlobalFilterPanel
+          activePart={activePart}
+          setActivePart={setActivePart}
+          filters={filters}
+          setFilters={setFilters}
+          categories={data.categories}
+          divisions={data.division}
+        />
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+
+        {/* ── Thin section tab nav ─────────────────────────────────────── */}
+        <div style={{
         display: 'flex', gap: 2, padding: '20px 32px 0', borderBottom: '1px solid #1e2030',
         overflowX: 'auto', scrollbarWidth: 'none',
       }}>
@@ -437,6 +441,9 @@ export default function Home() {
         </p>
         <p style={{ color: '#3a3d50', fontSize: 11 }}>Built with Next.js 14 · Leaflet · Recharts · Vercel</p>
       </footer>
+
+        </div> {/* end right column */}
+      </div>   {/* end two-column body */}
 
       {/* Back to top */}
       {showTop && (

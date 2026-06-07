@@ -99,12 +99,12 @@ function ViewTab({ label, active, onClick, icon }) {
   return (
     <button onClick={onClick} style={{
       display: 'flex', alignItems: 'center', gap: 6,
-      padding: '8px 16px', borderRadius: 8,
+      padding: '8px 16px', borderRadius: 10,
       border: active ? '1px solid rgba(79,142,247,.4)' : '1px solid #2a2d3a',
       background: active ? 'rgba(79,142,247,.1)' : '#1a1d27',
       color: active ? '#4f8ef7' : '#7b82a0',
       fontSize: 13, fontWeight: active ? 600 : 400,
-      cursor: 'pointer', transition: 'all .15s',
+      cursor: 'pointer', transition: 'all 0.2s ease',
     }}>
       <span style={{ fontSize: 14 }}>{icon}</span>{label}
     </button>
@@ -292,7 +292,7 @@ export default function Home() {
             <div key={yr.year} style={{
               background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 10,
               padding: '12px 10px', textAlign: 'center', cursor: 'default',
-              transition: 'border-color .2s, transform .15s',
+              transition: 'all 0.2s ease',
             }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3f55'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2d3a'; e.currentTarget.style.transform = 'translateY(0)'; }}

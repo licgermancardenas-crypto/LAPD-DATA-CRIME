@@ -77,8 +77,8 @@ const SELECT_BASE = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234f5870'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'right 8px center',
-  borderRadius: 7, fontSize: 11, fontWeight: 600,
-  cursor: 'pointer', outline: 'none', transition: 'all .15s',
+  borderRadius: 8, fontSize: 11, fontWeight: 600,
+  cursor: 'pointer', outline: 'none', transition: 'all 0.2s ease',
   fontFamily: 'inherit',
 };
 
@@ -129,9 +129,9 @@ export default function GlobalFilterPanel({
                 key={o.v}
                 onClick={() => setActivePart(o.v)}
                 style={{
-                  padding: '5px 12px', borderRadius: 6,
+                  padding: '5px 12px', borderRadius: 8,
                   fontSize: 11, fontWeight: activePart === o.v ? 700 : 400,
-                  cursor: 'pointer', transition: 'all .15s',
+                  cursor: 'pointer', transition: 'all 0.2s ease',
                   border: activePart === o.v
                     ? '1px solid rgba(79,142,247,.5)'
                     : '1px solid #1a1d2e',
@@ -209,9 +209,9 @@ export default function GlobalFilterPanel({
             onClick={clearAll}
             style={{
               marginLeft: 'auto',
-              background: 'none', border: '1px solid #1a1d2e', borderRadius: 6,
+              background: 'none', border: '1px solid #1a1d2e', borderRadius: 8,
               color: '#4f5870', fontSize: 10, cursor: 'pointer', fontWeight: 600,
-              padding: '5px 12px', transition: 'all .15s', whiteSpace: 'nowrap',
+              padding: '5px 12px', transition: 'all 0.2s ease', whiteSpace: 'nowrap',
               flexShrink: 0,
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#e05252'; e.currentTarget.style.color = '#e05252'; }}

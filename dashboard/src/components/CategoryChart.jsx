@@ -23,7 +23,7 @@ function PartToggle({ value, onChange }) {
     <div style={{ display: 'flex', gap: 4 }}>
       {opts.map(o => (
         <button key={o.v} onClick={() => onChange(o.v)} style={{
-          padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: value === o.v ? 700 : 400,
+          padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: value === o.v ? 700 : 400,
           border: value === o.v
             ? (o.v === 'p1' ? '1px solid rgba(224,136,58,.5)' : o.v === 'p2' ? '1px solid rgba(79,142,247,.5)' : '1px solid rgba(255,255,255,.2)')
             : '1px solid #2a2d3a',
@@ -33,7 +33,7 @@ function PartToggle({ value, onChange }) {
           color: value === o.v
             ? (o.v === 'p1' ? '#e0883a' : o.v === 'p2' ? '#4f8ef7' : '#e8eaf0')
             : '#7b82a0',
-          cursor: 'pointer', transition: 'all .15s',
+          cursor: 'pointer', transition: 'all 0.2s ease',
         }}>{o.label}</button>
       ))}
     </div>

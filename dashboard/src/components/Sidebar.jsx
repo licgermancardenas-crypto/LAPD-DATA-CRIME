@@ -98,9 +98,10 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
             onClick={() => setCollapsed(true)}
             title="Collapse sidebar"
             style={{
-              width: 22, height: 22, borderRadius: 5, border: `1px solid ${C.border}`,
+              width: 22, height: 22, borderRadius: 8, border: `1px solid ${C.border}`,
               background: '#0f1117', color: C.dim, cursor: 'pointer', fontSize: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              transition: 'all 0.2s ease',
             }}
           >‹</button>
         )}

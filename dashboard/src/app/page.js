@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { Shield, CheckCircle, Zap, TrendingUp, Clock } from 'lucide-react';
 import Shell              from '@/components/Shell';
 import KpiCard            from '@/components/KpiCard';
 import MonthlyTrend       from '@/components/MonthlyTrend';
@@ -313,11 +314,11 @@ export default function Home() {
         <Section id="overview">
           <SectionHeader title="Macro Tendencia" sub="¿Está mejorando o empeorando la seguridad? Indicadores del período 2020-2024 — evolución anual del clearance rate, violencia y volumen total." badge="1 004 894 registros" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 18, marginBottom: 28 }}>
-            <KpiCard label="Total de Delitos"          value={summary.total_crimes.toLocaleString()}   sub="Incidentes confirmados LAPD 2020-2024"             color="#4f8ef7" icon="📋" />
-            <KpiCard label="Tasa de Esclarecimiento"   value={`${summary.clearance_rate}%`}           sub="Casos con arresto o cierre excepcional"            color={clrColor} icon="✅" />
-            <KpiCard label="Proporción Violenta"       value={`${summary.violent_pct}%`}              sub={`${summary.violent_crimes.toLocaleString()} incidentes violentos registrados`} color="#e05252" icon="⚡" />
-            <KpiCard label="Volumen 2024"              value={summary.crimes_2024.toLocaleString()}   trend={summary.yoy_2024_vs_2023} sub="Variación interanual 2024 vs. 2023"      color="#e0883a" icon="📈" />
-            <KpiCard label="Demora de Reporte"         value={`${summary.avg_reporting_lag}d`}        sub="Días promedio entre ocurrencia y denuncia"         color="#a78bfa" icon="🕐" />
+            <KpiCard label="Total de Delitos"          value={summary.total_crimes.toLocaleString()}   sub="Incidentes confirmados LAPD 2020-2024"                                          color="#4f8ef7" icon={Shield} />
+            <KpiCard label="Tasa de Esclarecimiento"   value={`${summary.clearance_rate}%`}           sub="Casos con arresto o cierre excepcional"                                        color={clrColor} icon={CheckCircle} />
+            <KpiCard label="Proporción Violenta"       value={`${summary.violent_pct}%`}              sub={`${summary.violent_crimes.toLocaleString()} incidentes violentos registrados`} color="#e05252" icon={Zap} />
+            <KpiCard label="Volumen 2024"              value={summary.crimes_2024.toLocaleString()}   trend={summary.yoy_2024_vs_2023} sub="Variación interanual 2024 vs. 2023"          color="#e0883a" icon={TrendingUp} />
+            <KpiCard label="Demora de Reporte"         value={`${summary.avg_reporting_lag}d`}        sub="Días promedio entre ocurrencia y denuncia"                                     color="#a78bfa" icon={Clock} />
           </div>
           <ExecutiveInsights />
           <ChartWrapper pending={isFiltering} minHeight={280}>

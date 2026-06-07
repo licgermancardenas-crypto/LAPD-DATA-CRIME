@@ -1,6 +1,6 @@
 'use client';
 
-export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', icon }) {
+export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', icon: Icon }) {
   const trendColor = trend > 0 ? '#e05252' : trend < 0 ? '#3ecf8e' : '#7b82a0';
   const trendSign  = trend > 0 ? '+' : '';
 
@@ -37,16 +37,15 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
           {label}
         </span>
 
-        {icon && (
+        {Icon && (
           <div style={{
             width: 36, height: 36, borderRadius: 9, flexShrink: 0,
             background: `${color}18`,
             border: `1px solid ${color}28`,
             boxShadow: `0 0 14px ${color}12, inset 0 0 8px ${color}08`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16,
           }}>
-            {icon}
+            <Icon size={17} color={color} strokeWidth={1.75} />
           </div>
         )}
       </div>

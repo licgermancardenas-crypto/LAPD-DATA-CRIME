@@ -1,5 +1,7 @@
 'use client'
 
+import { LayoutGrid, FolderOpen, MapPin } from 'lucide-react';
+
 const DAYS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 const PART_OPTIONS = [
@@ -149,7 +151,10 @@ export default function GlobalFilterPanel({
       <div style={{ flex: 1, padding: '18px 16px', display: 'flex', flexDirection: 'column' }}>
 
         {/* ── PERÍODO ─────────────────────────────────── */}
-        <span style={LABEL}>Período</span>
+        <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <LayoutGrid size={12} color="#475569" strokeWidth={2} />
+          Período
+        </span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {PART_OPTIONS.map(o => {
             const on = activePart === o.v;
@@ -186,7 +191,10 @@ export default function GlobalFilterPanel({
         <Divider />
 
         {/* ── CATEGORÍA ───────────────────────────────── */}
-        <span style={LABEL}>Categoría de Delito</span>
+        <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <FolderOpen size={12} color="#475569" strokeWidth={2} />
+          Categoría de Delito
+        </span>
         <select
           value={filters.category ?? ''}
           onChange={e => setFilters(f => ({ ...f, category: e.target.value || null }))}
@@ -218,7 +226,10 @@ export default function GlobalFilterPanel({
         <Divider />
 
         {/* ── DIVISIÓN ────────────────────────────────── */}
-        <span style={LABEL}>División Policial</span>
+        <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <MapPin size={12} color="#475569" strokeWidth={2} />
+          División Policial
+        </span>
         <select
           value={filters.area ?? ''}
           onChange={e => setFilters(f => ({ ...f, area: e.target.value || null }))}

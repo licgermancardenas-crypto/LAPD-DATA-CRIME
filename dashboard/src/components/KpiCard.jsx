@@ -16,6 +16,18 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      cursor: 'default',
+    }}
+    onMouseEnter={e => {
+      e.currentTarget.style.boxShadow = '0 10px 30px -10px rgba(0, 243, 255, 0.1)';
+      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+      e.currentTarget.style.transform = 'translateY(-2px)';
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.boxShadow = 'none';
+      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+      e.currentTarget.style.transform = 'translateY(0)';
     }}>
 
       {/* Neon gradient top accent */}

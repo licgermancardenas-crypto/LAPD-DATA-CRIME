@@ -7,29 +7,29 @@ import { usePathname } from 'next/navigation';
 const MAIN_NAV = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    label: 'Panel Principal',
     icon: '⊞',
     href: '/',
     sub: [
-      { id: 'overview',   label: 'Overview',   href: '/#overview' },
-      { id: 'geographic', label: 'Geographic', href: '/#geographic' },
-      { id: 'temporal',   label: 'Temporal',   href: '/#temporal' },
-      { id: 'categories', label: 'Categories', href: '/#categories' },
-      { id: 'external',   label: 'Context',    href: '/#external' },
+      { id: 'overview',   label: 'Resumen',     href: '/#overview' },
+      { id: 'geographic', label: 'Geografía',   href: '/#geographic' },
+      { id: 'temporal',   label: 'Temporal',    href: '/#temporal' },
+      { id: 'categories', label: 'Categorías',  href: '/#categories' },
+      { id: 'external',   label: 'Contexto',    href: '/#external' },
     ],
   },
   {
     id: 'geo',
-    label: 'Geo Analysis',
+    label: 'Análisis Geográfico',
     icon: '◎',
     href: '/geo',
     sub: [
-      { id: 'divisions',     label: 'Division Map',    icon: '🗺️' },
-      { id: 'per1000',       label: 'Crime / 1,000',   icon: '👥' },
-      { id: 'vulnerability', label: 'Vulnerability',   icon: '⚠️' },
-      { id: 'neighborhoods', label: 'Neighborhoods',   icon: '🏘️' },
-      { id: 'mortality',     label: 'Biz Stability',   icon: '📉' },
-      { id: 'business',      label: 'Biz & Crime',     icon: '🏪' },
+      { id: 'divisions',     label: 'Mapa Divisiones',   icon: '🗺️' },
+      { id: 'per1000',       label: 'Delitos / 1.000',   icon: '👥' },
+      { id: 'vulnerability', label: 'Vulnerabilidad',    icon: '⚠️' },
+      { id: 'neighborhoods', label: 'Barrios',            icon: '🏘️' },
+      { id: 'mortality',     label: 'Estab. Comercial',  icon: '📉' },
+      { id: 'business',      label: 'Comercio y Crimen', icon: '🏪' },
     ],
   },
 ];
@@ -128,7 +128,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
           <div style={{
             fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: '.14em',
             textTransform: 'uppercase', padding: '8px 18px 5px',
-          }}>Main Menu</div>
+          }}>Menú Principal</div>
         )}
 
         {/* Main nav items */}
@@ -173,7 +173,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
           <div style={{
             fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: '.14em',
             textTransform: 'uppercase', padding: '4px 18px 5px',
-          }}>Data Sources</div>
+          }}>Fuentes de Datos</div>
         )}
 
         {DATA_ITEMS.map(item => (

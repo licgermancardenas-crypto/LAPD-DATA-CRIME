@@ -17,6 +17,7 @@ import PremiseChart       from '@/components/PremiseChart';
 import GlobalFilterPanel  from '@/components/GlobalFilterPanel';
 import ChartSkeleton      from '@/components/ChartSkeleton';
 import ExecutiveInsights  from '@/components/ExecutiveInsights';
+import OnboardingModal    from '@/components/OnboardingModal';
 import { computeCategories, computeDivisions, computeVictims } from '@/lib/filterUtils';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
@@ -114,16 +115,26 @@ function ViewTab({ label, active, onClick, icon }) {
 
 // ── Main page ───────────────────────────────────────────────────────────────
 export default function Home() {
-  const [data,       setData]       = useState(null);
-  const [activeNav,  setActiveNav]  = useState('overview');
-  const [geoView,    setGeoView]    = useState('map');
-  const [showTop,    setShowTop]    = useState(false);
-  const [activePart, setActivePart] = useState('all');
-  const [filters,    setFilters]    = useState({
+  const [data,            setData]            = useState(null);
+  const [activeNav,       setActiveNav]       = useState('overview');
+  const [geoView,         setGeoView]         = useState('map');
+  const [showTop,         setShowTop]         = useState(false);
+  const [activePart,      setActivePart]      = useState('all');
+  const [showOnboarding,  setShowOnboarding]  = useState(false);
+  const [filters,         setFilters]         = useState({
     area: null, category: null, ageGroup: null, timeSlot: null,
   });
   const [isFiltering, setIsFiltering] = useState(false);
   const filtersReady = useRef(false);
+
+  // Show onboarding on first visit
+  useEffect(() => {
+    if (!localStorage.getItem('lapd_onboarding_v1')) setShowOnboarding(true);
+  }, []);
+  const closeOnboarding = () => {
+    localStorage.setItem('lapd_onboarding_v1', '1');
+    setShowOnboarding(false);
+  };
 
   useEffect(() => {
     const b = '/data';
@@ -224,9 +235,9 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {[
-            { label: summary.total_crimes.toLocaleString(), sub: 'Total Crimes', color: '#4f8ef7' },
-            { label: `${summary.violent_pct}%`, sub: 'Violent',  color: '#e05252' },
-            { label: `${summary.clearance_rate}%`, sub: 'Clearance', color: clrColor },
+            { label: summary.total_crimes.toLocaleString(), sub: 'Total Delitos',  color: '#4f8ef7' },
+            { label: `${summary.violent_pct}%`,             sub: 'Violentos',      color: '#e05252' },
+            { label: `${summary.clearance_rate}%`,          sub: 'Esclarecidos',   color: clrColor  },
           ].map(s => (
             <div key={s.sub} style={{
               background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 10,
@@ -236,6 +247,21 @@ export default function Home() {
               <div style={{ fontSize: 10, color: '#7b82a0', marginTop: 2 }}>{s.sub}</div>
             </div>
           ))}
+          {/* Help button */}
+          <button
+            onClick={() => setShowOnboarding(true)}
+            title="Guía de uso"
+            style={{
+              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+              border: '1px solid rgba(79,142,247,.3)',
+              background: 'rgba(79,142,247,.07)',
+              color: '#6090e8', fontSize: 14, fontWeight: 700, fontFamily: 'serif',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'border-color .15s, color .15s, background .15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(76,201,240,.5)'; e.currentTarget.style.color='#4cc9f0'; e.currentTarget.style.background='rgba(76,201,240,.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(79,142,247,.3)'; e.currentTarget.style.color='#6090e8'; e.currentTarget.style.background='rgba(79,142,247,.07)'; }}
+          >i</button>
         </div>
       </div>
 
@@ -259,12 +285,12 @@ export default function Home() {
         overflowX: 'auto', scrollbarWidth: 'none',
       }}>
         {[
-          { id: 'overview',   label: 'Overview',     icon: '📊' },
-          { id: 'geographic', label: 'Geographic',   icon: '🗺️' },
-          { id: 'temporal',   label: 'Temporal',     icon: '🕐' },
-          { id: 'categories', label: 'Categories',   icon: '📂' },
-          { id: 'victims',    label: 'Victims',      icon: '👥' },
-          { id: 'external',   label: 'Context',      icon: '🌦️' },
+          { id: 'overview',   label: 'Resumen',    icon: '📊' },
+          { id: 'geographic', label: 'Geografía',  icon: '🗺️' },
+          { id: 'temporal',   label: 'Temporal',   icon: '🕐' },
+          { id: 'categories', label: 'Categorías', icon: '📂' },
+          { id: 'victims',    label: 'Víctimas',   icon: '👥' },
+          { id: 'external',   label: 'Contexto',   icon: '🌦️' },
         ].map(item => (
           <a
             key={item.id}
@@ -333,8 +359,8 @@ export default function Home() {
         <Section id="geographic">
           <SectionHeader title="¿Dónde Ocurre el Crimen?" sub="Distribución geográfica por división policial. El color combina volumen y eficacia: donde hay más crimen y menos resolución está el problema real no resuelto." badge="21 Divisiones" />
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            <ViewTab label="Interactive Map"    icon="🗺️" active={geoView === 'map'}     onClick={() => setGeoView('map')} />
-            <ViewTab label="Division Rankings"  icon="📊" active={geoView === 'ranking'} onClick={() => setGeoView('ranking')} />
+            <ViewTab label="Mapa Interactivo"    icon="🗺️" active={geoView === 'map'}     onClick={() => setGeoView('map')} />
+            <ViewTab label="Ranking Divisiones"  icon="📊" active={geoView === 'ranking'} onClick={() => setGeoView('ranking')} />
           </div>
           {geoView === 'map' ? (
             <div>
@@ -409,13 +435,13 @@ export default function Home() {
             <UnemploymentChart data={monthly} />
           </div>
           <div style={{ background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 12, padding: '20px 24px', marginTop: 20 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#e8eaf0', marginBottom: 16 }}>Key Findings</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#e8eaf0', marginBottom: 16 }}>Hallazgos Clave</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 14 }}>
               {[
-                { icon: '🌡️', title: 'Heat & Crime',         body: 'Positive correlation between avg temperature and daily crime. Hot days (&gt;90°F) show measurably higher incident rates.' },
-                { icon: '🌧️', title: 'Rain Deterrence',      body: 'Rainy days consistently show lower crime counts. Wet weather reduces outdoor activity and opportunistic crimes.' },
-                { icon: '💼', title: 'Unemployment Paradox', body: 'COVID-era spike (Apr 2020: 20%+) coincided with lower crime — lockdowns confined people indoors.' },
-                { icon: '📉', title: 'Clearance Decline',    body: 'Rate dropped from ~18% in 2020 to ~12% in 2024, reflecting growing caseload pressure on LAPD.' },
+                { icon: '🌡️', title: 'Calor y Crimen',          body: 'Correlación positiva entre temperatura promedio y delitos diarios. Los días con más de 32 °C registran tasas notablemente más altas.' },
+                { icon: '🌧️', title: 'Lluvia como Disuasor',    body: 'Los días de lluvia muestran consistentemente menos incidentes. El mal tiempo reduce la actividad al aire libre y los crímenes oportunistas.' },
+                { icon: '💼', title: 'Paradoja del Desempleo',  body: 'El pico de desempleo en COVID (abr. 2020: +20%) coincidió con menos crimen — las cuarentenas confinaron a las personas en sus hogares.' },
+                { icon: '📉', title: 'Caída del Esclarecimiento', body: 'La tasa cayó del ~18% en 2020 al ~12% en 2024, reflejando la presión creciente de casos sobre la LAPD.' },
               ].map(f => (
                 <div key={f.title} style={{
                   padding: '14px 16px', background: '#0f1117', borderRadius: 10, border: '1px solid #2a2d3a',
@@ -463,6 +489,8 @@ export default function Home() {
           aria-label="Back to top"
         >↑</button>
       )}
+
+      <OnboardingModal open={showOnboarding} onClose={closeOnboarding} />
     </Shell>
   );
 }

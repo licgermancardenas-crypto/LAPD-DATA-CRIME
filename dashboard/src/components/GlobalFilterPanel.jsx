@@ -1,6 +1,7 @@
 'use client'
 
 import { LayoutGrid, FolderOpen, MapPin } from 'lucide-react';
+import InfoTooltip from './InfoTooltip';
 
 const DAYS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
@@ -154,6 +155,10 @@ export default function GlobalFilterPanel({
         <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
           <LayoutGrid size={12} color="#475569" strokeWidth={2} />
           Período
+          <InfoTooltip
+            text="Part 1 — Delitos Graves: homicidio, robo violento, agresión, violación y hurto calificado según estándar FBI. Part 2 — Delitos Menores: resto de infracciones (vandalismo, fraude, drogas, etc.)."
+            width={250}
+          />
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {PART_OPTIONS.map(o => {

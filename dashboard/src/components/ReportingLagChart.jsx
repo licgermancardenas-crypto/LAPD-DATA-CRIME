@@ -4,6 +4,9 @@ import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
+import InfoTooltip from './InfoTooltip';
+
+const TOOLTIP_TEXT = 'Mide el promedio de días que transcurren desde que se comete el delito hasta que la víctima lo denuncia ante la LAPD. Valores altos pueden indicar desconfianza institucional o barreras de acceso.';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -14,12 +17,12 @@ const CustomTooltip = ({ active, payload, label }) => {
       <p style={{ color: '#7b82a0', fontSize: 12, marginBottom: 6 }}>{label}</p>
       {lag && (
         <p style={{ color: '#e0883a', fontSize: 13, margin: '2px 0' }}>
-          Avg Lag: <strong>{lag.value?.toFixed(1)} days</strong>
+          Lag promedio: <strong>{lag.value?.toFixed(1)} días</strong>
         </p>
       )}
       {roll && (
         <p style={{ color: '#4f8ef7', fontSize: 13, margin: '2px 0' }}>
-          3M Avg: <strong>{roll.value?.toFixed(1)} days</strong>
+          Prom. 3 meses: <strong>{roll.value?.toFixed(1)} días</strong>
         </p>
       )}
     </div>
@@ -36,9 +39,12 @@ export default function ReportingLagChart({ data }) {
     <div className="card">
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <p className="section-title">Reporting Lag — Days to File a Report</p>
+          <p className="section-title" style={{ display: 'flex', alignItems: 'center' }}>
+            Retraso de Denuncia (Días)
+            <InfoTooltip text={TOOLTIP_TEXT} width={260} />
+          </p>
           <p className="section-sub">
-            Average days between crime occurrence and police report · cap 365 days · reveals trust &amp; bureaucracy shifts
+            Promedio de días entre la fecha del hecho (DATE OCC) y la fecha de denuncia (Date Rptd) · excluye retrasos &gt;365 días · refleja confianza institucional y acceso al sistema
           </p>
         </div>
         <div style={{
@@ -46,7 +52,7 @@ export default function ReportingLagChart({ data }) {
           borderRadius: 8, padding: '6px 14px', textAlign: 'center', flexShrink: 0,
         }}>
           <div style={{ fontSize: 18, fontWeight: 800, color: '#e0883a' }}>{overallAvg}d</div>
-          <div style={{ fontSize: 10, color: '#7b82a0' }}>5yr avg</div>
+          <div style={{ fontSize: 10, color: '#7b82a0' }}>prom. 5 años</div>
         </div>
       </div>
 
@@ -67,24 +73,24 @@ export default function ReportingLagChart({ data }) {
             axisLine={false}
             tickLine={false}
             tickFormatter={v => `${v}d`}
-            label={{ value: 'days', angle: -90, position: 'insideLeft', fill: '#7b82a0', fontSize: 10, dx: -2 }}
+            label={{ value: 'días', angle: -90, position: 'insideLeft', fill: '#7b82a0', fontSize: 10, dx: -2 }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: 12, fontSize: 12, color: '#7b82a0' }} />
 
           {/* Baseline: 7-day reference */}
-          <ReferenceLine y={7} stroke="#2a2d3a" strokeDasharray="4 4" label={{ value: '7d baseline', fill: '#3a3f55', fontSize: 9, position: 'insideTopRight' }} />
+          <ReferenceLine y={7} stroke="#2a2d3a" strokeDasharray="4 4" label={{ value: 'base 7d', fill: '#3a3f55', fontSize: 9, position: 'insideTopRight' }} />
 
           {/* COVID lockdown marker */}
-          <ReferenceLine x="2020-04" stroke="#7c5cbf" strokeDasharray="4 4" label={{ value: 'COVID', fill: '#7c5cbf', fontSize: 10 }} />
+          <ReferenceLine x="2020-04" stroke="#7c5cbf" strokeDasharray="4 4" label={{ value: 'Cuarentena COVID', fill: '#7c5cbf', fontSize: 10 }} />
 
-          <Bar dataKey="avg_lag"    name="Avg Lag (days)" fill="#e0883a" opacity={0.65} radius={[2, 2, 0, 0]} />
-          <Line dataKey="rolling3_lag" name="3M Rolling Avg" stroke="#4f8ef7" strokeWidth={2} dot={false} />
+          <Bar dataKey="avg_lag"    name="Lag promedio (días)" fill="#e0883a" opacity={0.65} radius={[2, 2, 0, 0]} />
+          <Line dataKey="rolling3_lag" name="Prom. 3 meses" stroke="#4f8ef7" strokeWidth={2} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
 
       <p style={{ fontSize: 11, color: '#3a3f55', marginTop: 10 }}>
-        Source: LAPD DR records — DATE OCC vs Date Rptd · reports with lag &gt;365 days excluded as data entry anomalies
+        Fuente: registros LAPD — Fecha del Hecho (DATE OCC) vs. Fecha de Denuncia (Date Rptd) · denuncias con retraso &gt;365 días excluidas como anomalías de carga
       </p>
     </div>
   );

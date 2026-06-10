@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
@@ -27,8 +29,8 @@
     -webkit-backdrop-filter:blur(22px) saturate(1.5);
     border:1px solid rgba(79,142,247,.15);
     border-radius:14px;
-    padding:14px 16px 13px;
-    box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);
+    padding:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,.5),0 8px 32px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);
     opacity:0;transition:opacity .35s ease;
   }
   #hw.ready{opacity:1}
@@ -50,13 +52,15 @@
   #hw-count-lbl{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4f5870;margin-bottom:4px}
   #hw-count-val{
     font-size:24px;font-weight:800;color:#4f8ef7;line-height:1;
+    font-family:'JetBrains Mono',monospace;
     font-variant-numeric:tabular-nums;transition:color .25s;
+    min-width:6ch;
   }
   #hw-count-sub{font-size:10px;color:#4f5870;margin-top:3px}
   #hw-bar-row{display:flex;align-items:center;gap:7px;margin-top:7px}
   #hw-bar-bg{flex:1;height:3px;background:rgba(79,142,247,.12);border-radius:2px;overflow:hidden}
   #hw-bar-fill{height:100%;background:linear-gradient(90deg,#4f8ef7,#e0883a);border-radius:2px;transition:width .3s ease;width:0%}
-  #hw-pct{font-size:10px;color:#7b82a0;white-space:nowrap;flex-shrink:0;font-weight:600}
+  #hw-pct{font-size:10px;color:#7b82a0;white-space:nowrap;flex-shrink:0;font-weight:600;font-family:'JetBrains Mono',monospace;min-width:4ch;text-align:right}
 
   /* ── Top-left: theme button ───────────────────────────────────────────── */
   #tt{

@@ -48,7 +48,8 @@ export default function HourHeatmap({ data, filters, onFilter }) {
   const [speedIdx,   setSpeedIdx]   = useState(0);
   const intervalRef = useRef(null);
 
-  const activeSlot = filters?.timeSlot ?? null;
+  const activeSlot   = filters?.timeSlot ?? null;
+  const hasGeoFilter = filters?.area || filters?.category;
 
   // Build lookup: dow -> hour -> row
   const lookup = {};
@@ -100,7 +101,18 @@ export default function HourHeatmap({ data, filters, onFilter }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <p className="section-title">¿A Qué Hora Atacan?</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <p className="section-title" style={{ margin: 0 }}>¿A Qué Hora Atacan?</p>
+            {hasGeoFilter && (
+              <span style={{
+                fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 600,
+                background: 'rgba(251,191,36,.07)', border: '1px solid rgba(251,191,36,.2)',
+                color: '#fbbf24',
+              }} title="Los patrones horarios no tienen desglose por división o categoría — se muestra la distribución global">
+                datos globales
+              </span>
+            )}
+          </div>
           <p className="section-sub">Análisis del ciclo diario: identificación de picos críticos de actividad delictiva según franja horaria y día de semana — la tarde-noche del viernes al sábado concentra el mayor volumen acumulado.</p>
         </div>
 

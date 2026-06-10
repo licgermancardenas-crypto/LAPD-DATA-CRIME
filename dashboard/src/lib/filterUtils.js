@@ -82,6 +82,28 @@ export function computeDivisions(crossDivCat, filters, activePart) {
   }).sort((a, b) => b.crimes - a.crimes);
 }
 
+// ── Global KPI summary filtered by area / category / part ────────────────
+export function computeFilteredSummary(crossDivCat, filters, activePart) {
+  const hasFilter = filters.area || filters.category || activePart !== 'all';
+  if (!hasFilter) return null;
+
+  let d = crossDivCat;
+  if (activePart !== 'all') d = d.filter(r => r.part === activePart);
+  if (filters.area)         d = d.filter(r => r.area === filters.area);
+  if (filters.category)     d = d.filter(r => r.category === filters.category);
+
+  const total   = d.reduce((s, r) => s + r.crimes,  0);
+  const cleared = d.reduce((s, r) => s + r.cleared, 0);
+  const violent = d.reduce((s, r) => s + r.violent, 0);
+
+  return {
+    total_crimes:   total,
+    clearance_rate: total ? parseFloat((cleared / total * 100).toFixed(1)) : 0,
+    violent_pct:    total ? parseFloat((violent / total * 100).toFixed(1)) : 0,
+    violent_crimes: violent,
+  };
+}
+
 // ── Victim stats filtered by category and/or age group ────────────────────
 export function computeVictims(rawCross, baseVictims, filters) {
   const activeFilters = filters.category || filters.ageGroup;

@@ -21,7 +21,7 @@ function PremTip({ active, payload }) {
   );
 }
 
-export default function PremiseChart({ data, activePart = 'all' }) {
+export default function PremiseChart({ data, activePart = 'all', filters }) {
   if (!data?.length) return null;
 
   const chartData = data.map(d => ({
@@ -29,18 +29,30 @@ export default function PremiseChart({ data, activePart = 'all' }) {
     value: activePart === 'p1' ? d.p1 : activePart === 'p2' ? d.p2 : d.crimes,
   })).sort((a, b) => b.value - a.value);
 
-  const partLabel = activePart === 'p1' ? 'Delitos Graves (Part 1)'
-                  : activePart === 'p2' ? 'Delitos Menores (Part 2)'
-                  : 'Todos los delitos';
+  const partLabel    = activePart === 'p1' ? 'Delitos Graves (Part 1)'
+                     : activePart === 'p2' ? 'Delitos Menores (Part 2)'
+                     : 'Todos los delitos';
+  const hasGeoFilter = filters?.area || filters?.category;
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
         <p className="section-title">Crímenes por Lugar — Macro-Categorías</p>
-        <span style={{
-          fontSize: 10, color: '#4f8ef7', background: 'rgba(79,142,247,.1)',
-          border: '1px solid rgba(79,142,247,.2)', borderRadius: 5, padding: '2px 8px',
-        }}>{partLabel}</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={{
+            fontSize: 10, color: '#4f8ef7', background: 'rgba(79,142,247,.1)',
+            border: '1px solid rgba(79,142,247,.2)', borderRadius: 5, padding: '2px 8px',
+          }}>{partLabel}</span>
+          {hasGeoFilter && (
+            <span style={{
+              fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 600,
+              background: 'rgba(251,191,36,.07)', border: '1px solid rgba(251,191,36,.2)',
+              color: '#fbbf24',
+            }} title="Los tipos de lugar no tienen desglose por división o categoría — se muestra la distribución global">
+              datos globales
+            </span>
+          )}
+        </div>
       </div>
       <p className="section-sub">Análisis del entorno del delito: Vía Pública lidera con el 72 % de los delitos graves, confirmando que el espacio urbano abierto es el principal escenario de riesgo. Residencial concentra infracciones menores.</p>
       <ResponsiveContainer width="100%" height={200}>

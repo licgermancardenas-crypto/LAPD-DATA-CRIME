@@ -18,7 +18,7 @@ import GlobalFilterPanel  from '@/components/GlobalFilterPanel';
 import ChartSkeleton      from '@/components/ChartSkeleton';
 import ExecutiveInsights  from '@/components/ExecutiveInsights';
 import OnboardingModal    from '@/components/OnboardingModal';
-import { computeCategories, computeDivisions, computeVictims } from '@/lib/filterUtils';
+import { computeCategories, computeDivisions, computeVictims, computeFilteredSummary } from '@/lib/filterUtils';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
 
@@ -194,6 +194,11 @@ export default function Home() {
     return computeVictims(data.victims?.raw_cross ?? [], data.victims, filters);
   }, [data, filters]);
 
+  const computedSummary = useMemo(() => {
+    if (!data || data === 'error') return null;
+    return computeFilteredSummary(data.crossDivCat, filters, activePart);
+  }, [data, filters, activePart]);
+
   // ── Filter setter ───────────────────────────────────────────────────────
   const handleFilter = useCallback((key, value) => {
     setFilters(f => ({ ...f, [key]: value }));
@@ -213,7 +218,10 @@ export default function Home() {
     </Shell>
   );
 
-  const { summary, monthly, hourly, premises, weather } = data;
+  const { summary: baseSummary, monthly, hourly, premises, weather } = data;
+  // Merge static summary with live-filtered KPIs (total, clearance, violent).
+  // Fields without cross-dimensional data (crimes_2024, avg_reporting_lag, by_year) stay static.
+  const summary = computedSummary ? { ...baseSummary, ...computedSummary } : baseSummary;
   const clrColor = summary.clearance_rate >= 20 ? '#3ecf8e'
                  : summary.clearance_rate >= 12 ? '#e0c066' : '#e05252';
 
@@ -348,7 +356,7 @@ export default function Home() {
           </div>
           <ExecutiveInsights />
           <ChartWrapper pending={isFiltering} minHeight={280}>
-            <MonthlyTrend data={monthly} activePart={activePart} />
+            <MonthlyTrend data={monthly} activePart={activePart} filters={filters} />
           </ChartWrapper>
           <div style={{ marginTop: 20 }}>
             <ReportingLagChart data={monthly} />
@@ -406,7 +414,7 @@ export default function Home() {
           </ChartWrapper>
           <div style={{ marginTop: 20 }}>
             <ChartWrapper pending={isFiltering} minHeight={260}>
-              <PremiseChart data={premises} activePart={activePart} />
+              <PremiseChart data={premises} activePart={activePart} filters={filters} />
             </ChartWrapper>
           </div>
         </Section>

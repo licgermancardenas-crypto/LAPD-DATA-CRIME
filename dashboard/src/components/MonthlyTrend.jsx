@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function MonthlyTrend({ data, activePart = 'all' }) {
+export default function MonthlyTrend({ data, activePart = 'all', filters }) {
   if (!data?.length) return null;
 
   const ticks = data.filter(d => d.month === 1).map(d => d.period);
@@ -29,19 +29,31 @@ export default function MonthlyTrend({ data, activePart = 'all' }) {
   const rollKey    = activePart === 'p1' ? 'rolling3_p1'   : activePart === 'p2' ? 'rolling3_p2'   : 'rolling3_daily';
   const barColor   = activePart === 'p1' ? '#6d28d9' : activePart === 'p2' ? '#5b21b6' : '#3b0764';
   const partLabel  = activePart === 'p1' ? 'Part 1 – Graves' : activePart === 'p2' ? 'Part 2 – Menores' : 'Todos';
+  const hasGeoFilter = filters?.area || filters?.category;
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4, flexWrap: 'wrap', gap: 6 }}>
         <p className="section-title">Evolución Anual del Crimen</p>
-        {activePart !== 'all' && (
-          <span style={{
-            fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 700,
-            background: activePart === 'p1' ? 'rgba(224,136,58,.12)' : 'rgba(79,142,247,.12)',
-            color:      activePart === 'p1' ? '#e0883a'               : '#4f8ef7',
-            border:     activePart === 'p1' ? '1px solid rgba(224,136,58,.3)' : '1px solid rgba(79,142,247,.3)',
-          }}>{partLabel}</span>
-        )}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          {activePart !== 'all' && (
+            <span style={{
+              fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 700,
+              background: activePart === 'p1' ? 'rgba(224,136,58,.12)' : 'rgba(79,142,247,.12)',
+              color:      activePart === 'p1' ? '#e0883a'               : '#4f8ef7',
+              border:     activePart === 'p1' ? '1px solid rgba(224,136,58,.3)' : '1px solid rgba(79,142,247,.3)',
+            }}>{partLabel}</span>
+          )}
+          {hasGeoFilter && (
+            <span style={{
+              fontSize: 10, padding: '2px 8px', borderRadius: 5, fontWeight: 600,
+              background: 'rgba(251,191,36,.07)', border: '1px solid rgba(251,191,36,.2)',
+              color: '#fbbf24',
+            }} title="La serie temporal no tiene desglose por división o categoría — se muestra la tendencia global">
+              datos globales
+            </span>
+          )}
+        </div>
       </div>
       <p className="section-sub">
         Monitoreo del comportamiento macro del crimen: la media móvil trimestral (línea cian) revela la tendencia estructural, filtrando las variaciones de calendario. ¿Está bajando o subiendo el problema real?

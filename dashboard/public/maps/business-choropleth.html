@@ -170,11 +170,23 @@ function buildLegend(m) {
 }
 buildLegend(metric);
 
+// ── Zoom-adaptive choropleth style ────────────────────────────────────────────
+var ZOOM_CHOROPLETH = [[15,.2,.58],[14,.3,.62],[13,.4,.66],[12,.5,.70],[11,.7,.72],[0,1.0,.78]];
+var zoomW = 0.7, zoomFO = 0.72;
+function applyZoomStyle() {
+  var z = map.getZoom();
+  for (var i = 0; i < ZOOM_CHOROPLETH.length; i++) {
+    if (z >= ZOOM_CHOROPLETH[i][0]) { zoomW = ZOOM_CHOROPLETH[i][1]; zoomFO = ZOOM_CHOROPLETH[i][2]; break; }
+  }
+  if (geoLayer) geoLayer.setStyle(fStyle);
+}
+map.on('zoomend', applyZoomStyle);
+
 // ── Style ──────────────────────────────────────────────────────────────────
 function fStyle(f) {
   var p=f.properties, cfg=METRICS[metric];
   var t=p[cfg.normKey]||0;
-  return{fillColor:lerp(cfg.scale,t),fillOpacity:.72,color:dark?'#0a0c12':'#b0b6c8',weight:.8,opacity:.9};
+  return{fillColor:lerp(cfg.scale,t),fillOpacity:zoomFO,color:dark?'#0a0c12':'#b0b6c8',weight:zoomW,opacity:.9};
 }
 
 // ── Popup ──────────────────────────────────────────────────────────────────
@@ -300,6 +312,7 @@ fetch('/data/neighborhood_business_enriched.geojson')
         });
       }
     }).addTo(map);
+    applyZoomStyle();
     tick();
   })
   .catch(function(e){document.getElementById('loading').innerHTML='<p style="color:#e05252;text-align:center;padding:24px">'+e.message+'</p>';});

@@ -107,10 +107,22 @@ document.getElementById('tt').addEventListener('click', function(){
   if(geoLayer) geoLayer.setStyle(fStyle);
 });
 
+// ── Zoom-adaptive choropleth style ────────────────────────────────────────────
+var ZOOM_CHOROPLETH = [[15,.2,.58],[14,.3,.62],[13,.4,.66],[12,.5,.70],[11,.7,.72],[0,1.0,.78]];
+var zoomW = 0.7, zoomFO = 0.72;
+function applyZoomStyle() {
+  var z = map.getZoom();
+  for (var i = 0; i < ZOOM_CHOROPLETH.length; i++) {
+    if (z >= ZOOM_CHOROPLETH[i][0]) { zoomW = ZOOM_CHOROPLETH[i][1]; zoomFO = ZOOM_CHOROPLETH[i][2]; break; }
+  }
+  if (geoLayer) geoLayer.setStyle(fStyle);
+}
+map.on('zoomend', applyZoomStyle);
+
 // ── Style ──────────────────────────────────────────────────────────────────
 function fStyle(f){
   var n = f.properties.norm||0;
-  return{fillColor:lerp(n),fillOpacity:0.70,color:dark?'#0a0c12':'#c8ccd6',weight:0.5,opacity:0.8};
+  return{fillColor:lerp(n),fillOpacity:zoomFO,color:dark?'#0a0c12':'#c8ccd6',weight:zoomW,opacity:0.8};
 }
 
 // ── Risk colors ─────────────────────────────────────────────────────────────
@@ -162,6 +174,7 @@ fetch('/data/tract_crimes_per_1000.geojson')
         });
       }
     }).addTo(map);
+    applyZoomStyle();
   })
   .catch(function(e){
     document.getElementById('loading').innerHTML =

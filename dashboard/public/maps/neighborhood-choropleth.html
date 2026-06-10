@@ -155,15 +155,27 @@ function buildLegend(m) {
 }
 buildLegend(metric);
 
+// ── Zoom-adaptive choropleth style ────────────────────────────────────────────
+var ZOOM_CHOROPLETH = [[15,.2,.58],[14,.3,.62],[13,.4,.66],[12,.5,.70],[11,.7,.72],[0,1.0,.78]];
+var zoomW = 0.7, zoomFO = 0.72;
+function applyZoomStyle() {
+  var z = map.getZoom();
+  for (var i = 0; i < ZOOM_CHOROPLETH.length; i++) {
+    if (z >= ZOOM_CHOROPLETH[i][0]) { zoomW = ZOOM_CHOROPLETH[i][1]; zoomFO = ZOOM_CHOROPLETH[i][2]; break; }
+  }
+  if (geoLayer) geoLayer.setStyle(fStyle);
+}
+map.on('zoomend', applyZoomStyle);
+
 // ── Style ──────────────────────────────────────────────────────────────────
 function fStyle(f) {
   var p = f.properties, cfg = METRICS[metric];
   var t = p[cfg.normKey] || 0;
   return {
     fillColor: lerp(cfg.scale, t),
-    fillOpacity: 0.72,
+    fillOpacity: zoomFO,
     color: dark ? '#0a0c12' : '#b0b6c8',
-    weight: 0.8,
+    weight: zoomW,
     opacity: 0.9
   };
 }
@@ -304,6 +316,7 @@ fetch('/data/neighborhood_crimes.geojson')
         });
       }
     }).addTo(map);
+    applyZoomStyle();
     onAllLoaded();
   })
   .catch(function(e){

@@ -1,12 +1,25 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function InfoTooltip({ text, width = 240 }) {
   const [show, setShow] = useState(false);
+  const [pos, setPos]   = useState({ bottom: 0, left: 0 });
+  const ref = useRef(null);
+
+  const handleEnter = () => {
+    if (ref.current) {
+      const r = ref.current.getBoundingClientRect();
+      setPos({ bottom: window.innerHeight - r.top + 8, left: r.left + r.width / 2 });
+    }
+    setShow(true);
+  };
+
   return (
     <span
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: 5, verticalAlign: 'middle' }}
-      onMouseEnter={() => setShow(true)}
+      ref={ref}
+      style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 5, verticalAlign: 'middle' }}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
     >
       {/* ⓘ circle */}
@@ -21,12 +34,12 @@ export default function InfoTooltip({ text, width = 240 }) {
         transition: 'border-color .15s, background .15s, color .15s',
       }}>i</span>
 
-      {/* Floating tooltip */}
-      {show && (
+      {/* Tooltip via portal — escapes overflow:auto parents (sidebar, scroll containers) */}
+      {show && typeof document !== 'undefined' && createPortal(
         <span style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 8px)',
-          left: '50%',
+          position: 'fixed',
+          bottom: pos.bottom,
+          left: pos.left,
           transform: 'translateX(-50%)',
           width,
           background: 'rgba(4,6,14,.95)',
@@ -56,7 +69,8 @@ export default function InfoTooltip({ text, width = 240 }) {
             transform: 'translateX(-50%) rotate(45deg)',
             display: 'block',
           }} />
-        </span>
+        </span>,
+        document.body
       )}
     </span>
   );

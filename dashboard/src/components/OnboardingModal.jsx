@@ -152,11 +152,11 @@ export default function OnboardingModal({ open, onClose }) {
             onClick={onClose}
             style={{
               background: 'none', border: 'none',
-              color: '#3a4060', fontSize: 11, cursor: 'pointer',
+              color: '#5a6280', fontSize: 11, cursor: 'pointer',
               transition: 'color .15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.color = '#7b82a0'}
-            onMouseLeave={e => e.currentTarget.style.color = '#3a4060'}
+            onMouseEnter={e => e.currentTarget.style.color = '#9096b0'}
+            onMouseLeave={e => e.currentTarget.style.color = '#5a6280'}
           >Saltar introducción</button>
         </div>
       </div>

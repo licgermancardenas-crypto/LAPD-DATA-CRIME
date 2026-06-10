@@ -234,12 +234,37 @@ tDark.addTo(map);
 // ── Heat layer ───────────────────────────────────────────────────────────────
 var heat = null;
 var HEAT_OPTS = {
-  radius:  18,
-  blur:    15,
+  radius:  15,
+  blur:    11,
   maxZoom: 15,
   max:     1.0,
   gradient:{0.15:'#1e40af', 0.35:'#7c3aed', 0.55:'#db2777', 0.75:'#f97316', 1.0:'#fde047'}
 };
+
+// ── Zoom-adaptive heat params ─────────────────────────────────────────────────
+// [minZoom, radius, blur] — matched top-down, first hit wins
+var ZOOM_HEAT = [
+  [15, 30,  5],   // street level: focused spots, no diffusion
+  [14, 26,  8],   // block level
+  [13, 22, 10],   // neighborhood
+  [12, 18, 12],   // district
+  [11, 15, 11],   // city (default start zoom)
+  [10, 12,  8],   // basin overview
+  [ 0, 10,  6]    // full macro / very zoomed out
+];
+
+function applyZoomParams() {
+  if(!heat) return;
+  var z = map.getZoom();
+  for(var i = 0; i < ZOOM_HEAT.length; i++){
+    if(z >= ZOOM_HEAT[i][0]){
+      heat.setOptions({radius: ZOOM_HEAT[i][1], blur: ZOOM_HEAT[i][2]});
+      return;
+    }
+  }
+}
+
+map.on('zoomend', applyZoomParams);
 
 // ── Theme ────────────────────────────────────────────────────────────────────
 document.getElementById('tt').addEventListener('click', function(){
@@ -382,6 +407,7 @@ fetch('/data/crime_points_hourly.json')
 
     // Create heatmap layer
     heat = L.heatLayer(allHoursPts, HEAT_OPTS).addTo(map);
+    applyZoomParams();
 
     // Build sparkline from real counts
     buildSparkline(d.counts);

@@ -478,6 +478,18 @@ document.querySelectorAll('.mb').forEach(function(btn) {
   });
 });
 
+// ── Zoom-adaptive style (divisions: large polygons, start zoom 10) ───────────
+var ZOOM_CHOROPLETH = [[14,.8,.55],[13,1.0,.58],[12,1.2,.62],[11,1.5,.65],[10,1.8,.65],[0,2.2,.72]];
+var zoomW = 1.8, zoomFO = 0.65;
+function applyZoomStyle() {
+  var z = map.getZoom();
+  for (var i = 0; i < ZOOM_CHOROPLETH.length; i++) {
+    if (z >= ZOOM_CHOROPLETH[i][0]) { zoomW = ZOOM_CHOROPLETH[i][1]; zoomFO = ZOOM_CHOROPLETH[i][2]; break; }
+  }
+  if (geoLayer) geoLayer.setStyle(featureStyle);
+}
+map.on('zoomend', applyZoomStyle);
+
 // ── Layer style ─────────────────────────────────────────────────────────────
 function featureStyle(f) {
   var p = f.properties;
@@ -499,9 +511,9 @@ function featureStyle(f) {
   }
   return {
     fillColor:   lerp(t, stops),
-    fillOpacity: (currentHour !== null && metric === 'crimes' && !activeCat) ? 0.78 : 0.65,
+    fillOpacity: (currentHour !== null && metric === 'crimes' && !activeCat) ? zoomFO + 0.13 : zoomFO,
     color:       dark ? '#0a0c12' : '#c8ccd6',
-    weight: 1.8, opacity: 0.9
+    weight: zoomW, opacity: 0.9
   };
 }
 
@@ -541,6 +553,7 @@ fetch('/data/lapd_divisions_crimes.geojson')
         });
       }
     }).addTo(map);
+    applyZoomStyle();
   })
   .catch(function(e){ console.error('GeoJSON error:',e); });
 

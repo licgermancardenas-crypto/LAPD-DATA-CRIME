@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="/js/lapd-stations.js"></script>
 <style>
   :root{--bg:#0a0c12;--surface:rgba(10,12,18,.92);--surface-s:#1e2230;--border:#2e334d;--text:#e4e6f0;--muted:#7b82a0;--popup-bg:#1e2230;--outline:#0a0c12}
   .lm{--bg:#eef0f4;--surface:rgba(255,255,255,.95);--surface-s:#fff;--border:#d4d8e2;--text:#1a1d27;--muted:#6b7280;--popup-bg:rgba(255,255,255,.98);--outline:#c8ccd6}
@@ -170,7 +171,7 @@ fetch('/data/tract_crimes_per_1000.geojson')
         layer.on({
           mouseover: function(e){e.target.setStyle({fillOpacity:0.90,weight:1.5,color:'#4f8ef7'});e.target.bringToFront();},
           mouseout:  function(e){geoLayer.resetStyle(e.target);},
-          click:     function(){document.getElementById('hint').style.display='none';}
+          click:     function(){document.getElementById('hint').style.display='none';window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'per1k',clickType:'tract',tract:p.tract6||'—',total:p.crime_count||0,crimes_per_1000:p.crimes_per_1000||0,risk:p.risk||'—',population:p.population||0},'*');}
         });
       }
     }).addTo(map);
@@ -204,6 +205,7 @@ fetch('/data/lapd_divisions_crimes.geojson')
     }).addTo(map);
   })
   .catch(function(){});
+addPoliceStations(map);
 </script>
 </body>
 </html>

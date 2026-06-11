@@ -17,8 +17,14 @@ import PremiseChart       from '@/components/PremiseChart';
 import GlobalFilterPanel  from '@/components/GlobalFilterPanel';
 import ChartSkeleton      from '@/components/ChartSkeleton';
 import ExecutiveInsights  from '@/components/ExecutiveInsights';
+import KeyInsights        from '@/components/KeyInsights';
 import OnboardingModal    from '@/components/OnboardingModal';
-import { computeCategories, computeDivisions, computeVictims, computeFilteredSummary } from '@/lib/filterUtils';
+import {
+  computeVictims, computeFilteredSummary,
+  computeCategories, computeDivisions,
+  filterCrossRows, aggregateSummary, aggregateDivisions,
+  aggregateCategories, aggregateByYear, aggregateMonthly,
+} from '@/lib/filterUtils';
 
 const LaMap = dynamic(() => import('@/components/LaMap'), { ssr: false });
 
@@ -122,7 +128,7 @@ export default function Home() {
   const [activePart,      setActivePart]      = useState('all');
   const [showOnboarding,  setShowOnboarding]  = useState(false);
   const [filters,         setFilters]         = useState({
-    area: null, category: null, ageGroup: null, timeSlot: null,
+    area: null, category: null, ageGroup: null, timeSlot: null, years: [], months: [],
   });
   const [isFiltering, setIsFiltering] = useState(false);
   const filtersReady = useRef(false);
@@ -148,8 +154,9 @@ export default function Home() {
       fetch(`${b}/victims.json`).then(r => r.json()),
       fetch(`${b}/premises.json`).then(r => r.json()),
       fetch(`${b}/cross_div_cat.json`).then(r => r.json()),
-    ]).then(([summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat]) => {
-      setData({ summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat });
+      fetch(`${b}/monthly_cross.json`).then(r => r.json()).catch(() => null),
+    ]).then(([summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat, monthlyCross]) => {
+      setData({ summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat, monthlyCross });
     }).catch(() => setData('error'));
   }, []);
 
@@ -178,26 +185,82 @@ export default function Home() {
   }, [filters, activePart]);
 
   // ── Cross-filter computed data ──────────────────────────────────────────
+  // When monthlyCross is loaded, route ALL filter combos (incl. year) through it.
+  // When not loaded, fall back to crossDivCat for area/category/part (no year support).
+  const hasMC = !!(data && data !== 'error' && data.monthlyCross);
+  const hasAnyFilter = filters.years?.length > 0 || filters.months?.length > 0 || filters.area || filters.category || activePart !== 'all';
+
+  // Filtered rows for charts where area is a filter dimension (summary, monthly, categories)
+  const fcRows = useMemo(() => {
+    if (!hasMC || !hasAnyFilter) return null;
+    return filterCrossRows(data.monthlyCross, filters, activePart);
+  }, [hasMC, hasAnyFilter, data, filters, activePart]);
+
+  // Filtered rows for DivisionBar — same as above but WITHOUT area filter
+  // (DivisionBar always shows all divisions; area is its OUTPUT filter, not input)
+  const fcRowsNoArea = useMemo(() => {
+    if (!hasMC || !hasAnyFilter) return null;
+    return filterCrossRows(data.monthlyCross, filters, activePart, { skipArea: true });
+  }, [hasMC, hasAnyFilter, data, filters, activePart]);
+
+  const computedSummary = useMemo(() => {
+    if (!data || data === 'error') return null;
+    if (fcRows) return aggregateSummary(fcRows);
+    return computeFilteredSummary(data.crossDivCat, filters, activePart);
+  }, [data, fcRows, filters, activePart]);
+
   const computedCategories = useMemo(() => {
     if (!data || data === 'error') return null;
+    if (fcRows) return aggregateCategories(fcRows, data.categories);
     return computeCategories(data.crossDivCat, data.categories, filters, activePart);
-  }, [data, filters, activePart]);
+  }, [data, fcRows, filters, activePart]);
 
   const computedDivisions = useMemo(() => {
     if (!data || data === 'error') return null;
+    if (fcRowsNoArea) return aggregateDivisions(fcRowsNoArea);
     const result = computeDivisions(data.crossDivCat, filters, activePart);
-    return result ?? data.division; // null = use base
-  }, [data, filters, activePart]);
+    return result ?? data.division;
+  }, [data, fcRowsNoArea, filters, activePart]);
 
   const computedVictims = useMemo(() => {
     if (!data || data === 'error') return null;
     return computeVictims(data.victims?.raw_cross ?? [], data.victims, filters);
   }, [data, filters]);
 
-  const computedSummary = useMemo(() => {
+  // Monthly time series — filtered by all active dimensions (from monthlyCross when available)
+  const computedMonthly = useMemo(() => {
+    if (!fcRows) return null;
+    const hasTimeDimensionFilter = filters.area || filters.category || filters.years?.length || filters.months?.length;
+    if (!hasTimeDimensionFilter) return null;
+    return aggregateMonthly(fcRows);
+  }, [fcRows, filters.area, filters.category, filters.years, filters.months]);
+
+  // By-year cards
+  const computedByYear = useMemo(() => {
     if (!data || data === 'error') return null;
-    return computeFilteredSummary(data.crossDivCat, filters, activePart);
-  }, [data, filters, activePart]);
+    if (fcRows) return aggregateByYear(fcRows);
+
+    // Fallback (monthlyCross not loaded): part-only filter via monthly.json
+    if (activePart !== 'all') {
+      const crimesKey = activePart === 'p1' ? 'crimes_p1' : 'crimes_p2';
+      const yearMap = {};
+      data.monthly.forEach(r => {
+        if (!yearMap[r.year]) yearMap[r.year] = { year: r.year, crimes: 0 };
+        yearMap[r.year].crimes += r[crimesKey] || 0;
+      });
+      const partRows = data.crossDivCat.filter(r => r.part === activePart);
+      const totC = partRows.reduce((s, r) => s + r.crimes,  0);
+      const totCl= partRows.reduce((s, r) => s + r.cleared, 0);
+      const totV = partRows.reduce((s, r) => s + r.violent, 0);
+      const clrRate = totC ? parseFloat((totCl / totC * 100).toFixed(1)) : 0;
+      const vioRate = totC ? parseFloat((totV  / totC * 100).toFixed(1)) : 0;
+      return Object.values(yearMap).map(yr => ({
+        year: yr.year, crimes: yr.crimes,
+        clearance_rate: clrRate, violent_pct: vioRate,
+      })).sort((a, b) => a.year - b.year);
+    }
+    return null;
+  }, [data, fcRows, activePart]);
 
   // ── Filter setter ───────────────────────────────────────────────────────
   const handleFilter = useCallback((key, value) => {
@@ -219,6 +282,12 @@ export default function Home() {
   );
 
   const { summary: baseSummary, monthly, hourly, premises, weather } = data;
+  const displayMonthly = (filters.years?.length || filters.months?.length)
+    ? monthly.filter(r => (!filters.years?.length  || filters.years.includes(r.year)) && (!filters.months?.length || filters.months.includes(r.month)))
+    : monthly;
+  const displayWeather = (filters.years?.length || filters.months?.length)
+    ? weather.filter(r => (!filters.years?.length  || filters.years.includes(r.year)) && (!filters.months?.length || filters.months.includes(r.month)))
+    : weather;
   // Merge static summary with live-filtered KPIs (total, clearance, violent).
   // Fields without cross-dimensional data (crimes_2024, avg_reporting_lag, by_year) stay static.
   const summary = computedSummary ? { ...baseSummary, ...computedSummary } : baseSummary;
@@ -326,27 +395,37 @@ export default function Home() {
       <main style={{ flex: 1, padding: '44px 40px 80px', maxWidth: 1160, width: '100%' }}>
 
         {/* Annual mini cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginBottom: 44 }}>
-          {summary.by_year.map(yr => (
-            <div key={yr.year} style={{
-              background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 10,
-              padding: '12px 10px', textAlign: 'center', cursor: 'default',
-              transition: 'all 0.2s ease',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3f55'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2d3a'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              <p style={{ fontSize: 11, color: '#7b82a0', marginBottom: 5 }}>{yr.year}</p>
-              <p style={{ fontSize: 20, fontWeight: 800, color: '#e8eaf0', marginBottom: 3 }}>{(yr.crimes / 1000).toFixed(0)}k</p>
-              <p style={{ fontSize: 10, color: '#3ecf8e' }}>CLR {yr.clearance_rate}%</p>
-              <p style={{ fontSize: 10, color: '#e05252' }}>VIO {yr.violent_pct}%</p>
+        {(() => {
+          const byYear = computedByYear || summary.by_year;
+          const isFiltered = !!computedByYear;
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginBottom: 44 }}>
+              {byYear.map(yr => (
+                <div key={yr.year} style={{
+                  background: '#1a1d27', borderRadius: 10,
+                  border: isFiltered ? '1px solid rgba(79,142,247,.25)' : '1px solid #2a2d3a',
+                  padding: '12px 10px', textAlign: 'center', cursor: 'default',
+                  transition: 'all 0.2s ease',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3f55'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = isFiltered ? 'rgba(79,142,247,.25)' : '#2a2d3a'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <p style={{ fontSize: 11, color: '#7b82a0', marginBottom: 5 }}>{yr.year}</p>
+                  <p style={{ fontSize: 20, fontWeight: 800, color: '#e8eaf0', marginBottom: 3 }}>
+                    {yr.crimes >= 1000 ? `${(yr.crimes / 1000).toFixed(0)}k` : yr.crimes.toLocaleString()}
+                  </p>
+                  <p style={{ fontSize: 10, color: '#3ecf8e' }}>CLR {yr.clearance_rate}%</p>
+                  <p style={{ fontSize: 10, color: '#e05252' }}>VIO {yr.violent_pct}%</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          );
+        })()}
 
         {/* OVERVIEW */}
         <Section id="overview">
           <SectionHeader title="Macro Tendencia" sub="¿Está mejorando o empeorando la seguridad? Indicadores del período 2020-2024 — evolución anual del clearance rate, violencia y volumen total." badge="1 004 894 registros" />
+          <KeyInsights section="overview" summary={summary} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 18, marginBottom: 28 }}>
             <KpiCard label="Total de Delitos"          value={summary.total_crimes.toLocaleString()}   sub="Incidentes confirmados LAPD 2020-2024"                                          color="#4f8ef7" icon={Shield} />
             <KpiCard label="Tasa de Esclarecimiento"   value={`${summary.clearance_rate}%`}           sub="Casos con arresto o cierre excepcional"                                        color={clrColor} icon={CheckCircle} />
@@ -356,10 +435,10 @@ export default function Home() {
           </div>
           <ExecutiveInsights />
           <ChartWrapper pending={isFiltering} minHeight={280}>
-            <MonthlyTrend data={monthly} activePart={activePart} filters={filters} />
+            <MonthlyTrend data={monthly} filteredData={computedMonthly} activePart={activePart} filters={filters} setFilters={setFilters} />
           </ChartWrapper>
           <div style={{ marginTop: 20 }}>
-            <ReportingLagChart data={monthly} />
+            <ReportingLagChart data={displayMonthly} filters={filters} setFilters={setFilters} />
           </div>
         </Section>
 
@@ -404,11 +483,13 @@ export default function Home() {
             sub="Ranking de las 18 categorías criminales de mayor a menor frecuencia. El delito #1 resalta en cian. Clic en barra para sincronizar el mapa geográfico."
             badge="18 categorías"
           />
+          <KeyInsights section="categories" summary={summary} />
           <ChartWrapper pending={isFiltering} minHeight={340}>
             <CategoryChart
               data={computedCategories}
               activePart={activePart}
               filters={filters}
+              setFilters={setFilters}
               onFilter={handleFilter}
             />
           </ChartWrapper>
@@ -439,8 +520,8 @@ export default function Home() {
         <Section id="external">
           <SectionHeader title="Contexto Externo" sub="¿Influye el calor o el desempleo en el crimen? Correlaciones con temperatura diaria y tasa de desempleo mensual en el área metropolitana de Los Ángeles." />
           <div style={{ display: 'grid', gap: 20 }}>
-            <WeatherChart data={weather} />
-            <UnemploymentChart data={monthly} />
+            <WeatherChart data={displayWeather} filters={filters} setFilters={setFilters} />
+            <UnemploymentChart data={displayMonthly} filters={filters} setFilters={setFilters} />
           </div>
           <div style={{ background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 12, padding: '20px 24px', marginTop: 20 }}>
             <p style={{ fontSize: 14, fontWeight: 700, color: '#e8eaf0', marginBottom: 16 }}>Hallazgos Clave</p>

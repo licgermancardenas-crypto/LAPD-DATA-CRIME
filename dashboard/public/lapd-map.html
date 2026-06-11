@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="/js/lapd-stations.js"></script>
 <style>
   :root {
     --bg:#0a0c12; --surface:rgba(10,12,18,.92); --surface-s:#1e2230;
@@ -194,6 +195,20 @@
   .lm .ip-ctx-k{color:#8090b0}
   .ip-ctx-v{font-size:10px;font-weight:600;color:#7b82a0}
 
+  /* ── Contextual insight ── */
+  #panel-insight{
+    margin-top:9px;padding:8px 10px;
+    border-radius:8px;
+    background:rgba(79,142,247,.05);
+    border:1px solid rgba(79,142,247,.1);
+    font-size:12px;color:#e2e8f0;line-height:1.6;
+    opacity:0;transition:opacity .3s ease;
+    display:none;
+  }
+  #panel-insight.visible{display:block}
+  #panel-insight strong{font-weight:700}
+  .lm #panel-insight{background:rgba(30,60,120,.07);border-color:rgba(79,142,247,.2);color:#2a3050}
+
   /* CTA footer */
   #ip-cta{
     margin-top:10px;display:flex;align-items:center;gap:6px;
@@ -305,6 +320,7 @@
   <!-- Hour / title -->
   <div id="ip-hour">All Hours</div>
   <div id="ip-sub">2020–2024 · 5 years</div>
+  <div id="panel-insight"></div>
 
   <div class="ip-sep"></div>
 
@@ -370,9 +386,12 @@ var maxHourFrac   = 1;
 var currentHour   = null;   // null = all-day view, 0-23 = specific hour
 var isPlaying     = false;
 var playInterval  = null;
-var grandTotal    = 0;
-var peakHour      = 0;
-var quietHour     = 0;
+var grandTotal       = 0;
+var _origGrandTotal  = 0;
+var _mcData          = null;
+var _activePeriod    = null;
+var peakHour         = 0;
+var quietHour        = 0;
 
 // ── Popup builder (reads activeCat state) ──────────────────────────────────
 function buildPopupHtml(p) {
@@ -549,7 +568,7 @@ fetch('/data/lapd_divisions_crimes.geojson')
             e.target.bringToFront();
           },
           mouseout:  function(e){ geoLayer.resetStyle(e.target); },
-          click:     function(){ document.getElementById('hint').style.display='none'; }
+          click:     function(){document.getElementById('hint').style.display='none';window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'divisions',clickType:'division',name:p.name,total:p.total_crimes||0,clearance:p.clearance||0,topCategory:p.top_category||'—',rank:p.rank||'—',totalDivs:21},'*');}
         });
       }
     }).addTo(map);
@@ -655,6 +674,7 @@ function setHour(h) {
   updateHourLabel();
   refreshStyle();
   updateInfoPanel();
+  updateInsight(h);
   document.getElementById('hour-reset').style.display = 'flex';
 }
 
@@ -666,6 +686,7 @@ function resetHour() {
   updateHourLabel();
   refreshStyle();
   updateInfoPanel();
+  updateInsight(null);
   document.getElementById('hour-reset').style.display = 'none';
 }
 
@@ -869,14 +890,173 @@ fetch('/data/hourly_dow.json')
     document.getElementById('hc-label').innerHTML = 'Hourly data<small>unavailable</small>';
   });
 
-// ── Cross-filter bridge: receive category from parent React app ────────────
+// ── Contextual insight ──────────────────────────────────────────────────────
+var insightTimer = null;
+
+function getInsightText(h) {
+  if (h === null) return null;
+  if (h >= 22 || h <= 4)
+    return '🌙 <strong>Foco Nocturno:</strong> Alta concentración de asaltos y altercados en distritos de entretenimiento (Hollywood/Downtown).';
+  if (h >= 8 && h <= 17)
+    return '☀️ <strong>Foco Comercial:</strong> Pico de delitos contra la propiedad y hurtos en zonas corporativas y bancarias.';
+  return '⚡ <strong>Tránsito Urbano:</strong> Actividad delictiva moderada distribuida en nodos de transporte.';
+}
+
+function updateInsight(h) {
+  var el   = document.getElementById('panel-insight');
+  var text = getInsightText(h);
+
+  if (!text) {
+    el.style.opacity = '0';
+    clearTimeout(insightTimer);
+    insightTimer = setTimeout(function(){ el.classList.remove('visible'); }, 300);
+    return;
+  }
+
+  // Fade out → swap text → fade in
+  el.style.opacity = '0';
+  clearTimeout(insightTimer);
+  insightTimer = setTimeout(function() {
+    el.innerHTML = text;
+    el.classList.add('visible');
+    // Force reflow so opacity transition fires
+    void el.offsetWidth;
+    el.style.opacity = '1';
+  }, 280);
+}
+
+// ── Period filter (year / month) ────────────────────────────────────────────
+var MONTH_LABELS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function geoToMcName(geoName) {
+  var exc = {
+    'NORTH HOLLYWOOD': 'N Hollywood',
+    'WEST LOS ANGELES': 'West La',
+    '77TH STREET': '77Th Street'
+  };
+  if (exc[geoName]) return exc[geoName];
+  return geoName.split(' ').map(function(w) {
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }).join(' ');
+}
+
+function applyPeriodFilter(year, month) {
+  _activePeriod = (year || month) ? { year: year, month: month } : null;
+
+  if (!_activePeriod) {
+    // Restore originals
+    if (_origGrandTotal) { grandTotal = _origGrandTotal; _origGrandTotal = 0; }
+    divLayers.forEach(function(lr) {
+      var p = lr.props;
+      if (p._orig) {
+        p.total_crimes = p._orig.total_crimes;
+        p.clearance    = p._orig.clearance;
+        p.norm         = p._orig.norm;
+        p._clrNorm     = p._orig._clrNorm;
+        p.rank         = p._orig.rank;
+      }
+    });
+    if (geoLayer) { refreshStyle(); updatePopups(); updateInfoPanel(); }
+    var subEl = document.getElementById('ip-sub');
+    if (subEl) subEl.textContent = '2020–2024 · 5-year total';
+    return;
+  }
+
+  if (!_mcData) {
+    fetch('/data/monthly_cross.json')
+      .then(function(r) { return r.json(); })
+      .then(function(d) { _mcData = d; _doApplyPeriod(year, month); })
+      .catch(function() { console.warn('monthly_cross.json unavailable'); });
+  } else {
+    _doApplyPeriod(year, month);
+  }
+}
+
+function _doApplyPeriod(year, month) {
+  if (!geoLayer) return;
+
+  // Filter monthly_cross rows by selected period
+  var rows = _mcData.filter(function(r) {
+    return (!year  || r.year  === year)
+        && (!month || r.month === month);
+  });
+
+  // Aggregate crimes / cleared per division
+  var agg = {};
+  rows.forEach(function(r) {
+    if (!agg[r.area]) agg[r.area] = { crimes: 0, cleared: 0 };
+    agg[r.area].crimes  += r.crimes;
+    agg[r.area].cleared += r.cleared;
+  });
+
+  // Save originals on first filter, then overwrite props
+  divLayers.forEach(function(lr) {
+    var p = lr.props;
+    if (!p._orig) p._orig = {
+      total_crimes: p.total_crimes, clearance: p.clearance,
+      norm: p.norm, _clrNorm: p._clrNorm, rank: p.rank
+    };
+    var key = geoToMcName(p.name);
+    var d   = agg[key];
+    if (d) {
+      p.total_crimes = d.crimes;
+      p.clearance    = d.crimes > 0 ? parseFloat((d.cleared / d.crimes * 100).toFixed(1)) : 0;
+    } else {
+      p.total_crimes = 0;
+      p.clearance    = 0;
+    }
+  });
+
+  // Re-rank by filtered crime count
+  var sorted = divLayers.slice().sort(function(a, b) { return b.props.total_crimes - a.props.total_crimes; });
+  sorted.forEach(function(lr, i) { lr.props.rank = i + 1; });
+
+  // Re-normalize crime volume (norm)
+  var cVals = divLayers.map(function(lr) { return lr.props.total_crimes; });
+  var cMin = Math.min.apply(null, cVals), cMax = Math.max.apply(null, cVals);
+  divLayers.forEach(function(lr) {
+    lr.props.norm = (lr.props.total_crimes - cMin) / (cMax - cMin || 1);
+  });
+
+  // Re-normalize clearance rate (_clrNorm)
+  var clVals = divLayers.map(function(lr) { return lr.props.clearance || 0; });
+  var clMin = Math.min.apply(null, clVals), clMax = Math.max.apply(null, clVals);
+  divLayers.forEach(function(lr) {
+    lr.props._clrNorm = (lr.props.clearance - clMin) / (clMax - clMin || 1);
+  });
+
+  // Update grandTotal for info-panel percentages
+  var total = rows.reduce(function(s, r) { return s + r.crimes; }, 0);
+  if (!_origGrandTotal) _origGrandTotal = grandTotal;
+  grandTotal = total;
+
+  refreshStyle();
+  updatePopups();
+  updateInfoPanel();
+
+  // Subtitle label
+  var lbl = year ? String(year) : '2020–2024';
+  if (month) lbl += ' · ' + MONTH_LABELS_ES[month - 1];
+  var subEl = document.getElementById('ip-sub');
+  if (subEl) subEl.textContent = lbl + ' · filtrado';
+}
+
+// ── Cross-filter bridge: receive messages from parent React app ─────────────
 window.addEventListener('message', function(e) {
-  if (!e.data || e.data.type !== 'SET_CATEGORY') return;
-  var cat = e.data.category || '';
-  var sel = document.getElementById('cat-select');
-  if (sel) sel.value = cat;
-  applyCatFilter(cat);
+  if (!e.data) return;
+
+  if (e.data.type === 'SET_CATEGORY') {
+    var cat = e.data.category || '';
+    var sel = document.getElementById('cat-select');
+    if (sel) sel.value = cat;
+    applyCatFilter(cat);
+  }
+
+  if (e.data.type === 'SET_PERIOD') {
+    applyPeriodFilter(e.data.year || null, e.data.month || null);
+  }
 });
+addPoliceStations(map);
 </script>
 </body>
 </html>

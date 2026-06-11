@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="/js/lapd-stations.js"></script>
 <style>
   :root{--bg:#0a0c12;--surface:rgba(10,12,18,.82);--surface-s:#1e2230;--border:#2e334d;--text:#e4e6f0;--muted:#7b82a0}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -265,6 +266,9 @@ function applyZoomParams() {
 }
 
 map.on('zoomend', applyZoomParams);
+map.on('click', function(e){
+  window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'lapd-heat',clickType:'location',lat:e.latlng.lat.toFixed(4),lng:e.latlng.lng.toFixed(4)},'*');
+});
 
 // ── Theme ────────────────────────────────────────────────────────────────────
 document.getElementById('tt').addEventListener('click', function(){
@@ -430,6 +434,7 @@ fetch('/data/lapd_divisions_crimes.geojson')
       interactive: false,
     }).addTo(map);
   }).catch(function(){});
+addPoliceStations(map);
 </script>
 </body>
 </html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="/js/lapd-stations.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#010d1f;overflow:hidden}
+#map{position:absolute;inset:0}
+
+/* ── Leaflet dark blue overrides ─────────────────────────────────────── */
+.leaflet-control-zoom a{background:#061527!important;color:#38bdf8!important;border-color:#0c2461!important;font-weight:700}
+.leaflet-control-zoom a:hover{background:#0c2461!important;color:#7dd3fc!important}
+.leaflet-bar{border:1px solid #0c2461!important;border-radius:8px!important;overflow:hidden;box-shadow:0 0 20px rgba(14,165,233,.12)!important}
+.leaflet-control-attribution{background:rgba(1,13,31,.75)!important;color:#0c2461!important;font-size:9px!important;font-family:monospace}
+.leaflet-control-attribution a{color:#1e3a8a!important}
+.leaflet-popup-content-wrapper{background:#050f20!important;border:1px solid rgba(56,189,248,.3)!important;border-radius:10px!important;box-shadow:0 0 40px rgba(14,165,233,.2),0 0 80px rgba(14,165,233,.06)!important;color:#e4e8f0!important;font-family:monospace!important}
+.leaflet-popup-tip{background:#050f20!important}
+.leaflet-popup-close-button{color:#1e3a8a!important;font-size:18px!important;top:8px!important;right:10px!important}
+.leaflet-popup-close-button:hover{color:#38bdf8!important;background:none!important}
+.leaflet-popup-content{margin:14px 16px!important}
+
+/* ── Custom cluster icons ─────────────────────────────────────────────── */
+.osint-cl{display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:monospace;font-weight:700;cursor:pointer}
+.marker-cluster-small  .osint-cl{background:rgba(29,78,216,.15);border:1px solid rgba(29,78,216,.5);color:#60a5fa;box-shadow:0 0 10px rgba(29,78,216,.2)}
+.marker-cluster-medium .osint-cl{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.45);color:#38bdf8;box-shadow:0 0 14px rgba(14,165,233,.2)}
+.marker-cluster-large  .osint-cl{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.4);color:#7dd3fc;box-shadow:0 0 20px rgba(56,189,248,.2)}
+
+/* ── Scanline ─────────────────────────────────────────────────────────── */
+#scanline{position:absolute;inset:0;z-index:500;pointer-events:none;overflow:hidden}
+#scanline::after{content:'';position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(to bottom,transparent,rgba(14,165,233,.06),transparent);
+  animation:scan 9s linear infinite}
+@keyframes scan{0%{top:-2px}100%{top:100%}}
+
+/* ── Popup tip ────────────────────────────────────────────────────────── */
+.choro-tip{font-family:monospace;font-size:11px;background:rgba(5,15,32,.95);
+  border:1px solid rgba(56,189,248,.25);border-radius:6px;padding:7px 11px;
+  color:#38bdf8;white-space:nowrap;box-shadow:0 0 16px rgba(14,165,233,.15)}
+.choro-tip strong{color:#7dd3fc}
+
+/* ── Loading ─────────────────────────────────────────────────────────── */
+#loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:900;font-family:monospace;font-size:11px;color:#1d4ed8;letter-spacing:.14em;display:none}
+#loading.on{display:block}
+</style>
+</head>
+<body>
+<div id="scanline"></div>
+<div id="map"></div>
+<div id="loading">CARGANDO DATOS…</div>
+<script>
+// ── Read initial layer from URL param ─────────────────────────────────────
+const _initLayer = new URLSearchParams(location.search).get('layer') || 'heat';
+
+// ── Map ───────────────────────────────────────────────────────────────────
+const map = L.map('map',{center:[34.05,-118.25],zoom:11,zoomControl:true,attributionControl:true,preferCanvas:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; OSM &copy; CARTO',subdomains:'abcd',maxZoom:19,
+}).addTo(map);
+
+// ── State ─────────────────────────────────────────────────────────────────
+let _cache  = {};
+let _active = null;
+let _pts    = null;
+let _geo    = null;
+let _maxC   = 0;
+let _filters= {area:null,part:'all'};
+
+const $load = d => document.getElementById('loading').classList.toggle('on',d);
+
+// ── Loaders ───────────────────────────────────────────────────────────────
+async function loadPts(){
+  if(_pts)return _pts;
+  $load(true);
+  _pts=await fetch('/data/crime_points_hourly.json').then(r=>r.json());
+  $load(false);return _pts;
+}
+async function loadGeo(){
+  if(_geo)return _geo;
+  $load(true);
+  _geo=await fetch('/data/lapd_divisions_crimes.geojson').then(r=>r.json());
+  _maxC=Math.max(..._geo.features.map(f=>f.properties.total_crimes||0));
+  $load(false);return _geo;
+}
+
+// ── Heat layer — dark-blue cyberpunk gradient ─────────────────────────────
+async function buildHeat(){
+  const d=await loadPts();
+  const pts=[];
+  const mx=Math.max(...d.counts);
+  d.hours.forEach((h,i)=>{
+    const iv=d.counts[i]/mx;
+    for(let j=0;j<h.length;j+=2){
+      const[la,ln]=h[j];
+      if(la===0&&ln===0)continue;
+      pts.push([la,ln,iv]);
+    }
+  });
+  return L.heatLayer(pts,{
+    radius:20,blur:26,maxZoom:16,max:1.0,
+    gradient:{0:'#010d1f',0.2:'#0c2461',0.4:'#1d4ed8',0.6:'#0ea5e9',0.85:'#38bdf8',1:'#e0f2fe'},
+  });
+}
+
+// ── Cluster layer ─────────────────────────────────────────────────────────
+async function buildCluster(){
+  const d=await loadPts();
+  const g=L.markerClusterGroup({
+    maxClusterRadius:60,
+    iconCreateFunction:(c)=>{
+      const n=c.getChildCount();
+      const sz=n>500?46:n>100?36:28;
+      const cls=n>500?'large':n>100?'medium':'small';
+      const lbl=n>999?(n/1000).toFixed(1)+'k':n;
+      return L.divIcon({
+        html:`<div class="marker-cluster-${cls}"><div class="osint-cl" style="width:${sz}px;height:${sz}px;font-size:${sz>36?12:10}px">${lbl}</div></div>`,
+        className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],
+      });
+    },
+    spiderfyOnMaxZoom:true,showCoverageOnHover:false,
+    zoomToBoundsOnClick:true,disableClusteringAtZoom:16,
+    animate:true,animateAddingMarkers:false,
+  });
+  let tot=0;
+  d.hours.forEach((h,i)=>{
+    for(let j=0;j<h.length;j+=5){
+      const[la,ln]=h[j];
+      if(la===0&&ln===0)continue;
+      const m=L.circleMarker([la,ln],{radius:3.5,fillColor:'#38bdf8',color:'transparent',fillOpacity:.7,weight:0});
+      m.bindPopup(`<div style="color:#38bdf8;font-size:11px;line-height:1.6">
+        <div style="font-weight:700;color:#7dd3fc;margin-bottom:4px">◈ INCIDENT</div>
+        <div>HORA: <span style="color:#0ea5e9">${String(i).padStart(2,'0')}:XX</span></div>
+        <div style="margin-top:5px;font-size:9px;color:#0c2461">LAT:${la.toFixed(4)} LNG:${ln.toFixed(4)}</div>
+      </div>`);
+      m.on('click',function(){window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'cluster',clickType:'incident',hour:i,lat:la.toFixed(4),lng:ln.toFixed(4)},'*');});
+      g.addLayer(m);tot++;
+    }
+  });
+  g.on('clusterclick',function(e){
+    const cnt=e.layer.getChildCount();const ll=e.layer.getLatLng();
+    window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'cluster',clickType:'cluster',count:cnt,lat:ll.lat.toFixed(4),lng:ll.lng.toFixed(4)},'*');
+  });
+  return g;
+}
+
+// ── Choropleth ────────────────────────────────────────────────────────────
+function choroFill(c){
+  const t=c/_maxC;
+  if(t>.80)return '#0ea5e9';
+  if(t>.60)return '#1d4ed8';
+  if(t>.40)return '#1e3a8a';
+  if(t>.20)return '#0c2461';
+  return '#071b40';
+}
+function choroStyle(f,hi){
+  const c=f.properties.total_crimes||0;
+  if(hi)return{fillColor:'#38bdf8',fillOpacity:.55,color:'#7dd3fc',weight:2.5,opacity:.9};
+  return{fillColor:choroFill(c),fillOpacity:.3+(c/_maxC)*.45,color:'rgba(56,189,248,.4)',weight:1,opacity:.5};
+}
+async function buildChoropleth(){
+  const geo=await loadGeo();
+  // Rank by total crimes (1 = highest)
+  const _sorted=[...geo.features].sort((a,b)=>(b.properties.total_crimes||0)-(a.properties.total_crimes||0));
+  const _rankMap={};_sorted.forEach((f,i)=>{_rankMap[f.properties.name]=i+1;});
+  let _hov=null;
+  const layer=L.geoJSON(geo,{
+    style:f=>choroStyle(f,false),
+    onEachFeature:(feature,lyr)=>{
+      const p=feature.properties;
+      const name=p.name||'?';
+      lyr.on('mouseover',function(e){
+        if(_hov&&_hov!==this)_hov.setStyle(choroStyle(_hov.feature,false));
+        this.setStyle({fillOpacity:.8,weight:2,color:'#7dd3fc',fillColor:'#38bdf8'});
+        this.bringToFront();_hov=this;
+        L.popup({closeButton:false,offset:[0,-2]})
+          .setLatLng(e.latlng)
+          .setContent(`<div class="choro-tip">▸ <strong>${name}</strong><br>
+            INCIDENTES: <strong>${(p.total_crimes||0).toLocaleString()}</strong><br>
+            CLR: <strong>${(p.clearance||0).toFixed(1)}%</strong><br>
+            TOP: <strong>${p.top_category||'—'}</strong></div>`)
+          .openOn(map);
+      });
+      lyr.on('mouseout',function(){
+        const sel=_filters.area&&name.toUpperCase()===(_filters.area||'').toUpperCase();
+        this.setStyle(choroStyle(feature,sel));map.closePopup();
+      });
+      lyr.on('click',function(){
+        window.parent.postMessage({type:'OSINT_AREA_CLICK',area:name},'*');
+        window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'choropleth',clickType:'division',name:name,total:p.total_crimes||0,clearance:p.clearance||0,topCategory:p.top_category||'—',rank:_rankMap[name]||'—',totalDivs:21},'*');
+      });
+    },
+  });
+  return layer;
+}
+
+// ── Layer switcher ────────────────────────────────────────────────────────
+async function setLayer(name){
+  Object.values(_cache).forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
+  _active=name;
+  if(!_cache[name]){
+    if(name==='heat')_cache[name]=await buildHeat();
+    else if(name==='cluster')_cache[name]=await buildCluster();
+    else if(name==='choropleth')_cache[name]=await buildChoropleth();
+  }
+  if(_cache[name])_cache[name].addTo(map);
+  if(name==='choropleth'&&_filters.area)applyHighlight(_filters.area);
+}
+
+function applyHighlight(area){
+  if(!_cache['choropleth'])return;
+  _cache['choropleth'].eachLayer(lyr=>{
+    const name=lyr.feature?.properties?.name||'';
+    const match=area&&name.toUpperCase()===area.toUpperCase();
+    lyr.setStyle(choroStyle(lyr.feature,match));
+    if(match){lyr.bringToFront();map.fitBounds(lyr.getBounds(),{padding:[60,60]});}
+  });
+}
+
+// ── postMessage API ───────────────────────────────────────────────────────
+window.addEventListener('message',e=>{
+  const msg=e.data;
+  if(!msg)return;
+  if(msg.type==='OSINT_FILTER'){
+    _filters={...msg};
+    if(_active==='choropleth')applyHighlight(_filters.area||'');
+    if(_filters.area&&_cache['choropleth']){
+      _cache['choropleth'].eachLayer(lyr=>{
+        if((lyr.feature?.properties?.name||'').toUpperCase()===(_filters.area||'').toUpperCase())
+          map.fitBounds(lyr.getBounds(),{padding:[80,80]});
+      });
+    }else if(!_filters.area){map.setView([34.05,-118.25],11);}
+  }
+  if(msg.type==='OSINT_SET_LAYER')setLayer(msg.layer);
+});
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────
+setLayer(_initLayer);
+map.on('click',function(e){
+  if(_active==='heat')window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'heat',clickType:'location',lat:e.latlng.lat.toFixed(4),lng:e.latlng.lng.toFixed(4)},'*');
+});
+addPoliceStations(map);
+</script>
+</body>
+</html>

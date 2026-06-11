@@ -32,6 +32,25 @@ const MAIN_NAV = [
       { id: 'business',      label: 'Comercio y Crimen', icon: '🏪' },
     ],
   },
+  {
+    id: 'osiris',
+    label: 'Terminal OSINT',
+    icon: '◈',
+    href: '/osiris',
+    sub: [],
+  },
+  {
+    id: 'glossary',
+    label: 'Diccionario',
+    icon: '📖',
+    href: '/glossary',
+    sub: [
+      { id: 'temporal',     label: 'Métricas Temporales',    href: '/glossary#temporal'    },
+      { id: 'demographic',  label: 'Variables Demográficas', href: '/glossary#demographic' },
+      { id: 'crime-code',   label: 'Códigos de Crimen',      href: '/glossary#crime-code'  },
+      { id: 'lapd-concept', label: 'Conceptos LAPD',         href: '/glossary#lapd-concept'},
+    ],
+  },
 ];
 
 const DATA_ITEMS = [
@@ -57,8 +76,10 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
-  const isHome = pathname === '/' || pathname === '';
-  const isGeo  = pathname === '/geo';
+  const isHome     = pathname === '/' || pathname === '';
+  const isGeo      = pathname === '/geo';
+  const isOsiris   = pathname === '/osiris';
+  const isGlossary = pathname === '/glossary';
 
   const W = collapsed ? 60 : 244;
 
@@ -133,7 +154,11 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
 
         {/* Main nav items */}
         {MAIN_NAV.map(item => {
-          const active = item.id === 'dashboard' ? isHome : isGeo;
+          const active = item.id === 'dashboard' ? isHome
+                       : item.id === 'geo'       ? isGeo
+                       : item.id === 'osiris'    ? isOsiris
+                       : item.id === 'glossary'  ? isGlossary
+                       : false;
           return (
             <div key={item.id}>
               <NavItem
@@ -148,7 +173,9 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
                   {item.sub.map(sub => {
                     const subActive = item.id === 'dashboard'
                       ? activeSection === sub.id
-                      : geoActiveTab === sub.id;
+                      : item.id === 'geo'
+                      ? geoActiveTab === sub.id
+                      : false;
                     return (
                       <SubItem
                         key={sub.id}

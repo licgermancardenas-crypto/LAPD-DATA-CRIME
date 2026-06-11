@@ -101,7 +101,7 @@ export default function GlobalFilterPanel({
   const hasAnyFilter      = hasPartFilter || hasDropdownFilter || interactiveKeys.length > 0;
 
   const clearAll = () => {
-    setFilters({ area: null, category: null, ageGroup: null, timeSlot: null });
+    setFilters({ area: null, category: null, ageGroup: null, timeSlot: null, years: [], months: [] });
     setActivePart('all');
   };
   const clearOne = (key) => setFilters(f => ({ ...f, [key]: null }));

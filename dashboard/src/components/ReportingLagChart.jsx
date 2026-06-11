@@ -5,6 +5,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import InfoTooltip from './InfoTooltip';
+import TimeFilterBar from './TimeFilterBar';
 
 const TOOLTIP_TEXT = 'Mide el promedio de días que transcurren desde que se comete el delito hasta que la víctima lo denuncia ante la LAPD. Valores altos pueden indicar desconfianza institucional o barreras de acceso.';
 
@@ -29,7 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function ReportingLagChart({ data }) {
+export default function ReportingLagChart({ data, filters, setFilters }) {
   if (!data?.length) return null;
 
   const ticks = data.filter(d => d.month === 1).map(d => d.period);
@@ -92,6 +93,14 @@ export default function ReportingLagChart({ data }) {
       <p style={{ fontSize: 11, color: '#3a3f55', marginTop: 10 }}>
         Fuente: registros LAPD — Fecha del Hecho (DATE OCC) vs. Fecha de Denuncia (Date Rptd) · denuncias con retraso &gt;365 días excluidas como anomalías de carga
       </p>
+      {setFilters && (
+        <TimeFilterBar
+          years={filters?.years ?? []}
+          months={filters?.months ?? []}
+          onYears={v => setFilters(f => ({ ...f, years: v }))}
+          onMonths={v => setFilters(f => ({ ...f, months: v }))}
+        />
+      )}
     </div>
   );
 }

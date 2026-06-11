@@ -3,3 +3,6 @@ node_modules/
 out/
 .vercel/
 *.tsbuildinfo
+
+# Environment variables — never commit
+.env*.local

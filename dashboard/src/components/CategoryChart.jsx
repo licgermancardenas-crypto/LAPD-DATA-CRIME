@@ -5,6 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Cell, ResponsiveContainer,
 } from 'recharts';
+import TimeFilterBar from './TimeFilterBar';
 
 function getCategoryColor(index, total) {
   if (index === 0) return '#00f3ff'; // Top crime: electric cyan
@@ -60,7 +61,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-export default function CategoryChart({ data, activePart: externalPart, filters, onFilter }) {
+export default function CategoryChart({ data, activePart: externalPart, filters, onFilter, setFilters }) {
   const [localPart, setLocalPart] = useState('all');
   const activePart = externalPart ?? localPart;
   const setActivePart = externalPart === undefined ? setLocalPart : () => {};
@@ -139,6 +140,14 @@ export default function CategoryChart({ data, activePart: externalPart, filters,
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      {setFilters && (
+        <TimeFilterBar
+          years={filters?.years ?? []}
+          months={filters?.months ?? []}
+          onYears={v => setFilters(f => ({ ...f, years: v }))}
+          onMonths={v => setFilters(f => ({ ...f, months: v }))}
+        />
+      )}
     </div>
   );
 }

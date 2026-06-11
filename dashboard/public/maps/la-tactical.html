@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css"/>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;
+    font-family:'Courier New',Courier,monospace}
+  #map{position:absolute;inset:0}
+
+  /* ── Scanline CRT texture ─────────────────────────────────────────────── */
+  #scanlines{
+    position:fixed;inset:0;z-index:1800;pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,
+      rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px
+    );
+  }
+
+  /* ── Radial vignette ──────────────────────────────────────────────────── */
+  #vignette{
+    position:fixed;inset:0;z-index:1700;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 44%,rgba(0,0,0,.65) 100%);
+  }
+
+  /* ── Precision crosshair ──────────────────────────────────────────────── */
+  #crosshair{
+    position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    z-index:1900;pointer-events:none;opacity:.38;
+  }
+
+  /* ── Corner HUD boxes ─────────────────────────────────────────────────── */
+  .hud{
+    position:fixed;z-index:1900;pointer-events:none;
+    font-size:9px;letter-spacing:.12em;line-height:1.75;
+    color:rgba(0,255,90,.65);
+  }
+  #hud-tl{top:12px;left:12px;}
+  #hud-tr{top:12px;right:12px;text-align:right;}
+  #hud-bl{bottom:22px;left:12px;}
+  #hud-br{bottom:22px;right:12px;text-align:right;}
+  .hud-title{color:rgba(0,255,90,1);font-size:10px;font-weight:700;letter-spacing:.2em;}
+  .hud-alert{color:#ff5500;}
+  .hud-val  {color:rgba(0,255,90,.95);}
+
+  /* ── Bottom coordinate bar ────────────────────────────────────────────── */
+  #coords{
+    position:fixed;bottom:6px;left:50%;transform:translateX(-50%);
+    z-index:1900;pointer-events:none;white-space:nowrap;
+    background:rgba(0,6,0,.72);border:1px solid rgba(0,255,80,.18);
+    padding:3px 18px;border-radius:2px;
+    font-size:9px;color:rgba(0,255,90,.72);letter-spacing:.15em;
+    text-shadow:0 0 10px rgba(0,255,80,.4);
+  }
+
+  /* ── Target-lock flash ────────────────────────────────────────────────── */
+  #target-lock{
+    position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    z-index:2000;pointer-events:none;margin-top:36px;
+    font-size:11px;font-weight:700;color:#00ff50;letter-spacing:.28em;
+    text-shadow:0 0 18px rgba(0,255,80,1),0 0 36px rgba(0,255,80,.5);
+    opacity:0;transition:opacity .08s;user-select:none;
+  }
+
+  /* ── Classified watermark ─────────────────────────────────────────────── */
+  #watermark{
+    position:fixed;top:50%;left:50%;z-index:1600;pointer-events:none;
+    font-size:13px;font-weight:900;letter-spacing:.5em;user-select:none;
+    color:rgba(0,255,80,.028);white-space:nowrap;
+    transform:translate(-50%,-50%) rotate(-18deg);
+  }
+
+  /* ── Maplibre GL control overrides ───────────────────────────────────── */
+  .maplibregl-ctrl-group{
+    background:rgba(0,10,0,.90)!important;
+    border:1px solid rgba(0,255,80,.22)!important;
+    box-shadow:0 0 14px rgba(0,0,0,.75)!important;
+    border-radius:6px!important;
+  }
+  .maplibregl-ctrl-group button{background:transparent!important;color:rgba(0,255,80,.8)!important;}
+  .maplibregl-ctrl-group button:hover{background:rgba(0,255,80,.08)!important;}
+  .maplibregl-ctrl-group button+button{border-top:1px solid rgba(0,255,80,.15)!important;}
+  .maplibregl-ctrl-attrib,.maplibregl-ctrl-attrib.maplibregl-compact{
+    background:rgba(0,0,0,.6)!important;color:rgba(0,255,80,.3)!important;font-size:8px!important;
+  }
+  .maplibregl-ctrl-attrib a{color:rgba(0,255,80,.4)!important;}
+  .maplibregl-ctrl-compass-arrow{filter:hue-rotate(85deg) saturate(4) brightness(1.3);}
+
+  /* ── Division hover popup ─────────────────────────────────────────────── */
+  .maplibregl-popup-content{
+    background:rgba(0,10,0,.93)!important;
+    border:1px solid rgba(0,255,80,.38)!important;
+    color:rgba(0,255,90,.92)!important;
+    font-family:'Courier New',monospace!important;
+    font-size:10px!important;font-weight:700!important;
+    letter-spacing:.1em!important;border-radius:4px!important;
+    box-shadow:0 0 16px rgba(0,255,80,.18),0 0 0 1px rgba(0,255,80,.06)!important;
+    padding:6px 14px!important;
+  }
+  .maplibregl-popup-tip{
+    border-top-color:rgba(0,10,0,.93)!important;
+    border-bottom-color:rgba(0,10,0,.93)!important;
+  }
+  .maplibregl-popup-close-button{color:rgba(0,255,80,.5)!important;font-size:16px!important;}
+  .maplibregl-popup-close-button:hover{color:#ff5500!important;background:none!important;}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="vignette"></div>
+<div id="scanlines"></div>
+<div id="watermark">LAPD CRIME INTELLIGENCE SYSTEM — CLASSIFIED // FOUO</div>
+
+<!-- Precision crosshair SVG -->
+<div id="crosshair">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+    <circle cx="24" cy="24" r="13" stroke="#00ff50" stroke-width="0.7"/>
+    <circle cx="24" cy="24" r="2.8" fill="#00ff50" fill-opacity="0.55"/>
+    <line x1="0"  y1="24" x2="15" y2="24" stroke="#00ff50" stroke-width="0.7"/>
+    <line x1="33" y1="24" x2="48" y2="24" stroke="#00ff50" stroke-width="0.7"/>
+    <line x1="24" y1="0"  x2="24" y2="15" stroke="#00ff50" stroke-width="0.7"/>
+    <line x1="24" y1="33" x2="24" y2="48" stroke="#00ff50" stroke-width="0.7"/>
+    <line x1="2"  y1="2"  x2="9"  y2="2"  stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="2"  y1="2"  x2="2"  y2="9"  stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="46" y1="2"  x2="39" y2="2"  stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="46" y1="2"  x2="46" y2="9"  stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="2"  y1="46" x2="9"  y2="46" stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="2"  y1="46" x2="2"  y2="39" stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="46" y1="46" x2="39" y2="46" stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+    <line x1="46" y1="46" x2="46" y2="39" stroke="#00ff50" stroke-width="0.5" opacity=".5"/>
+  </svg>
+</div>
+
+<!-- HUDs -->
+<div class="hud" id="hud-tl">
+  <div class="hud-title">◈ L.A. MAP // CIA TACTICAL</div>
+  <div>SRC: LAPD OPEN DATA 2020–2024</div>
+  <div>MODE: 3D SATELLITE + CRIME DENSITY</div>
+  <div>STATUS: <span class="hud-alert">■ SURVEILLANCE ACTIVE</span></div>
+</div>
+
+<div class="hud" id="hud-tr">
+  <div id="live-clock">——:——:—— UTC</div>
+  <div>CLASSIFICATION: UNCLASSIFIED // FOUO</div>
+  <div>COORD SYS: WGS84 · EPSG:4326</div>
+  <div>TERRAIN: <span class="hud-val">3D · EXAG ×1.5</span></div>
+</div>
+
+<div class="hud" id="hud-bl">
+  <div>ZOOM: <span class="hud-val" id="zoom-val">11</span>
+    &nbsp;|&nbsp; PITCH: <span class="hud-val" id="pitch-val">45</span>°
+    &nbsp;|&nbsp; BRG: <span class="hud-val" id="bearing-val">-17</span>°</div>
+  <div>FILTER: <span class="hud-val" id="filter-status">ALL YEARS · ALL AREAS</span></div>
+</div>
+
+<div class="hud" id="hud-br">
+  <div>HEAT LAYER: <span class="hud-alert">■ ACTIVE</span></div>
+  <div>INCIDENTS: <span class="hud-val" id="inc-count">LOADING…</span></div>
+  <div>DIVISIONS: <span class="hud-val">21</span></div>
+</div>
+
+<div id="coords">LAT: 34.0522° N &nbsp;|&nbsp; LNG: 118.2437° W &nbsp;|&nbsp; LOS ANGELES BASIN</div>
+<div id="target-lock">◈ TARGET ACQUIRED</div>
+
+<script>
+// ── Map (Maplibre GL JS — open-source, no API token) ──────────────────────────
+var map = new maplibregl.Map({
+  container:'map',
+  style:{
+    version:8,
+    sources:{
+      // Google Maps Hybrid: satellite photos + roads + labels in one tileset
+      satellite:{
+        type:'raster',
+        tiles:[
+          'https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+          'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+          'https://mt2.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+          'https://mt3.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+        ],
+        tileSize:256,
+        attribution:'Imagery © Google · LAPD Open Data',
+        maxzoom:21,
+      }
+    },
+    layers:[{
+      id:'satellite-base',
+      type:'raster',
+      source:'satellite',
+      paint:{
+        // CIA monitor effect — applied only to satellite layer, crime overlay unaffected
+        'raster-brightness-min':0,
+        'raster-brightness-max':0.42,   // caps highlights at 42%
+        'raster-contrast':0.30,         // +30% contrast
+        'raster-saturation':-0.55,      // reduce saturation ~45% of original
+      }
+    }]
+  },
+  center:[-118.2437,34.0522],
+  zoom:11,
+  pitch:45,
+  bearing:-17,
+  antialias:true,
+  attributionControl:false,
+});
+
+map.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-right');
+map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var divisionGJ = null;
+var filterArea = null;
+var hoverPopup = new maplibregl.Popup({closeButton:false,closeOnClick:false,offset:12});
+
+// ── Live UTC clock ────────────────────────────────────────────────────────────
+(function tick(){
+  document.getElementById('live-clock').textContent=
+    new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+  setTimeout(tick,1000);
+})();
+
+// ── HUD update on camera move ─────────────────────────────────────────────────
+map.on('move',function(){
+  document.getElementById('zoom-val').textContent=
+    Math.round(map.getZoom()*10)/10;
+  document.getElementById('pitch-val').textContent=
+    Math.round(map.getPitch());
+  document.getElementById('bearing-val').textContent=
+    Math.round(map.getBearing());
+});
+
+// ── Coordinate readout ────────────────────────────────────────────────────────
+map.on('mousemove',function(e){
+  document.getElementById('coords').textContent=
+    'LAT: '+e.lngLat.lat.toFixed(5)+'° N  |  '+
+    'LNG: '+Math.abs(e.lngLat.lng).toFixed(5)+'° W  |  LOS ANGELES BASIN';
+});
+
+// ── Click handler → OSINT_CLICK_INFO + target lock ────────────────────────────
+map.on('click',function(e){
+  var divHits=map.queryRenderedFeatures(e.point,{layers:['divisions-fill']});
+  if(divHits.length>0){
+    var p=divHits[0].properties;
+    window.parent.postMessage({
+      type:'OSINT_CLICK_INFO',mapId:'tactical',clickType:'division',
+      name:p.name,total:p.total_crimes||0,clearance:p.clearance||0,
+      topCategory:p.top_category||'—',rank:p.rank||'—',totalDivs:21
+    },'*');
+  } else {
+    window.parent.postMessage({
+      type:'OSINT_CLICK_INFO',mapId:'tactical',clickType:'location',
+      lat:e.lngLat.lat.toFixed(4),lng:e.lngLat.lng.toFixed(4)
+    },'*');
+  }
+  var tl=document.getElementById('target-lock');
+  tl.style.opacity='1';
+  setTimeout(function(){tl.style.opacity='0';},900);
+});
+
+// ── Division cursor + tooltip ─────────────────────────────────────────────────
+map.on('mouseenter','divisions-fill',function(e){
+  map.getCanvas().style.cursor='crosshair';
+  if(e.features.length>0){
+    var p=e.features[0].properties;
+    var crimes=(p.total_crimes||0).toLocaleString();
+    hoverPopup
+      .setLngLat(e.lngLat)
+      .setHTML(
+        '<span style="color:rgba(0,255,90,.5);font-size:8px">DIVISIÓN LAPD</span><br>'+
+        '<strong>'+p.name.toUpperCase()+'</strong>'+
+        '<br><span style="color:rgba(0,255,90,.6);font-size:8px">'+crimes+' incidentes</span>'
+      )
+      .addTo(map);
+  }
+});
+map.on('mousemove','divisions-fill',function(e){
+  hoverPopup.setLngLat(e.lngLat);
+});
+map.on('mouseleave','divisions-fill',function(){
+  map.getCanvas().style.cursor='';
+  hoverPopup.remove();
+});
+
+// ── On load: terrain, divisions, crime data ───────────────────────────────────
+map.on('load',function(){
+
+  // ── 3D Terrain DEM (Mapzen/AWS — public, no key required) ──────────────────
+  map.addSource('terrain-dem',{
+    type:'raster-dem',
+    tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+    tileSize:256,
+    encoding:'terrarium',
+    maxzoom:14,
+  });
+  map.setTerrain({source:'terrain-dem',exaggeration:1.5});
+
+  // Atmospheric sky (visible when pitch > 30°)
+  try{
+    map.setFog({
+      range:[1,12],
+      color:'rgb(0,3,8)',
+      'high-color':'rgb(0,5,16)',
+      'horizon-blend':0.04,
+    });
+  }catch(e){}
+
+  // ── LAPD Divisions GeoJSON ──────────────────────────────────────────────────
+  fetch('/data/lapd_divisions_crimes.geojson')
+    .then(function(r){return r.json();})
+    .then(function(gj){
+      divisionGJ=gj;
+      // Pre-compute rank on features (sort desc by total_crimes)
+      var sorted=gj.features.slice().sort(function(a,b){
+        return (b.properties.total_crimes||0)-(a.properties.total_crimes||0);
+      });
+      sorted.forEach(function(f,i){f.properties.rank=i+1;});
+
+      map.addSource('divisions',{type:'geojson',data:gj});
+
+      // Invisible fill for hit-testing
+      map.addLayer({
+        id:'divisions-fill',type:'fill',source:'divisions',
+        paint:{'fill-opacity':0,'fill-color':'rgba(0,0,0,0)'},
+      });
+      // Dashed cyan perimeter line
+      map.addLayer({
+        id:'divisions-line',type:'line',source:'divisions',
+        paint:{
+          'line-color':'rgba(0,255,100,.35)',
+          'line-width':1.3,
+          'line-dasharray':[7,5],
+        },
+      });
+      // Highlighted line on hover
+      map.addLayer({
+        id:'divisions-line-hover',type:'line',source:'divisions',
+        paint:{
+          'line-color':'rgba(0,255,100,.80)',
+          'line-width':2,
+          'line-dasharray':[7,5],
+        },
+        filter:['==','name','__NONE__'],   // hidden until hover
+      });
+    })
+    .catch(function(e){console.warn('[tactical] divisions:',e);});
+
+  // ── Crime points → GeoJSON → heatmap + glowing circles ───────────────────
+  fetch('/data/crime_points_hourly.json')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var mx=Math.max.apply(null,d.counts);
+      var features=[];
+      d.hours.forEach(function(hr,i){
+        var iv=d.counts[i]/mx;
+        for(var j=0;j<hr.length;j+=2){          // every 2nd point for perf
+          var la=hr[j][0],ln=hr[j][1];
+          if(la!==0&&ln!==0){
+            features.push({
+              type:'Feature',
+              geometry:{type:'Point',coordinates:[ln,la]}, // GeoJSON: [lng, lat]
+              properties:{iv:iv}
+            });
+          }
+        }
+      });
+
+      document.getElementById('inc-count').textContent=
+        features.length.toLocaleString()+' pts';
+
+      map.addSource('crimes',{
+        type:'geojson',
+        data:{type:'FeatureCollection',features:features},
+      });
+
+      // ── Heatmap (zoom ≤ 13) — cyan→orange→white-hot ─────────────────────
+      map.addLayer({
+        id:'crime-heat',type:'heatmap',source:'crimes',maxzoom:14,
+        paint:{
+          'heatmap-weight':['get','iv'],
+          'heatmap-intensity':['interpolate',['linear'],['zoom'],6,0.7,12,2.0],
+          'heatmap-radius':  ['interpolate',['linear'],['zoom'],6,4,10,9,13,16],
+          'heatmap-opacity':0.75,
+          'heatmap-color':[
+            'interpolate',['linear'],['heatmap-density'],
+            0,   'rgba(0,0,0,0)',
+            0.12,'rgba(0,180,255,0.15)',
+            0.32,'rgba(0,255,200,0.42)',
+            0.58,'rgba(255,160,0,0.68)',
+            0.82,'rgba(255,35,0,0.88)',
+            1.0, 'rgba(255,255,190,1.0)',
+          ],
+        }
+      });
+
+      // ── Outer glow ring (zoom ≥ 13) ──────────────────────────────────────
+      map.addLayer({
+        id:'crime-glow-outer',type:'circle',source:'crimes',minzoom:13,
+        paint:{
+          'circle-color':'#00ffcc',
+          'circle-radius':['interpolate',['linear'],['zoom'],13,10,18,22],
+          'circle-blur':1.4,
+          'circle-opacity':0.10,
+        }
+      });
+      // ── Mid glow ──────────────────────────────────────────────────────────
+      map.addLayer({
+        id:'crime-glow-mid',type:'circle',source:'crimes',minzoom:13,
+        paint:{
+          'circle-color':'#00ffcc',
+          'circle-radius':['interpolate',['linear'],['zoom'],13,5,18,11],
+          'circle-blur':0.85,
+          'circle-opacity':0.22,
+        }
+      });
+      // ── Core dot — color encodes intensity (cool→warm) ───────────────────
+      map.addLayer({
+        id:'crime-core',type:'circle',source:'crimes',minzoom:13,
+        paint:{
+          'circle-color':['interpolate',['linear'],['get','iv'],
+            0,'#00ffcc',  0.4,'#ffaa00',  1,'#ff2200'],
+          'circle-radius':['interpolate',['linear'],['zoom'],13,1.8,18,5],
+          'circle-blur':0.2,
+          'circle-opacity':0.80,
+        }
+      });
+    })
+    .catch(function(e){
+      document.getElementById('inc-count').textContent='ERR';
+      console.warn('[tactical] crime_points:',e);
+    });
+
+  // ── Division hover highlight update ─────────────────────────────────────────
+  map.on('mouseenter','divisions-fill',function(e){
+    if(e.features.length>0){
+      map.setFilter('divisions-line-hover',['==','name',e.features[0].properties.name]);
+    }
+  });
+  map.on('mouseleave','divisions-fill',function(){
+    map.setFilter('divisions-line-hover',['==','name','__NONE__']);
+  });
+});
+
+// ── OSINT_FILTER from parent (year / area / part) ─────────────────────────────
+window.addEventListener('message',function(e){
+  if(!e.data||e.data.type!=='OSINT_FILTER') return;
+  filterArea=e.data.area||null;
+  var fYear=e.data.year||null;
+  var fPart=e.data.part||'all';
+
+  var s='';
+  if(fYear)       s+='Y:'+fYear+'  ';
+  if(filterArea)  s+='DIV:'+filterArea+'  ';
+  if(fPart&&fPart!=='all') s+=fPart.toUpperCase()+' ';
+  document.getElementById('filter-status').textContent=s||'ALL YEARS · ALL AREAS';
+
+  if(filterArea&&divisionGJ){
+    var feat=divisionGJ.features.find(function(f){
+      return f.properties.name.toUpperCase()===filterArea.toUpperCase();
+    });
+    if(feat){
+      // Compute bounds from GeoJSON coords
+      var coords=feat.geometry.type==='MultiPolygon'
+        ? feat.geometry.coordinates.reduce(function(a,poly){return a.concat(poly[0]);}, [])
+        : feat.geometry.coordinates[0];
+      var lngs=coords.map(function(c){return c[0];});
+      var lats=coords.map(function(c){return c[1];});
+      map.fitBounds(
+        [[Math.min.apply(null,lngs),Math.min.apply(null,lats)],
+         [Math.max.apply(null,lngs),Math.max.apply(null,lats)]],
+        {padding:60,duration:1400,pitch:45,bearing:-17}
+      );
+    }
+  } else if(!filterArea){
+    map.flyTo({center:[-118.2437,34.0522],zoom:11,pitch:45,bearing:-17,duration:1200});
+  }
+});
+</script>
+</body>
+</html>

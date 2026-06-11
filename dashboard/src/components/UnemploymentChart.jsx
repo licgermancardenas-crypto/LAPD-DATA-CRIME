@@ -4,6 +4,7 @@ import {
   ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
+import TimeFilterBar from './TimeFilterBar';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -24,7 +25,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function UnemploymentChart({ data }) {
+export default function UnemploymentChart({ data, filters, setFilters }) {
   if (!data?.length) return null;
 
   const ticks = data.filter(d => d.month === 1).map(d => d.period);
@@ -83,6 +84,14 @@ export default function UnemploymentChart({ data }) {
           />
         </ComposedChart>
       </ResponsiveContainer>
+      {setFilters && (
+        <TimeFilterBar
+          years={filters?.years ?? []}
+          months={filters?.months ?? []}
+          onYears={v => setFilters(f => ({ ...f, years: v }))}
+          onMonths={v => setFilters(f => ({ ...f, months: v }))}
+        />
+      )}
     </div>
   );
 }

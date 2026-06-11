@@ -32,7 +32,7 @@ export default function PremiseChart({ data, activePart = 'all', filters }) {
   const partLabel    = activePart === 'p1' ? 'Delitos Graves (Part 1)'
                      : activePart === 'p2' ? 'Delitos Menores (Part 2)'
                      : 'Todos los delitos';
-  const hasGeoFilter = filters?.area || filters?.category;
+  const hasGeoFilter = filters?.area || filters?.category || filters?.years?.length || filters?.months?.length;
 
   return (
     <div className="card">

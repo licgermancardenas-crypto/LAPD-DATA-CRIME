@@ -81,6 +81,63 @@ select:focus, input:focus {
 .recharts-cartesian-axis-tick-value { fill: #7b82a0 !important; font-size: 11px; }
 .recharts-legend-item-text { color: #7b82a0 !important; font-size: 12px !important; }
 
+/* ── OSIRIS tactical animations ──────────────────────────────────────────── */
+@keyframes osiris-pulse    { 0%,100%{opacity:1;box-shadow:0 0 8px #0ea5e9} 50%{opacity:.5;box-shadow:0 0 20px #0ea5e9,0 0 40px #0ea5e940} }
+@keyframes osiris-scan     { 0%{transform:translateY(-100%);opacity:0} 15%{opacity:.4} 85%{opacity:.4} 100%{transform:translateY(3000%);opacity:0} }
+@keyframes osiris-blink    { 0%,100%{opacity:1} 49%{opacity:1} 50%{opacity:0} 99%{opacity:0} }
+@keyframes osiris-fadein   { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+@keyframes osiris-glow     { 0%,100%{text-shadow:0 0 4px #38bdf860} 50%{text-shadow:0 0 16px #38bdf8,0 0 32px #38bdf840} }
+@keyframes osiris-bar      { from{width:0} to{width:var(--w)} }
+.osiris-pulse  { animation: osiris-pulse  2s ease-in-out infinite }
+.osiris-scan   { animation: osiris-scan   6s linear infinite }
+.osiris-blink  { animation: osiris-blink  1s step-end infinite }
+.osiris-fadein { animation: osiris-fadein .3s ease forwards }
+.osiris-glow   { animation: osiris-glow   3s ease-in-out infinite }
+.osiris-bar    { animation: osiris-bar    .6s ease forwards }
+.osiris-scroll::-webkit-scrollbar       { width:3px }
+.osiris-scroll::-webkit-scrollbar-track { background:transparent }
+.osiris-scroll::-webkit-scrollbar-thumb { background:#2a3060;border-radius:2px }
+
+/* ── OSINT time slider ─────────────────────────────────────────────────── */
+.osint-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(56,189,248,.15);
+  outline: none;
+  cursor: pointer;
+  border: none;
+}
+.osint-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 10px rgba(56,189,248,.7), 0 0 0 2px rgba(56,189,248,.2);
+  cursor: pointer;
+  transition: transform .1s;
+}
+.osint-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #67e8f9;
+}
+.osint-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 10px rgba(56,189,248,.7);
+  cursor: pointer;
+  border: none;
+}
+.osint-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+}
+
 @layer components {
   .card {
     @apply bg-surface border border-border rounded-xl p-6;

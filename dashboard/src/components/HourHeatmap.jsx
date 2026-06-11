@@ -49,7 +49,7 @@ export default function HourHeatmap({ data, filters, onFilter }) {
   const intervalRef = useRef(null);
 
   const activeSlot   = filters?.timeSlot ?? null;
-  const hasGeoFilter = filters?.area || filters?.category;
+  const hasGeoFilter = filters?.area || filters?.category || filters?.years?.length || filters?.months?.length;
 
   // Build lookup: dow -> hour -> row
   const lookup = {};

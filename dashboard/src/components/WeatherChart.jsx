@@ -4,6 +4,7 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
+import TimeFilterBar from './TimeFilterBar';
 
 // Cyberpunk year palette — deep indigo (oldest) → fuchsia (most recent)
 const YEAR_COLORS = {
@@ -28,7 +29,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-export default function WeatherChart({ data }) {
+export default function WeatherChart({ data, filters, setFilters }) {
   if (!data?.length) return null;
 
   // Downsample for performance: keep every 3rd point
@@ -82,6 +83,14 @@ export default function WeatherChart({ data }) {
           </Scatter>
         </ScatterChart>
       </ResponsiveContainer>
+      {setFilters && (
+        <TimeFilterBar
+          years={filters?.years ?? []}
+          months={filters?.months ?? []}
+          onYears={v => setFilters(f => ({ ...f, years: v }))}
+          onMonths={v => setFilters(f => ({ ...f, months: v }))}
+        />
+      )}
     </div>
   );
 }

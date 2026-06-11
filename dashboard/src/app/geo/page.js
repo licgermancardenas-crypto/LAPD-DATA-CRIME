@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Shell from '@/components/Shell';
 
 const MAPS = [
@@ -113,9 +113,58 @@ function MapTab({ map, active, onClick }) {
   );
 }
 
+const YEARS  = [2020, 2021, 2022, 2023, 2024];
+const MONTHS = [
+  { n: 1,  label: 'Ene' }, { n: 2,  label: 'Feb' }, { n: 3,  label: 'Mar' },
+  { n: 4,  label: 'Abr' }, { n: 5,  label: 'May' }, { n: 6,  label: 'Jun' },
+  { n: 7,  label: 'Jul' }, { n: 8,  label: 'Ago' }, { n: 9,  label: 'Sep' },
+  { n: 10, label: 'Oct' }, { n: 11, label: 'Nov' }, { n: 12, label: 'Dic' },
+];
+
+function Chip({ label, active, onClick, color = '#4f8ef7' }) {
+  return (
+    <button onClick={onClick} style={{
+      padding: '4px 11px', borderRadius: 14,
+      border: active ? `1px solid ${color}` : '1px solid #2a2d3a',
+      background: active ? `rgba(79,142,247,.12)` : 'transparent',
+      color: active ? color : '#5a6080',
+      fontSize: 11, fontWeight: active ? 700 : 400,
+      cursor: 'pointer', transition: 'all .13s',
+      whiteSpace: 'nowrap', fontFamily: 'inherit',
+      boxShadow: active ? `0 0 10px ${color}18` : 'none',
+    }}>{label}</button>
+  );
+}
+
 export default function GeoPage() {
-  const [active, setActive] = useState('divisions');
+  const [active,      setActive]      = useState('divisions');
+  const [yearFilter,  setYearFilter]  = useState(null);
+  const [monthFilter, setMonthFilter] = useState(null);
+  const iframeRefs = useRef({});
   const current = MAPS.find(m => m.id === active);
+
+  const hasFilter   = !!(yearFilter || monthFilter);
+  const canFilter   = active === 'divisions';  // only lapd-map.html has dynamic filtering
+
+  // Broadcast period filter to all iframes whenever it changes
+  const sendPeriod = useCallback((year, month) => {
+    Object.values(iframeRefs.current).forEach(iframe => {
+      try { iframe?.contentWindow?.postMessage({ type: 'SET_PERIOD', year, month }, '*'); }
+      catch (_) {}
+    });
+  }, []);
+
+  useEffect(() => { sendPeriod(yearFilter, monthFilter); }, [yearFilter, monthFilter, sendPeriod]);
+
+  function toggleYear(y) {
+    const next = yearFilter === y ? null : y;
+    setYearFilter(next);
+  }
+  function toggleMonth(m) {
+    const next = monthFilter === m ? null : m;
+    setMonthFilter(next);
+  }
+  function clearAll() { setYearFilter(null); setMonthFilter(null); }
 
   return (
     <Shell geoActiveTab={active}>
@@ -139,7 +188,7 @@ export default function GeoPage() {
             fontSize: 11, color: '#4f8ef7', fontWeight: 700,
             background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
             borderRadius: 6, padding: '4px 11px',
-          }}>6 Layers</span>
+          }}>7 Layers</span>
           <span style={{
             fontSize: 11, color: '#7b82a0',
             background: '#1a1d27', border: '1px solid #2a2d3a',
@@ -160,15 +209,98 @@ export default function GeoPage() {
         ))}
       </div>
 
+      {/* ── Temporal filter bar ───────────────────────────────────────────── */}
+      <div style={{
+        padding: '14px 32px 12px',
+        borderBottom: '1px solid #1a1d28',
+        background: hasFilter ? 'rgba(79,142,247,.03)' : 'transparent',
+        transition: 'background .2s',
+      }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center' }}>
+
+          {/* Year row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              fontSize: 9.5, fontWeight: 700, color: '#3d4255', letterSpacing: '.12em',
+              textTransform: 'uppercase', flexShrink: 0, minWidth: 28,
+            }}>AÑO</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <Chip label="Todos" active={!yearFilter} onClick={() => setYearFilter(null)} />
+              {YEARS.map(y => (
+                <Chip key={y} label={String(y)} active={yearFilter === y} onClick={() => toggleYear(y)} />
+              ))}
+            </div>
+          </div>
+
+          {/* Vertical divider */}
+          <div style={{ width: 1, height: 22, background: '#1e2030', flexShrink: 0 }} />
+
+          {/* Month row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              fontSize: 9.5, fontWeight: 700, color: '#3d4255', letterSpacing: '.12em',
+              textTransform: 'uppercase', flexShrink: 0, minWidth: 28,
+            }}>MES</span>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              <Chip label="Todos" active={!monthFilter} onClick={() => setMonthFilter(null)} />
+              {MONTHS.map(m => (
+                <Chip key={m.n} label={m.label} active={monthFilter === m.n} onClick={() => toggleMonth(m.n)} />
+              ))}
+            </div>
+          </div>
+
+          {/* Clear button */}
+          {hasFilter && (
+            <button onClick={clearAll} style={{
+              marginLeft: 'auto', padding: '4px 12px', borderRadius: 14,
+              border: '1px solid rgba(217,70,239,.4)', background: 'rgba(217,70,239,.06)',
+              color: '#d946ef', fontSize: 11, fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit',
+              transition: 'all .13s', flexShrink: 0,
+            }}>
+              Limpiar ×
+            </button>
+          )}
+        </div>
+
+        {/* Non-division map notice */}
+        {hasFilter && !canFilter && (
+          <div style={{
+            marginTop: 10, padding: '6px 12px', borderRadius: 6,
+            background: 'rgba(251,191,36,.06)', border: '1px solid rgba(251,191,36,.15)',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <span style={{ fontSize: 13 }}>⚡</span>
+            <span style={{ fontSize: 11, color: '#9c7f30' }}>
+              Este mapa usa datos agregados 2020-2024. El filtro temporal aplica al <strong style={{ color: '#fbbf24' }}>Mapa de Divisiones</strong>.
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* ── Map content ──────────────────────────────────────────────────── */}
       <div style={{ flex: 1, padding: '24px 32px 40px', maxWidth: 1160, width: '100%' }}>
         <div style={{ background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 16, overflow: 'hidden' }}>
 
-          {/* Map iframe (all pre-loaded, toggled via display) */}
+          {/* Map iframes (all pre-loaded, toggled via display) */}
           <div style={{ width: '100%', lineHeight: 0, position: 'relative' }}>
             {MAPS.map(m => (
               <div key={m.id} style={{ display: m.id === active ? 'block' : 'none' }}>
-                <iframe src={m.src} style={{ width: '100%', height: 560, border: 'none', display: 'block' }} title={m.label} loading="lazy" />
+                <iframe
+                  ref={el => { iframeRefs.current[m.id] = el; }}
+                  src={m.src}
+                  style={{ width: '100%', height: 560, border: 'none', display: 'block' }}
+                  title={m.label}
+                  loading="lazy"
+                  onLoad={() => {
+                    // Re-send current filter to this iframe after it loads
+                    try {
+                      iframeRefs.current[m.id]?.contentWindow?.postMessage(
+                        { type: 'SET_PERIOD', year: yearFilter, month: monthFilter }, '*'
+                      );
+                    } catch (_) {}
+                  }}
+                />
               </div>
             ))}
           </div>
@@ -177,11 +309,23 @@ export default function GeoPage() {
           <div style={{ padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
               <p style={{ fontSize: 16, fontWeight: 700, color: '#e8eaf0' }}>{current.title}</p>
-              <span style={{
-                fontSize: 11, color: '#4f8ef7',
-                background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
-                borderRadius: 6, padding: '3px 10px', fontWeight: 600,
-              }}>{current.badge}</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                {hasFilter && canFilter && (
+                  <span style={{
+                    fontSize: 11, color: '#3ecf8e', fontWeight: 700,
+                    background: 'rgba(62,207,142,.08)', border: '1px solid rgba(62,207,142,.25)',
+                    borderRadius: 6, padding: '3px 10px',
+                  }}>
+                    {yearFilter ? String(yearFilter) : 'Todos los años'}
+                    {monthFilter ? ` · ${MONTHS[monthFilter-1].label}` : ''}
+                  </span>
+                )}
+                <span style={{
+                  fontSize: 11, color: '#4f8ef7',
+                  background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
+                  borderRadius: 6, padding: '3px 10px', fontWeight: 600,
+                }}>{current.badge}</span>
+              </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 10 }}>
               {current.insight.map((ins, i) => (

@@ -42,9 +42,10 @@ const MAPS = [
   { id:'barrios',       label:'BARRIOS',      short:'BAR',    src:'/maps/neighborhood-choropleth.html',  group:'lapd',  icon:'🏘' },
   { id:'negocios',      label:'NEGOCIOS',     short:'NEG',    src:'/maps/business-choropleth.html',      group:'lapd',  icon:'🏪' },
   { id:'tactical',      label:'L.A. MAP',     short:'CIA',    src:'/maps/la-tactical.html',              group:'tactical', icon:'🛰' },
+  { id:'mobility',      label:'MOBILITY',     short:'MOB',    src:'/maps/mobility-intelligence.html',    group:'osint',    icon:'🚌' },
 ];
 
-const OSINT_IDS = new Set(['heat','cluster','choropleth']);
+const OSINT_IDS = new Set(['heat','cluster','choropleth','mobility']);
 const YEARS     = [null, 2020, 2021, 2022, 2023, 2024];
 
 const MAP_LABELS = {
@@ -52,6 +53,7 @@ const MAP_LABELS = {
   divisions:'DIVISIONES LAPD', 'lapd-heat':'CALOR LAPD', per1k:'CRIMEN/1K HAB',
   vulnerability:'VULNERABILIDAD', barrios:'BARRIOS', negocios:'NEGOCIOS',
   tactical:'L.A. MAP TACTICAL',
+  mobility:'OSINT // MOBILITY',
 };
 
 const CLICK_WHAT_IS = {

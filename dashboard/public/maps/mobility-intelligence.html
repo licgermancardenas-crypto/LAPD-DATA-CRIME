@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OSINT Mobility Intelligence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:'JetBrains Mono','Courier New',monospace}
+
+#map{position:absolute;inset:0;z-index:1}
+
+/* ── Leaflet dark overrides ─────────────────────────────────── */
+.leaflet-control-zoom a{background:#0a1628!important;border-color:rgba(56,189,248,.3)!important;color:#38bdf8!important}
+.leaflet-popup-content-wrapper{background:rgba(1,8,24,.96);border:1px solid rgba(0,191,255,.3);border-radius:6px;box-shadow:0 0 24px rgba(0,191,255,.15)}
+.leaflet-popup-content{color:#e2e8f0;font-family:monospace;font-size:11px;line-height:1.6;margin:10px 14px}
+.leaflet-popup-tip{background:rgba(1,8,24,.96)}
+.leaflet-popup-close-button{color:#00bfff!important;font-size:18px!important}
+
+/* ── Loading screen ─────────────────────────────────────────── */
+#loading{position:absolute;inset:0;z-index:900;background:#010d1f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
+#loading.hidden{opacity:0;pointer-events:none}
+.ld-logo{font-size:11px;font-weight:900;color:#00bfff;letter-spacing:.35em;text-shadow:0 0 20px #00bfff}
+.ld-msg{font-size:9px;color:rgba(0,191,255,.6);letter-spacing:.2em}
+.ld-bar{width:240px;height:2px;background:rgba(0,191,255,.12);border-radius:2px;overflow:hidden;position:relative}
+.ld-fill{height:100%;width:0;background:linear-gradient(90deg,#00bfff,#7dd3fc);border-radius:2px;transition:width .3s}
+
+/* ── Left toolbar ───────────────────────────────────────────── */
+#toolbar{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  z-index:500;display:flex;flex-direction:column;gap:6px;
+}
+.t-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;border-radius:7px;cursor:pointer;
+  border:1px solid rgba(56,189,248,.22);
+  background:rgba(1,10,26,.85);backdrop-filter:blur(10px);
+  color:#7dd3fc;font-size:9px;font-weight:700;letter-spacing:.1em;
+  white-space:nowrap;transition:all .15s;user-select:none;
+  min-width:148px;
+}
+.t-btn:hover{border-color:rgba(56,189,248,.5);color:#bae6fd}
+.t-btn.active{border-color:rgba(0,191,255,.7);color:#fff;background:rgba(0,191,255,.12);box-shadow:0 0 14px rgba(0,191,255,.25)}
+.t-btn.active.corridors{border-color:rgba(0,255,80,.6);color:#00ff80;background:rgba(0,255,80,.08);box-shadow:0 0 14px rgba(0,255,80,.2)}
+.t-btn.active.nodes{border-color:rgba(255,0,255,.6);color:#ff80ff;background:rgba(255,0,255,.08);box-shadow:0 0 14px rgba(255,0,255,.2)}
+.t-btn.active.elasticity{border-color:rgba(255,185,0,.6);color:#ffd700;background:rgba(255,185,0,.08);box-shadow:0 0 14px rgba(255,185,0,.2)}
+.t-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.corridors .t-dot{background:#00ff80}
+.nodes .t-dot{background:#ff00ff}
+.elasticity .t-dot{background:#ffd700}
+
+/* ── OSINT Panel ────────────────────────────────────────────── */
+#osint-panel{
+  position:absolute;right:10px;top:10px;bottom:10px;
+  width:270px;z-index:500;
+  background:rgba(1,8,24,.94);backdrop-filter:blur(14px);
+  border:1px solid rgba(0,191,255,.22);border-radius:10px;
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+#osint-panel.collapsed{transform:translateX(282px)}
+#panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-bottom:1px solid rgba(0,191,255,.12);
+  background:rgba(0,191,255,.06);flex-shrink:0;
+}
+.ph-title{font-size:9px;font-weight:900;color:#00bfff;letter-spacing:.18em}
+.ph-sub{font-size:8px;color:rgba(0,191,255,.45);margin-top:1px;letter-spacing:.08em}
+#panel-toggle{
+  background:transparent;border:none;color:#38bdf8;cursor:pointer;
+  font-size:13px;line-height:1;padding:2px 4px;
+}
+#panel-body{flex:1;overflow-y:auto;padding:10px}
+#panel-body::-webkit-scrollbar{width:3px}
+#panel-body::-webkit-scrollbar-track{background:transparent}
+#panel-body::-webkit-scrollbar-thumb{background:rgba(56,189,248,.25);border-radius:2px}
+
+/* ── Panel sections ─────────────────────────────────────────── */
+.ps-header{
+  font-size:8px;font-weight:900;color:rgba(56,189,248,.65);
+  letter-spacing:.15em;text-transform:uppercase;
+  padding-bottom:6px;margin-bottom:8px;
+  border-bottom:1px solid rgba(56,189,248,.1);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ps-header span{font-size:10px;color:#fff}
+
+/* Transit Vulnerability Index */
+#tvi-wrap{
+  padding:10px 12px;border-radius:7px;
+  background:rgba(0,191,255,.05);border:1px solid rgba(0,191,255,.15);
+  margin-bottom:12px;text-align:center;
+}
+.tvi-num{font-size:28px;font-weight:900;color:#00bfff;line-height:1;text-shadow:0 0 20px #00bfff88}
+.tvi-label{font-size:8px;color:rgba(0,191,255,.55);letter-spacing:.12em;margin-top:3px}
+.tvi-risk{font-size:9px;font-weight:800;letter-spacing:.1em;margin-top:5px}
+
+/* Corridor rows */
+.corridor-row{
+  padding:6px 8px;border-radius:5px;margin-bottom:5px;cursor:pointer;
+  background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);
+  transition:all .12s;
+}
+.corridor-row:hover{background:rgba(0,191,255,.06);border-color:rgba(0,191,255,.2)}
+.cr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.cr-badge{
+  font-size:8px;font-weight:900;padding:1px 6px;border-radius:3px;
+  letter-spacing:.06em;flex-shrink:0;
+}
+.cr-name{font-size:10px;font-weight:600;color:#e0f2fe;flex:1;margin:0 7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.cr-cpk{font-size:10px;font-weight:800;white-space:nowrap}
+.cr-bar{height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden}
+.cr-fill{height:100%;border-radius:1px;transition:width .5s ease}
+
+/* Node rows */
+.node-row{
+  padding:6px 8px;border-radius:5px;margin-bottom:5px;cursor:pointer;
+  background:rgba(255,0,255,.04);border:1px solid rgba(255,0,255,.12);
+  transition:all .12s;display:flex;align-items:flex-start;gap:8px;
+}
+.node-row:hover{background:rgba(255,0,255,.08);border-color:rgba(255,0,255,.3)}
+.node-pulse-icon{
+  width:10px;height:10px;border-radius:50%;background:#ff00ff;flex-shrink:0;margin-top:3px;
+  box-shadow:0 0 8px #ff00ffaa;animation:icon-pulse 1.6s ease-in-out infinite;
+}
+@keyframes icon-pulse{0%,100%{box-shadow:0 0 6px #ff00ffaa}50%{box-shadow:0 0 16px #ff00ff,0 0 32px #ff00ff44}}
+.node-info{flex:1;min-width:0}
+.node-line{font-size:9px;color:rgba(255,0,255,.7);letter-spacing:.07em;margin-bottom:2px}
+.node-coords{font-size:10px;color:#f0e6ff;font-weight:600}
+.node-count{font-size:9px;color:#ff80ff;margin-top:2px}
+
+/* Sparkline panel */
+#elasticity-wrap{display:none}
+#elasticity-wrap.show{display:block}
+.spark-label{font-size:9px;color:rgba(255,185,0,.7);letter-spacing:.08em;margin-bottom:6px}
+
+/* ── Trilateral node markers (Leaflet DivIcon) ──────────────── */
+.tri-node-marker{
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(255,0,255,.25);
+  border:2px solid #ff00ff;
+  box-shadow:0 0 12px rgba(255,0,255,.7);
+  cursor:pointer;
+  animation:tri-pulse 1.8s ease-in-out infinite;
+}
+@keyframes tri-pulse{
+  0%{box-shadow:0 0 6px rgba(255,0,255,.7);transform:scale(1)}
+  50%{box-shadow:0 0 0 12px rgba(255,0,255,0),0 0 20px rgba(255,0,255,.8);transform:scale(1.15)}
+  100%{box-shadow:0 0 6px rgba(255,0,255,.7);transform:scale(1)}
+}
+
+/* ── HUD corner overlays ────────────────────────────────────── */
+#hud-tl{
+  position:absolute;top:10px;left:168px;z-index:400;
+  font-size:9px;color:rgba(0,191,255,.65);letter-spacing:.12em;
+  pointer-events:none;
+}
+#hud-tl .h-title{font-size:11px;font-weight:900;color:#00bfff;letter-spacing:.2em;margin-bottom:3px;text-shadow:0 0 10px #00bfff88}
+#hour-badge{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:400;font-size:9px;color:#67e8f9;letter-spacing:.15em;font-weight:700;
+  background:rgba(0,6,20,.82);border:1px solid rgba(0,191,255,.2);
+  padding:3px 16px;border-radius:2px;pointer-events:none;
+}
+
+/* ── Elasticity sparkline overlay (per line hover) ──────────── */
+#spark-overlay{
+  position:absolute;z-index:600;pointer-events:none;
+  background:rgba(1,6,20,.92);border:1px solid rgba(255,185,0,.3);
+  border-radius:6px;padding:8px 10px;display:none;min-width:180px;
+}
+.so-title{font-size:9px;color:#ffd700;font-weight:800;letter-spacing:.1em;margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div class="ld-logo">◈ MOBILITY INTELLIGENCE</div>
+  <div class="ld-bar"><div class="ld-fill" id="ld-fill"></div></div>
+  <div class="ld-msg" id="ld-msg">INITIALIZING…</div>
+</div>
+
+<div id="map"></div>
+
+<!-- HUD top-left -->
+<div id="hud-tl">
+  <div class="h-title">OSINT // MOBILITY</div>
+  <div>CORREDORES DE ESCAPE &amp; NODOS TRILATERALES</div>
+  <div id="hud-status" style="color:rgba(0,255,80,.6);margin-top:2px">● LOADING</div>
+</div>
+
+<!-- Hour badge -->
+<div id="hour-badge">HORA: <span id="hour-val">12</span>:00 HS</div>
+
+<!-- Toolbar (toggles) -->
+<div id="toolbar">
+  <button class="t-btn corridors" id="btn-corridors" onclick="toggleLayer('corridors')">
+    <span class="t-dot"></span>VER CORREDORES
+  </button>
+  <button class="t-btn nodes" id="btn-nodes" onclick="toggleLayer('nodes')">
+    <span class="t-dot"></span>VER NODOS
+  </button>
+  <button class="t-btn elasticity" id="btn-elasticity" onclick="toggleLayer('elasticity')">
+    <span class="t-dot"></span>VER ELASTICIDAD
+  </button>
+</div>
+
+<!-- OSINT Panel -->
+<div id="osint-panel">
+  <div id="panel-header">
+    <div>
+      <div class="ph-title">◈ OSINT MOBILITY PANEL</div>
+      <div class="ph-sub">ANÁLISIS ESPACIAL EN TIEMPO REAL</div>
+    </div>
+    <button id="panel-toggle" onclick="togglePanel()">›</button>
+  </div>
+  <div id="panel-body">
+
+    <!-- Transit Vulnerability Index -->
+    <div id="tvi-wrap">
+      <div class="tvi-num" id="tvi-val">—</div>
+      <div class="tvi-label">ÍNDICE VULNERABILIDAD EN TRÁNSITO</div>
+      <div class="tvi-risk" id="tvi-risk" style="color:#7dd3fc">CALCULANDO…</div>
+    </div>
+
+    <!-- Top 5 Corredores de Escape -->
+    <div style="margin-bottom:14px">
+      <div class="ps-header">
+        Top 5 Líneas Corredores de Escape
+        <span id="corridor-hour-label">H:12</span>
+      </div>
+      <div id="corridors-list"><div style="font-size:9px;color:rgba(255,255,255,.3);padding:8px 0">CALCULANDO…</div></div>
+    </div>
+
+    <!-- Nodos Trilaterales -->
+    <div style="margin-bottom:14px">
+      <div class="ps-header">
+        Nodos Trilaterales Detectados
+        <span id="node-count-badge" style="color:#ff80ff">0</span>
+      </div>
+      <div id="nodes-list"><div style="font-size:9px;color:rgba(255,255,255,.3);padding:8px 0">CALCULANDO…</div></div>
+    </div>
+
+    <!-- Elasticidad Temporal -->
+    <div id="elasticity-wrap">
+      <div class="ps-header">Elasticidad Temporal (Línea seleccionada)</div>
+      <div class="spark-label" id="spark-line-label">Seleccioná una línea</div>
+      <canvas id="spark-canvas" width="230" height="50" style="display:block;border-radius:3px;background:rgba(255,185,0,.04);border:1px solid rgba(255,185,0,.12)"></canvas>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span style="font-size:7px;color:rgba(255,255,255,.3)">00h</span>
+        <span style="font-size:7px;color:rgba(255,255,255,.3)">12h</span>
+        <span style="font-size:7px;color:rgba(255,255,255,.3)">23h</span>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;padding:5px 8px;border-radius:4px;background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.08)">
+      <div style="font-size:8px;color:rgba(56,189,248,.5);letter-spacing:.08em">
+        SRC: LAPD OPEN DATA · LA METRO GTFS · NEIGHBORHOOD BIZ INDEX
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sparkline hover overlay -->
+<div id="spark-overlay">
+  <div class="so-title" id="so-title">LÍNEA —</div>
+  <canvas id="so-canvas" width="180" height="40"></canvas>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const CRIME_RADIUS_M   = 50;   // corridor crime radius (meters)
+const NODE_RADIUS_M    = 100;  // trilateral node search radius
+const GRID_DEG         = 0.01; // ~1.1 km grid cell
+const LA_LAT_MIN       = 33.65;
+const LA_LNG_MIN       = -118.82;
+const MAX_SAMPLE_PER_H = 2000; // crime pts to use per hour
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let simHour     = 12;
+let filterYear  = null;
+let filterArea  = null;
+let filterPart  = 'all';
+let panelOpen   = true;
+let activeNode  = null;
+
+let showCorridors  = true;
+let showNodes      = false;
+let showElasticity = false;
+
+// Loaded data
+let crimeHourly   = null;   // hours[24] → [[lat,lng],…]
+let metroLines    = null;   // GeoJSON FeatureCollection
+let bizGeoJSON    = null;   // neighborhood GeoJSON
+
+// Pre-computed indexes / analytics
+let crimeGrids    = [];     // [24] → Map<cell, [[lat,lng]]>
+let corridorStats = [];     // [{lineId, name, color, cpk, total, hourly[24], pct}]
+let triNodes      = [];     // [{lat,lng,lineId,crimeCount}]
+let elasticityData= {};     // lineId → [24 counts]
+let transitVulnIdx= 0;
+
+// Leaflet layers
+let corridorLayers   = L.layerGroup();
+let nodeLayers       = L.layerGroup();
+let selectedLineId   = null;
+
+// ══════════════════════════════════════════════════════════════
+// MAP INIT
+// ══════════════════════════════════════════════════════════════
+const map = L.map('map', {
+  center: [34.05, -118.28], zoom: 11,
+  zoomControl: true,
+  attributionControl: false,
+  preferCanvas: true,
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19, subdomains: 'abcd',
+}).addTo(map);
+
+corridorLayers.addTo(map);
+nodeLayers.addTo(map);
+
+// ══════════════════════════════════════════════════════════════
+// PROGRESS LOADER
+// ══════════════════════════════════════════════════════════════
+function setProgress(pct, msg) {
+  document.getElementById('ld-fill').style.width = pct + '%';
+  document.getElementById('ld-msg').textContent = msg;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SPATIAL UTILITIES
+// ══════════════════════════════════════════════════════════════
+
+// Haversine distance in meters
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R  = 6371000;
+  const dL = (lat2 - lat1) * Math.PI / 180;
+  const dG = (lng2 - lng1) * Math.PI / 180;
+  const sL = Math.sin(dL / 2), sG = Math.sin(dG / 2);
+  const a  = sL * sL + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * sG * sG;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Distance from point to line segment (approximate, meters)
+function distToSegmentM(lat, lng, lat1, lng1, lat2, lng2) {
+  const cos_ = Math.cos((lat1 + lat2) / 2 * Math.PI / 180);
+  const R = 6371000;
+  const dx = (lng2 - lng1) * cos_ * (Math.PI / 180) * R;
+  const dy = (lat2 - lat1) * (Math.PI / 180) * R;
+  const px = (lng - lng1) * cos_ * (Math.PI / 180) * R;
+  const py = (lat - lat1) * (Math.PI / 180) * R;
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.sqrt(px * px + py * py);
+  const t = Math.max(0, Math.min(1, (px * dx + py * dy) / len2));
+  return Math.sqrt((px - t * dx) ** 2 + (py - t * dy) ** 2);
+}
+
+// Approximate length of a LineString in km
+function lineStringLengthKm(coords) {
+  let km = 0;
+  for (let i = 1; i < coords.length; i++) {
+    km += haversineM(coords[i-1][1], coords[i-1][0], coords[i][1], coords[i][0]) / 1000;
+  }
+  return km;
+}
+
+// Grid cell key for a point
+function cellKey(lat, lng) {
+  return `${Math.floor(lat / GRID_DEG)},${Math.floor(lng / GRID_DEG)}`;
+}
+
+// Build spatial grid for fast proximity queries
+function buildCrimeGrid(points) {
+  const grid = new Map();
+  for (const [lat, lng] of points) {
+    const k = cellKey(lat, lng);
+    let cell = grid.get(k);
+    if (!cell) { cell = []; grid.set(k, cell); }
+    cell.push([lat, lng]);
+  }
+  return grid;
+}
+
+// Get all crime points within radiusM of (lat, lng) using grid
+function getCrimesNear(lat, lng, radiusM, grid) {
+  const results = [];
+  const delta = Math.ceil(radiusM / (GRID_DEG * 111000)) + 1;
+  const rLat = Math.floor(lat / GRID_DEG);
+  const rLng = Math.floor(lng / GRID_DEG);
+  for (let dl = -delta; dl <= delta; dl++) {
+    for (let dg = -delta; dg <= delta; dg++) {
+      const k = `${rLat + dl},${rLng + dg}`;
+      const cell = grid.get(k);
+      if (!cell) continue;
+      for (const [plat, plng] of cell) {
+        if (haversineM(lat, lng, plat, plng) <= radiusM) results.push([plat, plng]);
+      }
+    }
+  }
+  return results;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ANALYTICS ENGINE
+// ══════════════════════════════════════════════════════════════
+
+function sampleHour(points) {
+  if (points.length <= MAX_SAMPLE_PER_H) return points;
+  const step = Math.ceil(points.length / MAX_SAMPLE_PER_H);
+  return points.filter((_, i) => i % step === 0);
+}
+
+// Pre-compute corridor crime counts for all 24 hours (runs once at load)
+function computeAllCorridorStats() {
+  const lines = metroLines.features;
+  // Initialize structure
+  const stats = lines.map(f => ({
+    lineId:   f.properties.line_id,
+    name:     f.properties.line_name,
+    color:    f.properties.color,
+    type:     f.properties.type,
+    lengthKm: lineStringLengthKm(f.geometry.coordinates),
+    hourly:   new Array(24).fill(0),
+    total:    0,
+    cpk:      0,
+    pct:      0,
+  }));
+
+  for (let h = 0; h < 24; h++) {
+    const pts   = sampleHour(crimeHourly.hours[h] || []);
+    const grid  = crimeGrids[h];
+
+    for (let li = 0; li < lines.length; li++) {
+      const coords = lines[li].geometry.coordinates;
+      const seen   = new Set();
+
+      // Walk each segment of the line
+      for (let s = 1; s < coords.length; s++) {
+        const [lng1, lat1] = coords[s - 1];
+        const [lng2, lat2] = coords[s];
+        // Sample the segment every ~80m
+        const segLenM = haversineM(lat1, lng1, lat2, lng2);
+        const steps   = Math.max(1, Math.round(segLenM / 80));
+
+        for (let k = 0; k <= steps; k++) {
+          const t    = k / steps;
+          const sLat = lat1 + (lat2 - lat1) * t;
+          const sLng = lng1 + (lng2 - lng1) * t;
+          const near = getCrimesNear(sLat, sLng, CRIME_RADIUS_M, grid);
+          for (const [plat, plng] of near) {
+            const key = `${Math.round(plat * 10000)},${Math.round(plng * 10000)}`;
+            if (!seen.has(key)) { seen.add(key); stats[li].hourly[h]++; }
+          }
+        }
+      }
+      stats[li].total += stats[li].hourly[h];
+    }
+  }
+
+  // Compute CPK and normalize
+  for (const s of stats) {
+    s.cpk = s.lengthKm > 0 ? (s.total / 24) / s.lengthKm : 0;
+  }
+  const maxCpk = Math.max(...stats.map(s => s.cpk), 0.001);
+  for (const s of stats) s.pct = s.cpk / maxCpk;
+
+  return stats;
+}
+
+// Detect trilateral nodes at a given hour
+function detectTriNodes(hour) {
+  const nodes   = [];
+  const grid    = crimeGrids[hour];
+  const lines   = metroLines.features;
+
+  for (const feat of lines) {
+    const coords = feat.geometry.coordinates;
+
+    for (let s = 1; s < coords.length; s++) {
+      const [lng1, lat1] = coords[s - 1];
+      const [lng2, lat2] = coords[s];
+      const segLenM = haversineM(lat1, lng1, lat2, lng2);
+      const steps   = Math.max(1, Math.round(segLenM / 180)); // every ~180m
+
+      for (let k = 0; k <= steps; k++) {
+        const t    = k / steps;
+        const sLat = lat1 + (lat2 - lat1) * t;
+        const sLng = lng1 + (lng2 - lng1) * t;
+
+        // Condition 1: Part-1-type crimes nearby (use all crimes as proxy)
+        const nearbyCrimes = getCrimesNear(sLat, sLng, NODE_RADIUS_M, grid);
+        if (nearbyCrimes.length < 2) continue;
+
+        // Condition 2: Nightlife business neighborhood (PiP check)
+        let hasNightlife = false;
+        for (const feat of bizGeoJSON.features) {
+          if (!feat.geometry) continue;
+          const bbox = feat._bbox;
+          if (!bbox || sLat < bbox[1] || sLat > bbox[3] || sLng < bbox[0] || sLng > bbox[2]) continue;
+          const ring = feat.geometry.type === 'Polygon'
+            ? feat.geometry.coordinates[0]
+            : feat.geometry.coordinates[0][0];
+          if (pipRayCast(sLat, sLng, ring)) {
+            const p     = feat.properties;
+            const score = (p.biz_entertainment || 0) + (p.biz_food_restaurants || 0) * 0.7 + (p.biz_retail || 0) * 0.5;
+            if (score >= 3) { hasNightlife = true; break; }
+          }
+        }
+        if (!hasNightlife) continue;
+
+        nodes.push({
+          lat:       sLat,
+          lng:       sLng,
+          lineId:    feat.properties.line_id,
+          lineName:  feat.properties.line_name,
+          lineColor: feat.properties.color,
+          crimeCount: nearbyCrimes.length,
+        });
+      }
+    }
+  }
+
+  // Deduplicate nodes within 200m of each other
+  const deduped = [];
+  for (const n of nodes) {
+    if (!deduped.some(d => haversineM(d.lat, d.lng, n.lat, n.lng) < 200)) {
+      deduped.push(n);
+    }
+  }
+  return deduped.sort((a, b) => b.crimeCount - a.crimeCount).slice(0, 20);
+}
+
+// Ray-casting PiP for biz neighborhoods
+function pipRayCast(lat, lng, ring) {
+  let inside = false;
+  const n = ring.length;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Pre-index biz feature bboxes
+function indexBizBboxes() {
+  for (const feat of bizGeoJSON.features) {
+    if (!feat.geometry) continue;
+    const coords = feat.geometry.type === 'Polygon'
+      ? feat.geometry.coordinates[0]
+      : feat.geometry.coordinates[0][0];
+    let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+    for (const [lng, lat] of coords) {
+      if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+    }
+    feat._bbox = [minLng, minLat, maxLng, maxLat];
+  }
+}
+
+// Compute Transit Vulnerability Index (global score 0–100)
+function computeTVI(hour) {
+  const stats    = corridorStats;
+  if (!stats.length) return 0;
+  const maxH     = Math.max(...stats.map(s => s.hourly[hour] || 0), 1);
+  const avgScore = stats.reduce((sum, s) => sum + (s.hourly[hour] || 0) / maxH, 0) / stats.length;
+  return Math.round(avgScore * 100);
+}
+
+// ══════════════════════════════════════════════════════════════
+// COLOR UTILITIES
+// ══════════════════════════════════════════════════════════════
+
+// Lerp between green → yellow → red based on t ∈ [0,1]
+function dangerColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  if (t < 0.5) {
+    const s = t * 2;
+    const r = Math.round(0   + 255 * s);
+    const g = Math.round(255 + (165 - 255) * s);
+    return `rgb(${r},${g},0)`;
+  } else {
+    const s = (t - 0.5) * 2;
+    const r = 255;
+    const g = Math.round(165 - 165 * s);
+    return `rgb(${r},${g},0)`;
+  }
+}
+
+function hexToRgb(hex) {
+  const m = hex.replace('#','').match(/.{2}/g);
+  return m ? m.map(x => parseInt(x,16)) : [56,189,248];
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER LAYERS
+// ══════════════════════════════════════════════════════════════
+
+function renderCorridors(hour) {
+  corridorLayers.clearLayers();
+  if (!showCorridors || !corridorStats.length) return;
+
+  const hourStats = corridorStats.map(s => ({...s, h: s.hourly[hour] || 0}));
+  const maxH      = Math.max(...hourStats.map(s => s.h), 1);
+
+  for (let i = 0; i < metroLines.features.length; i++) {
+    const feat = metroLines.features[i];
+    const stat = hourStats[i];
+    const t    = stat.h / maxH;
+    const col  = dangerColor(t);
+    const w    = 1.5 + t * 4.5; // weight 1.5–6px
+    const coords = feat.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+
+    const pl = L.polyline(coords, {
+      color: col, weight: w, opacity: 0.82,
+      smoothFactor: 1.5,
+    });
+
+    // Glow effect: thinner outer layer
+    const glow = L.polyline(coords, {
+      color: col, weight: w + 6, opacity: 0.12,
+      smoothFactor: 1.5, interactive: false,
+    });
+
+    const elasticityProfile = elasticityData[stat.lineId] || stat.hourly;
+    pl.on('mouseover', function(e) { showSparkOverlay(e, stat, elasticityProfile); });
+    pl.on('mouseout',  function()  { hideSparkOverlay(); });
+    pl.on('click',     function()  { selectLine(stat, elasticityProfile); });
+
+    corridorLayers.addLayer(glow);
+    corridorLayers.addLayer(pl);
+  }
+}
+
+function renderNodes(hour) {
+  nodeLayers.clearLayers();
+  if (!showNodes) return;
+
+  for (const node of triNodes) {
+    const icon = L.divIcon({
+      html: '<div class="tri-node-marker"></div>',
+      className: '', iconSize: [18,18], iconAnchor: [9,9],
+    });
+    const marker = L.marker([node.lat, node.lng], { icon });
+    marker.bindPopup(
+      '<div style="font-size:11px;color:#ff80ff;font-weight:900;margin-bottom:4px">◈ NODO TRILATERAL</div>' +
+      '<div style="color:#e0ccff;margin-bottom:3px">' + node.lineName + '</div>' +
+      '<div style="font-size:10px;color:#c084fc">' + node.crimeCount + ' crímenes / 100m</div>' +
+      '<div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:4px">Cruce: Crimen + Tránsito + Zona Comercial</div>',
+      { maxWidth: 220 }
+    );
+    marker.on('click', () => { map.setView([node.lat, node.lng], 15); });
+    nodeLayers.addLayer(marker);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SPARKLINE / ELASTICITY
+// ══════════════════════════════════════════════════════════════
+
+function drawSparkline(canvas, data, color, activeHour) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const max = Math.max(...data, 1);
+  const pts = data.map((v, i) => [i / 23 * (W - 4) + 2, H - 4 - (v / max) * (H - 8)]);
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  const rgb = hexToRgb(color);
+  ctx.strokeStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Active hour dot
+  if (activeHour !== undefined && pts[activeHour]) {
+    ctx.beginPath();
+    ctx.arc(pts[activeHour][0], pts[activeHour][1], 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+  }
+}
+
+function showSparkOverlay(e, stat, profile) {
+  const el = document.getElementById('spark-overlay');
+  const canvas = document.getElementById('so-canvas');
+  document.getElementById('so-title').textContent = stat.name;
+  drawSparkline(canvas, profile, stat.color || '#38bdf8', simHour);
+  const px = e.originalEvent.clientX, py = e.originalEvent.clientY;
+  el.style.left  = (px + 14) + 'px';
+  el.style.top   = Math.min(py - 40, window.innerHeight - 90) + 'px';
+  el.style.display = 'block';
+}
+function hideSparkOverlay() { document.getElementById('spark-overlay').style.display = 'none'; }
+
+function selectLine(stat, profile) {
+  selectedLineId = stat.lineId;
+  document.getElementById('spark-line-label').textContent = stat.name;
+  if (showElasticity) {
+    const canvas = document.getElementById('spark-canvas');
+    drawSparkline(canvas, profile, stat.color || '#38bdf8', simHour);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL UPDATE
+// ══════════════════════════════════════════════════════════════
+
+function updatePanel(hour) {
+  // TVI
+  const tvi = computeTVI(hour);
+  document.getElementById('tvi-val').textContent = tvi;
+  const riskEl = document.getElementById('tvi-risk');
+  if (tvi >= 70)      { riskEl.textContent = '● CRÍTICO'; riskEl.style.color = '#ef4444'; }
+  else if (tvi >= 50) { riskEl.textContent = '● ELEVADO'; riskEl.style.color = '#f97316'; }
+  else if (tvi >= 30) { riskEl.textContent = '● MODERADO'; riskEl.style.color = '#eab308'; }
+  else                { riskEl.textContent = '● BAJO';    riskEl.style.color = '#34d399'; }
+
+  document.getElementById('corridor-hour-label').textContent = 'H:' + String(hour).padStart(2,'0');
+
+  // Top 5 corridors
+  const sorted = corridorStats
+    .map((s, i) => ({...s, h: s.hourly[hour] || 0, idx: i}))
+    .sort((a, b) => b.h - a.h)
+    .slice(0, 5);
+  const maxH = sorted[0]?.h || 1;
+  const rgb_arr = hexToRgb;
+
+  document.getElementById('corridors-list').innerHTML = sorted.map((s, rank) => {
+    const col     = dangerColor(s.h / maxH);
+    const cpkDisp = (s.h / Math.max(s.lengthKm, 0.1)).toFixed(1);
+    return `
+      <div class="corridor-row" onclick="flyToLine('${s.lineId}')">
+        <div class="cr-top">
+          <span class="cr-badge" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}55">${s.lineId}</span>
+          <span class="cr-name" title="${s.name}">${s.name.replace('Metro ','').replace(' Line','').replace('Rapid ','R.')}</span>
+          <span class="cr-cpk" style="color:${col}">${cpkDisp} c/km</span>
+        </div>
+        <div class="cr-bar">
+          <div class="cr-fill" style="width:${(s.h/maxH)*100}%;background:linear-gradient(90deg,${col}55,${col})"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Trilateral nodes
+  document.getElementById('node-count-badge').textContent = triNodes.length;
+  document.getElementById('nodes-list').innerHTML = triNodes.slice(0, 6).map((n, i) => `
+    <div class="node-row" onclick="flyToNode(${n.lat},${n.lng})">
+      <div class="node-pulse-icon"></div>
+      <div class="node-info">
+        <div class="node-line">${n.lineName.replace('Metro ','').replace(' Line','').replace('Rapid ','R.')}</div>
+        <div class="node-coords">${n.lat.toFixed(4)}°N · ${Math.abs(n.lng).toFixed(4)}°W</div>
+        <div class="node-count">${n.crimeCount} incidentes en radio 100m</div>
+      </div>
+    </div>`).join('');
+
+  if (!triNodes.length) {
+    document.getElementById('nodes-list').innerHTML =
+      '<div style="font-size:9px;color:rgba(255,255,255,.3);padding:4px 0">No detectados a esta hora</div>';
+  }
+
+  // Elasticity panel sparkline (if panel visible + line selected)
+  if (showElasticity && selectedLineId) {
+    const stat = corridorStats.find(s => s.lineId === selectedLineId);
+    if (stat) {
+      const canvas = document.getElementById('spark-canvas');
+      drawSparkline(canvas, stat.hourly, stat.color || '#38bdf8', hour);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION HELPERS
+// ══════════════════════════════════════════════════════════════
+
+function flyToLine(lineId) {
+  const feat = metroLines.features.find(f => f.properties.line_id === lineId);
+  if (!feat) return;
+  const coords = feat.geometry.coordinates;
+  const mid    = coords[Math.floor(coords.length / 2)];
+  map.setView([mid[1], mid[0]], 13);
+  const stat = corridorStats.find(s => s.lineId === lineId);
+  if (stat) selectLine(stat, stat.hourly);
+}
+
+function flyToNode(lat, lng) {
+  map.setView([lat, lng], 16);
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOGGLE CONTROLS
+// ══════════════════════════════════════════════════════════════
+
+function toggleLayer(layer) {
+  if (layer === 'corridors') {
+    showCorridors = !showCorridors;
+    document.getElementById('btn-corridors').classList.toggle('active', showCorridors);
+    renderCorridors(simHour);
+  } else if (layer === 'nodes') {
+    showNodes = !showNodes;
+    document.getElementById('btn-nodes').classList.toggle('active', showNodes);
+    renderNodes(simHour);
+  } else if (layer === 'elasticity') {
+    showElasticity = !showElasticity;
+    document.getElementById('btn-elasticity').classList.toggle('active', showElasticity);
+    const wrap = document.getElementById('elasticity-wrap');
+    wrap.classList.toggle('show', showElasticity);
+    if (showElasticity && selectedLineId) {
+      const stat = corridorStats.find(s => s.lineId === selectedLineId);
+      if (stat) {
+        const canvas = document.getElementById('spark-canvas');
+        drawSparkline(canvas, stat.hourly, stat.color || '#38bdf8', simHour);
+      }
+    }
+  }
+}
+
+function togglePanel() {
+  panelOpen = !panelOpen;
+  document.getElementById('osint-panel').classList.toggle('collapsed', !panelOpen);
+  document.getElementById('panel-toggle').textContent = panelOpen ? '›' : '‹';
+}
+
+// ══════════════════════════════════════════════════════════════
+// MAIN UPDATE (triggered on hour / filter change)
+// ══════════════════════════════════════════════════════════════
+
+function updateAll(hour) {
+  simHour = hour;
+  document.getElementById('hour-val').textContent = String(hour).padStart(2,'0');
+
+  // Recompute tri-nodes for new hour (fast due to grid index)
+  triNodes = detectTriNodes(hour);
+
+  renderCorridors(hour);
+  renderNodes(hour);
+  updatePanel(hour);
+}
+
+// ══════════════════════════════════════════════════════════════
+// POSTMESSAGE API (sync with Osiris parent)
+// ══════════════════════════════════════════════════════════════
+
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'OSINT_FILTER') {
+    if (e.data.hour !== undefined) updateAll(e.data.hour);
+    filterYear = e.data.year  ?? filterYear;
+    filterArea = e.data.area  ?? filterArea;
+    filterPart = e.data.part  ?? filterPart;
+    updateAll(simHour);
+  }
+  if (e.data.type === 'MOBILITY_HOUR') {
+    updateAll(e.data.hour);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// BOOTSTRAP — async load pipeline
+// ══════════════════════════════════════════════════════════════
+
+async function bootstrap() {
+  try {
+    setProgress(5, 'CARGANDO DATOS DE CRIMEN HORARIO…');
+    const crimeRes = await fetch('/data/crime_points_hourly.json');
+    crimeHourly    = await crimeRes.json();
+    setProgress(30, 'CARGANDO RED DE TRÁNSITO LA METRO…');
+
+    const metroRes = await fetch('/data/la_metro_lines.geojson');
+    metroLines     = await metroRes.json();
+    setProgress(55, 'CARGANDO ÍNDICE DE NEGOCIOS…');
+
+    const bizRes = await fetch('/data/neighborhood_business_enriched.geojson');
+    bizGeoJSON   = await bizRes.json();
+    setProgress(70, 'CONSTRUYENDO ÍNDICES ESPACIALES…');
+
+    // Build crime grids for all 24 hours
+    crimeGrids = crimeHourly.hours.map(h => buildCrimeGrid(sampleHour(h || [])));
+    setProgress(80, 'CALCULANDO CORREDORES DE ESCAPE…');
+
+    // Index biz bboxes
+    indexBizBboxes();
+
+    // Run corridor stats (heavy computation — breaks into microtasks)
+    await new Promise(resolve => setTimeout(() => {
+      corridorStats = computeAllCorridorStats();
+      resolve();
+    }, 0));
+    setProgress(92, 'DETECTANDO NODOS TRILATERALES…');
+
+    await new Promise(resolve => setTimeout(() => {
+      triNodes = detectTriNodes(simHour);
+      resolve();
+    }, 0));
+    setProgress(98, 'RENDERIZANDO…');
+
+    // Initial render
+    document.getElementById('btn-corridors').classList.add('active');
+    await new Promise(resolve => setTimeout(resolve, 80));
+    updateAll(simHour);
+
+    // Add police stations layer for context
+    addStationLayer();
+
+    setProgress(100, 'LISTO');
+    document.getElementById('hud-status').textContent = '● ONLINE';
+    document.getElementById('hud-status').style.color = 'rgba(0,255,80,.8)';
+    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 400);
+
+  } catch (err) {
+    document.getElementById('ld-msg').textContent = 'ERROR: ' + err.message;
+    document.getElementById('ld-msg').style.color = '#ef4444';
+  }
+}
+
+// ── Police station badge layer (context markers) ─────────────
+function addStationLayer() {
+  const badgeSVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="26" viewBox="0 0 34 40">' +
+    '<path d="M17 1 L31 7 L31 21 Q31 34 17 39 Q3 34 3 21 L3 7 Z" fill="rgba(0,10,30,0.92)" stroke="#00bfff" stroke-width="1.7"/>' +
+    '<polygon points="17,10.5 18.6,15.7 24.2,15.7 19.8,18.9 21.4,24.1 17,20.9 12.6,24.1 14.2,18.9 9.8,15.7 15.4,15.7" fill="#00bfff" opacity="0.8"/>' +
+    '</svg>';
+  const icon = L.divIcon({
+    html: '<div style="filter:drop-shadow(0 0 6px rgba(0,191,255,0.7))">' + badgeSVG + '</div>',
+    className: '', iconSize:[22,26], iconAnchor:[11,26],
+  });
+  fetch('/data/lapd_stations.geojson')
+    .then(r => r.json())
+    .then(gj => {
+      L.geoJSON(gj, {
+        pointToLayer: (feat, ll) => L.marker(ll, {icon, zIndexOffset:3000}),
+        onEachFeature: (feat, layer) => {
+          const p = feat.properties;
+          layer.bindPopup(
+            '<div style="color:#00bfff;font-weight:900;margin-bottom:3px">' + p.division + ' Division</div>' +
+            '<div style="color:#94a3b8;font-size:10px">' + p.address + '</div>',
+            {maxWidth:200}
+          );
+        },
+      }).addTo(map);
+    }).catch(() => {});
+}
+
+// ── Kick off bootstrap ───────────────────────────────────────
+bootstrap();
+</script>
+</body>
+</html>

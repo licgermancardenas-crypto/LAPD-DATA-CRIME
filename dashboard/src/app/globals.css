@@ -82,6 +82,7 @@ select:focus, input:focus {
 .recharts-legend-item-text { color: #7b82a0 !important; font-size: 12px !important; }
 
 /* ── OSIRIS tactical animations ──────────────────────────────────────────── */
+@keyframes pulse           { 0%,100%{opacity:1} 50%{opacity:.35} }
 @keyframes osiris-pulse    { 0%,100%{opacity:1;box-shadow:0 0 8px #0ea5e9} 50%{opacity:.5;box-shadow:0 0 20px #0ea5e9,0 0 40px #0ea5e940} }
 @keyframes osiris-scan     { 0%{transform:translateY(-100%);opacity:0} 15%{opacity:.4} 85%{opacity:.4} 100%{transform:translateY(3000%);opacity:0} }
 @keyframes osiris-blink    { 0%,100%{opacity:1} 49%{opacity:1} 50%{opacity:0} 99%{opacity:0} }

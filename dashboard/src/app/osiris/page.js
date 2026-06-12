@@ -8,10 +8,11 @@ const LaMapGoogle = dynamic(
   () => import('../../components/LaMapGoogle'),
   { ssr: false, loading: () => null }
 );
+import BizCrimeCorrelation from '../../components/BizCrimeCorrelation';
 import {
   ChevronLeft, ChevronRight, Shield, Activity,
   Radio, Users, Eye, EyeOff, Target, Zap, Filter, Layers,
-  Play, Pause, ArrowLeft,
+  Play, Pause, ArrowLeft, TrendingUp,
 } from 'lucide-react';
 
 // ── Color palette ──────────────────────────────────────────────────────────
@@ -877,6 +878,10 @@ export default function OsintPage(){
               <ProgBar key={c.category} label={c.category} value={c.crimes} max={topCats[0].crimes}
                 color={i===0?'#38bdf8':i<3?C.accent:C.accent3}/>
             )):<div style={{height:70,display:'flex',alignItems:'center',justifyContent:'center',color:C.dim,fontSize:10}}>LOADING…</div>}
+          </PanelSection>
+
+          <PanelSection icon={TrendingUp} title="Correlación Comercial" color="#00bfff">
+            <BizCrimeCorrelation simHour={simHour}/>
           </PanelSection>
 
           {(filterYear||filterArea)&&(

@@ -96,6 +96,29 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
 /* Color dots */
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;flex-shrink:0}
 
+/* ── Division select ─────────────────────────────────────────── */
+.div-select{
+  width:100%;padding:5px 24px 5px 8px;border-radius:5px;
+  background:rgba(1,10,26,.85);border:1px solid rgba(0,191,255,.25);
+  color:#e0f2fe;font-family:'JetBrains Mono','Courier New',monospace;
+  font-size:9px;font-weight:600;cursor:pointer;outline:none;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%2338bdf8'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+  transition:border-color .12s;
+}
+.div-select:hover,.div-select:focus{border-color:rgba(0,191,255,.6);box-shadow:0 0 8px rgba(0,191,255,.15)}
+.div-select option{background:#010d1f;color:#e0f2fe}
+#div-reset-btn{display:none;margin-top:5px}
+#div-reset-btn button{
+  width:100%;padding:4px;border-radius:4px;
+  border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.06);
+  color:#fca5a5;font-size:8px;font-weight:700;letter-spacing:.08em;
+  cursor:pointer;font-family:'JetBrains Mono','Courier New',monospace;
+  transition:all .12s;
+}
+#div-reset-btn button:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.5)}
+
 /* ── Right OSINT panel ───────────────────────────────────────── */
 #osint-panel{
   position:absolute;right:10px;top:10px;bottom:10px;
@@ -122,6 +145,32 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
 /* Stats sections */
 .os-section{margin-bottom:13px}
 .os-label{font-size:7px;font-weight:900;color:rgba(56,189,248,.55);letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid rgba(56,189,248,.08)}
+
+/* ── Division stats section ──────────────────────────────────── */
+#div-stats-section{display:none;margin-bottom:13px}
+.ds-badge{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 10px;border-radius:6px;margin-bottom:10px;
+  background:rgba(0,191,255,.07);border:1px solid rgba(0,191,255,.28);
+}
+.ds-name{font-size:11px;font-weight:900;color:#00bfff;letter-spacing:.12em}
+.ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.ds-card{
+  padding:7px 8px;border-radius:5px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  text-align:center;
+}
+.ds-card-num{font-size:22px;font-weight:900;line-height:1;margin-bottom:2px}
+.ds-card-label{font-size:7px;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase}
+.ds-station-grid{display:flex;gap:4px;margin-bottom:8px}
+.ds-st-block{flex:1;padding:6px 4px;border-radius:4px;text-align:center}
+.ds-st-num{font-size:18px;font-weight:900;line-height:1;margin-bottom:2px}
+.ds-st-label{font-size:7px;letter-spacing:.06em;font-weight:700;text-transform:uppercase}
+.ds-divider{height:1px;background:rgba(0,191,255,.12);margin:10px 0}
+.ds-crime-box{
+  padding:7px 9px;border-radius:5px;
+  background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.1);
+}
 
 /* Vulnerability Index */
 #vuln-idx-wrap{
@@ -250,7 +299,7 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
     </div>
 
     <!-- Force filter -->
-    <div class="cp-section" style="margin-bottom:0">
+    <div class="cp-section">
       <div class="cp-section-label">Estaciones de Seguridad</div>
       <div class="toggle-row">
         <button class="t-toggle active lapd" id="btn-lapd" onclick="toggleForce('lapd')">
@@ -264,6 +313,18 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
         </button>
       </div>
     </div>
+
+    <!-- Division filter -->
+    <div class="cp-section" style="margin-bottom:4px;padding-top:10px;border-top:1px solid rgba(56,189,248,.07)">
+      <div class="cp-section-label">División LAPD</div>
+      <select id="div-select" class="div-select" onchange="setDivisionFilter(this.value)">
+        <option value="">TODAS LAS DIVISIONES</option>
+      </select>
+      <div id="div-reset-btn">
+        <button onclick="clearDivision()">✕ LIMPIAR DIVISIÓN</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -272,15 +333,67 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
   <div id="op-header">
     <div>
       <div class="op-title">◈ EDU SAFETY INTELLIGENCE</div>
-      <div class="op-sub">INDICADORES EN TIEMPO REAL</div>
+      <div class="op-sub" id="op-sub-text">INDICADORES EN TIEMPO REAL</div>
     </div>
     <button id="op-toggle" onclick="togglePanel()">›</button>
   </div>
   <div id="op-body">
 
+    <!-- Division stats (shown only when a division is active) -->
+    <div class="os-section" id="div-stats-section">
+      <div class="os-label">▸ División Activa</div>
+      <div class="ds-badge">
+        <span style="font-size:13px">🏛</span>
+        <span class="ds-name" id="ds-div-name">—</span>
+      </div>
+      <div class="ds-grid">
+        <div class="ds-card">
+          <div class="ds-card-num" id="ds-schools" style="color:#00bfff">—</div>
+          <div class="ds-card-label">Establecimientos</div>
+        </div>
+        <div class="ds-card">
+          <div class="ds-card-num" id="ds-vuln-pct" style="color:#ef4444">—%</div>
+          <div class="ds-card-label">% Vulnerables</div>
+        </div>
+      </div>
+      <!-- School type breakdown in division -->
+      <div id="ds-type-breakdown" style="margin-bottom:8px"></div>
+      <!-- Stations in division -->
+      <div class="ds-station-grid">
+        <div class="ds-st-block" style="background:rgba(0,191,255,.05);border:1px solid rgba(0,191,255,.15)">
+          <div class="ds-st-num" id="ds-lapd-count" style="color:#00bfff">—</div>
+          <div class="ds-st-label" style="color:#38bdf8">LAPD</div>
+        </div>
+        <div class="ds-st-block" style="background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15)">
+          <div class="ds-st-num" id="ds-lasd-count" style="color:#fbbf24">—</div>
+          <div class="ds-st-label" style="color:#fbbf24">LASD</div>
+        </div>
+        <div class="ds-st-block" style="background:rgba(148,163,184,.04);border:1px solid rgba(148,163,184,.1)">
+          <div class="ds-st-num" id="ds-other-count" style="color:#94a3b8">—</div>
+          <div class="ds-st-label" style="color:#94a3b8">OTROS</div>
+        </div>
+      </div>
+      <!-- Crime data from GeoJSON -->
+      <div class="ds-crime-box">
+        <div style="font-size:8px;color:#7dd3fc;margin-bottom:3px;font-weight:700;letter-spacing:.08em">TOP CATEGORÍA CRIMINAL</div>
+        <div style="font-size:11px;color:#fff;font-weight:700;margin-bottom:4px" id="ds-top-crime">—</div>
+        <div style="display:flex;gap:10px">
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,.35)">CRÍMENES TOTALES</div>
+            <div style="font-size:11px;color:#e0f2fe;font-weight:800" id="ds-total-crimes">—</div>
+          </div>
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,.35)">CLEARANCE RATE</div>
+            <div style="font-size:11px;font-weight:800" id="ds-clearance">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="ds-divider"></div>
+    </div>
+
     <!-- Vulnerability Index -->
     <div class="os-section">
-      <div class="os-label">Índice de Vulnerabilidad Escolar Global</div>
+      <div class="os-label" id="vuln-section-label">Índice de Vulnerabilidad Escolar Global</div>
       <div id="vuln-idx-wrap">
         <div class="vi-num" id="vi-num" style="color:#ef4444">—</div>
         <div class="vi-label" style="color:#ef4444">% ESCUELAS DESPROTEGIDAS (&gt;3KM)</div>
@@ -324,7 +437,7 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
 
     <!-- Top vulnerable schools -->
     <div class="os-section">
-      <div class="os-label">Top 10 Escuelas Más Aisladas</div>
+      <div class="os-label" id="vuln-list-label">Top 10 Escuelas Más Aisladas</div>
       <div id="vuln-schools-list">
         <div style="font-size:9px;color:rgba(255,255,255,.3);padding:6px 0">Calculando…</div>
       </div>
@@ -351,31 +464,33 @@ html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:
 // ══════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════════════
-const SAFE_KM     = 1;
-const ALERT_KM    = 3;
-const CRIME_R_M   = 300;
-const SCHOOL_HRS  = [7, 8, 14, 15];
-const GRID_DEG    = 0.01;
+const SAFE_KM    = 1;
+const ALERT_KM   = 3;
+const CRIME_R_M  = 300;
+const SCHOOL_HRS = [7, 8, 14, 15];
+const GRID_DEG   = 0.01;
 
 // ══════════════════════════════════════════════════════════════════
 // FILTER STATE
 // ══════════════════════════════════════════════════════════════════
 let showPublic  = true, showPrivate = true, showCollege = true;
-let covFilter   = 'all';   // 'all' | 'vuln'
+let covFilter   = 'all';
 let showLAPD    = true, showLASD = true, showOther = false;
+
+// ── Division filter ───────────────────────────────────────────
+let activeDivision = null;   // active GeoJSON feature or null
+let divGeoData     = null;   // full FeatureCollection
+let divisionLayer  = null;   // active L.geoJSON boundary layer
 
 // ══════════════════════════════════════════════════════════════════
 // DATA & ANALYTICS STATE
 // ══════════════════════════════════════════════════════════════════
-let schoolData    = [];   // processed school analytics objects
-let stationFeats  = [];   // raw station feature array
+let schoolData   = [];
+let stationFeats = [];
 
-// Leaflet layer groups per type×risk
-// Keys: 'public_safe', 'public_alert', 'public_vuln',
-//       'private_safe', ... 'college_safe', ...
 const schoolGroups = {};
 let lapdGroup, lasdGroup, otherGroup;
-let markerMap = new Map(); // school OBJECTID → L.Marker (for fly-to)
+let markerMap = new Map();
 
 let globalStats = null;
 
@@ -442,24 +557,155 @@ function countCrimesNear(lat, lng, radiusM, grid) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// DIVISION SPATIAL FILTER
+// ══════════════════════════════════════════════════════════════════
+function pointInRing(lat, lng, ring) {
+  // ring: array of [lng, lat] (GeoJSON) — ray casting
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1];
+    const xj = ring[j][0], yj = ring[j][1];
+    const cross = ((yi > lat) !== (yj > lat)) &&
+      (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (cross) inside = !inside;
+  }
+  return inside;
+}
+
+function isInFeature(lat, lng, feature) {
+  if (!feature) return true;
+  const geom = feature.geometry;
+  if (geom.type === 'Polygon') return pointInRing(lat, lng, geom.coordinates[0]);
+  if (geom.type === 'MultiPolygon') return geom.coordinates.some(poly => pointInRing(lat, lng, poly[0]));
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DIVISION FILTER CONTROL
+// ══════════════════════════════════════════════════════════════════
+function setDivisionFilter(name) {
+  // Remove old boundary
+  if (divisionLayer) { map.removeLayer(divisionLayer); divisionLayer = null; }
+
+  if (!name) { clearDivision(); return; }
+
+  const feat = divGeoData?.features?.find(f => f.properties.name === name);
+  if (!feat) return;
+
+  activeDivision = feat;
+  document.getElementById('div-reset-btn').style.display = 'block';
+  document.getElementById('op-sub-text').textContent = 'DIVISIÓN: ' + name;
+
+  // Draw glowing boundary polygon
+  divisionLayer = L.geoJSON(feat, {
+    style: {
+      color: '#00bfff',
+      weight: 2.5,
+      opacity: 1,
+      fillColor: '#00bfff',
+      fillOpacity: 0.06,
+    }
+  }).addTo(map);
+
+  // Fit to division bounds
+  map.fitBounds(divisionLayer.getBounds(), { padding: [50, 50] });
+
+  renderVisibleLayers();
+  updatePanel();
+}
+
+function clearDivision() {
+  if (divisionLayer) { map.removeLayer(divisionLayer); divisionLayer = null; }
+  activeDivision = null;
+  document.getElementById('div-select').value = '';
+  document.getElementById('div-reset-btn').style.display = 'none';
+  document.getElementById('div-stats-section').style.display = 'none';
+  document.getElementById('op-sub-text').textContent = 'INDICADORES EN TIEMPO REAL';
+  document.getElementById('vuln-section-label').textContent = 'Índice de Vulnerabilidad Escolar Global';
+  document.getElementById('vuln-list-label').textContent = 'Top 10 Escuelas Más Aisladas';
+  map.setView([34.05, -118.25], 10);
+  renderVisibleLayers();
+  updatePanel();
+}
+
+function updateDivisionStats() {
+  const feat = activeDivision;
+  if (!feat) return;
+  const p = feat.properties;
+
+  // Schools inside this division polygon
+  const inDiv = schoolData.filter(s => isInFeature(s.lat, s.lng, feat));
+  const total   = inDiv.length;
+  const nVuln   = inDiv.filter(s => s.risk === 'vuln').length;
+  const nAlert  = inDiv.filter(s => s.risk === 'alert').length;
+  const nSafe   = inDiv.filter(s => s.risk === 'safe').length;
+  const vulnPct = total > 0 ? (nVuln / total * 100).toFixed(1) : '0';
+
+  // Type breakdown
+  const byType = { public: 0, private: 0, college: 0 };
+  inDiv.forEach(s => byType[s.schoolType]++);
+
+  // Stations inside this division
+  const stInDiv = stationFeats.filter(st =>
+    isInFeature(st.geometry.coordinates[1], st.geometry.coordinates[0], feat)
+  );
+  const lapdCnt  = stInDiv.filter(st => st.properties.agency === 'LAPD').length;
+  const lasdCnt  = stInDiv.filter(st => st.properties.agency === 'LASD').length;
+  const otherCnt = stInDiv.filter(st => st.properties.agency !== 'LAPD' && st.properties.agency !== 'LASD').length;
+
+  // Populate DOM
+  document.getElementById('div-stats-section').style.display = 'block';
+  document.getElementById('ds-div-name').textContent     = p.name;
+  document.getElementById('ds-schools').textContent      = total.toLocaleString();
+  document.getElementById('ds-vuln-pct').textContent     = vulnPct + '%';
+  document.getElementById('ds-lapd-count').textContent   = lapdCnt;
+  document.getElementById('ds-lasd-count').textContent   = lasdCnt;
+  document.getElementById('ds-other-count').textContent  = otherCnt;
+
+  // Type breakdown mini-bars
+  const typeColors = { public: '#00bfff', private: '#a78bfa', college: '#fb923c' };
+  const typeLabels = { public: 'Públicas', private: 'Privadas', college: 'Universidades' };
+  document.getElementById('ds-type-breakdown').innerHTML = Object.entries(byType).map(([t, n]) => `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+      <span style="font-size:8px;color:${typeColors[t]};width:72px;flex-shrink:0">${typeLabels[t]}</span>
+      <div style="flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${total>0?(n/total*100).toFixed(1):0}%;background:${typeColors[t]};border-radius:2px;transition:width .4s"></div>
+      </div>
+      <span style="font-size:9px;color:#fff;font-weight:700;width:24px;text-align:right">${n}</span>
+    </div>`).join('');
+
+  // Crime data from GeoJSON properties
+  const topCrime   = p.top_category || '—';
+  const totalCrimes = p.total_crimes ? Number(p.total_crimes).toLocaleString() : '—';
+  const clearance  = p.clearance    ? p.clearance.toFixed(1) + '%'             : '—';
+  const clrColor   = p.clearance >= 50 ? '#34d399' : p.clearance >= 30 ? '#fbbf24' : '#ef4444';
+  document.getElementById('ds-top-crime').textContent      = topCrime;
+  document.getElementById('ds-total-crimes').textContent   = totalCrimes;
+  document.getElementById('ds-clearance').textContent      = clearance;
+  document.getElementById('ds-clearance').style.color      = clrColor;
+
+  // Update section labels to reflect division scope
+  document.getElementById('vuln-section-label').textContent = `Vulnerabilidad — División ${p.name}`;
+  document.getElementById('vuln-list-label').textContent    = `Escuelas Más Aisladas — ${p.name}`;
+}
+
+// ══════════════════════════════════════════════════════════════════
 // ANALYTICS ENGINE
 // ══════════════════════════════════════════════════════════════════
 function classifySchoolType(cat3) {
   if (!cat3) return 'private';
   if (cat3 === 'Public Schools') return 'public';
   if (cat3.includes('College') || cat3.includes('Technical') || cat3.includes('Junior College')) return 'college';
-  return 'private'; // Private + Charter
+  return 'private';
 }
 
 function runAnalytics(schools, stations, crimeHourly) {
-  // Build school-hour crime grid (07-09h + 14-16h)
   const crimeHrPts = [];
   for (const h of SCHOOL_HRS) {
     for (const pt of (crimeHourly.hours[h] || [])) crimeHrPts.push(pt);
   }
   const crimeGrid = buildGrid(crimeHrPts);
 
-  // Pre-extract station coords for performance
   const allSt = stations.map(f => ({
     lat:    f.geometry.coordinates[1],
     lng:    f.geometry.coordinates[0],
@@ -476,34 +722,26 @@ function runAnalytics(schools, stations, crimeHourly) {
     const [slng, slat] = school.geometry.coordinates;
     const p = school.properties;
 
-    // ── Nearest station (all agencies) ──────────────────────────
     let minDist = Infinity, nearestSt = null;
     for (const st of allSt) {
       const d = haversineKm(slat, slng, st.lat, st.lng);
       if (d < minDist) { minDist = d; nearestSt = st; }
     }
 
-    // ── Nearest LAPD ─────────────────────────────────────────────
     let minLAPD = Infinity, nearestLAPD = null;
     for (const st of lapdSt) {
       const d = haversineKm(slat, slng, st.lat, st.lng);
       if (d < minLAPD) { minLAPD = d; nearestLAPD = st; }
     }
 
-    // ── Nearest LASD ─────────────────────────────────────────────
     let minLASD = Infinity, nearestLASD = null;
     for (const st of lasdSt) {
       const d = haversineKm(slat, slng, st.lat, st.lng);
       if (d < minLASD) { minLASD = d; nearestLASD = st; }
     }
 
-    // ── Risk classification ──────────────────────────────────────
-    const risk = minDist < SAFE_KM ? 'safe' : minDist < ALERT_KM ? 'alert' : 'vuln';
-
-    // ── Jurisdictional: LAPD vs LASD ────────────────────────────
+    const risk    = minDist < SAFE_KM ? 'safe' : minDist < ALERT_KM ? 'alert' : 'vuln';
     const jurisSt = minLAPD <= minLASD ? nearestLAPD : nearestLASD;
-
-    // ── School-hour crimes ───────────────────────────────────────
     const crimeCount = countCrimesNear(slat, slng, CRIME_R_M, crimeGrid);
 
     results.push({
@@ -537,7 +775,6 @@ function computeGlobalStats(data) {
   const nVuln   = visible.filter(s => s.risk === 'vuln').length;
   const vulnIdx = total > 0 ? (nVuln / total * 100) : 0;
 
-  // Station load (jurisdictional assignment)
   const loadMap = {};
   for (const s of visible) {
     if (s.jurisSt) {
@@ -552,21 +789,22 @@ function computeGlobalStats(data) {
 
   const totalConflicts = visible.reduce((s, x) => s + x.crimeCount, 0);
 
-  const topVuln = data
-    .filter(s => s.risk === 'vuln')
-    .sort((a, b) => b.distKm - a.distKm)
-    .slice(0, 10);
+  // Top vulnerable scoped to current division if active
+  const scope = activeDivision
+    ? data.filter(s => s.risk === 'vuln' && isInFeature(s.lat, s.lng, activeDivision))
+    : data.filter(s => s.risk === 'vuln');
+  const topVuln = scope.sort((a, b) => b.distKm - a.distKm).slice(0, 10);
 
   return { total, nSafe, nAlert, nVuln, vulnIdx, topStations, totalConflicts, topVuln };
 }
 
-// Which schools pass current filters
 function getVisibleData(data) {
   return data.filter(s => {
-    if (s.schoolType === 'public'   && !showPublic)  return false;
-    if (s.schoolType === 'private'  && !showPrivate) return false;
-    if (s.schoolType === 'college'  && !showCollege) return false;
-    if (covFilter === 'vuln' && s.risk !== 'vuln')   return false;
+    if (s.schoolType === 'public'  && !showPublic)  return false;
+    if (s.schoolType === 'private' && !showPrivate) return false;
+    if (s.schoolType === 'college' && !showCollege) return false;
+    if (covFilter === 'vuln' && s.risk !== 'vuln')  return false;
+    if (activeDivision && !isInFeature(s.lat, s.lng, activeDivision)) return false;
     return true;
   });
 }
@@ -574,7 +812,6 @@ function getVisibleData(data) {
 // ══════════════════════════════════════════════════════════════════
 // MARKER SVG BUILDERS
 // ══════════════════════════════════════════════════════════════════
-
 const RISK_COLORS = { safe: '#34d399', alert: '#fbbf24', vuln: '#ef4444' };
 const TYPE_COLORS = { public: '#00bfff', private: '#a78bfa', college: '#fb923c' };
 
@@ -585,7 +822,6 @@ function schoolMarkerHTML(risk, schoolType) {
   return `<div class="sm-inner" style="width:22px;height:22px;filter:${glow}">
     <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
       <circle cx="11" cy="11" r="10" fill="rgba(0,0,0,0.75)" stroke="${rc}" stroke-width="1.5"/>
-      <!-- graduation cap -->
       <polygon points="11,5.5 17,8.2 11,10.9 5,8.2" fill="${tc}"/>
       <rect x="10" y="11.2" width="2" height="3.5" fill="${tc}" rx="0.4"/>
       <circle cx="16.5" cy="8.2" r="0.8" fill="${rc}"/>
@@ -612,7 +848,6 @@ function stationBadgeHTML(agency) {
 // RENDER MARKERS
 // ══════════════════════════════════════════════════════════════════
 function buildSchoolMarkers(data) {
-  // Initialize layer groups (using markercluster for school groups)
   const types = ['public', 'private', 'college'];
   const risks = ['safe', 'alert', 'vuln'];
   for (const t of types) {
@@ -643,7 +878,6 @@ function buildSchoolMarkers(data) {
     });
     const marker = L.marker([s.lat, s.lng], { icon });
 
-    // Popup
     const rc = RISK_COLORS[s.risk];
     const riskLabel = s.risk === 'safe' ? 'ZONA SEGURA' : s.risk === 'alert' ? 'ALERTA' : 'VULNERABLE';
     marker.bindPopup(
@@ -661,6 +895,28 @@ function buildSchoolMarkers(data) {
         : `<div style="margin-top:6px;color:#34d399;font-size:10px">✓ Sin incidentes en horario escolar</div>`),
       { maxWidth: 240 }
     );
+
+    // postMessage → OSIRIS parent for INTEL CLICK
+    marker.on('click', () => {
+      window.parent.postMessage({
+        type:           'OSINT_CLICK_INFO',
+        mapId:          'edu-safety',
+        clickType:      'edu_school',
+        name:           s.name,
+        risk:           s.risk,
+        distKm:         s.distKm.toFixed(2),
+        schoolType:     s.schoolType,
+        city:           s.city,
+        cat2:           s.cat2,
+        nearestStation: s.nearestSt?.name || '—',
+        nearestAgency:  s.nearestSt?.agency || '—',
+        minLAPD:        s.minLAPD != null ? s.minLAPD.toFixed(2) : '—',
+        minLASD:        s.minLASD != null ? s.minLASD.toFixed(2) : '—',
+        crimeCount:     s.crimeCount,
+        lat:            s.lat,
+        lng:            s.lng,
+      }, '*');
+    });
 
     schoolGroups[key].addLayer(marker);
     markerMap.set(s.id, { marker, group: key });
@@ -688,6 +944,24 @@ function buildStationMarkers(stations) {
       `<div style="color:#94a3b8;font-size:10px">${p.addr}${p.city ? ', ' + p.city : ''}</div>`,
       { maxWidth: 220 }
     );
+
+    // postMessage → OSIRIS parent for INTEL CLICK
+    marker.on('click', () => {
+      const assigned = schoolData.filter(s => s.jurisSt?.name === p.name).length;
+      window.parent.postMessage({
+        type:            'OSINT_CLICK_INFO',
+        mapId:           'edu-safety',
+        clickType:       'edu_station',
+        name:            p.name,
+        agency:          agency,
+        addr:            p.addr || '—',
+        city:            p.city || '—',
+        schoolsAssigned: assigned,
+        lat:             slat,
+        lng:             slng,
+      }, '*');
+    });
+
     if      (agency === 'LAPD') lapdGroup.addLayer(marker);
     else if (agency === 'LASD') lasdGroup.addLayer(marker);
     else                         otherGroup.addLayer(marker);
@@ -757,15 +1031,15 @@ function updatePanel() {
   if (!total) return;
 
   // Vulnerability Index
-  const viEl = document.getElementById('vi-num');
-  viEl.textContent = vulnIdx.toFixed(1) + '%';
+  const viEl   = document.getElementById('vi-num');
   const riskEl = document.getElementById('vi-risk');
+  viEl.textContent = vulnIdx.toFixed(1) + '%';
   if (vulnIdx >= 40)      { riskEl.textContent = '● CRÍTICO';  riskEl.style.color = '#ef4444'; viEl.style.color = '#ef4444'; }
   else if (vulnIdx >= 25) { riskEl.textContent = '● ELEVADO';  riskEl.style.color = '#f97316'; viEl.style.color = '#f97316'; }
   else if (vulnIdx >= 12) { riskEl.textContent = '● MODERADO'; riskEl.style.color = '#eab308'; viEl.style.color = '#eab308'; }
   else                    { riskEl.textContent = '● BAJO';      riskEl.style.color = '#34d399'; viEl.style.color = '#34d399'; }
 
-  // Breakdown
+  // Breakdown bars
   const safePct  = (nSafe  / total * 100).toFixed(1);
   const alertPct = (nAlert / total * 100).toFixed(1);
   const vulnPct  = (nVuln  / total * 100).toFixed(1);
@@ -781,7 +1055,7 @@ function updatePanel() {
     const color = st.agency === 'LAPD' ? '#00bfff' : st.agency === 'LASD' ? '#fbbf24' : '#94a3b8';
     const shortName = st.name
       .replace('Los Angeles Police Department - ', '')
-      .replace(" Community Police Station", '')
+      .replace(' Community Police Station', '')
       .replace(" Sheriff's Station", '')
       .replace(' Police Department', '');
     return `<div class="station-row">
@@ -804,12 +1078,15 @@ function updatePanel() {
       <div class="vr-meta">${s.city} · ${s.cat2} · ${s.nearestSt?.name?.replace('Los Angeles Police Department - ','').replace(' Community Police Station','').replace(" Sheriff's Station",'') || '—'}</div>
     </div>`).join('');
 
-  // Update counts in checkboxes
+  // Checkbox counts (always show totals, not filtered)
   const countByType = { public: 0, private: 0, college: 0 };
   for (const s of schoolData) countByType[s.schoolType]++;
   document.getElementById('cnt-public').textContent  = countByType.public.toLocaleString();
   document.getElementById('cnt-private').textContent = countByType.private.toLocaleString();
   document.getElementById('cnt-college').textContent = countByType.college.toLocaleString();
+
+  // Division stats (if active)
+  if (activeDivision) updateDivisionStats();
 }
 
 function flyToSchool(id) {
@@ -818,7 +1095,6 @@ function flyToSchool(id) {
   map.setView([s.lat, s.lng], 15);
   const entry = markerMap.get(id);
   if (entry) {
-    // Uncluster and open popup
     setTimeout(() => {
       const grp = schoolGroups[entry.group];
       if (grp) {
@@ -844,36 +1120,48 @@ function togglePanel() {
 // ══════════════════════════════════════════════════════════════════
 async function bootstrap() {
   try {
-    setProgress(5,  'CARGANDO INSTITUCIONES EDUCATIVAS…');
-    const [schoolsGeo, stationsGeo, crimeHourly] = await Promise.all([
+    setProgress(5, 'CARGANDO INSTITUCIONES EDUCATIVAS…');
+    const [schoolsGeo, stationsGeo, crimeHourly, divisionsGeo] = await Promise.all([
       fetch('/data/schools_la.geojson').then(r => r.json()),
       fetch('/data/stations_la.geojson').then(r => r.json()),
       fetch('/data/crime_points_hourly.json').then(r => r.json()),
+      fetch('/data/lapd_divisions_crimes.geojson').then(r => r.json()),
     ]);
-    setProgress(45, 'EJECUTANDO ANÁLISIS DE COBERTURA…');
+    setProgress(40, 'EJECUTANDO ANÁLISIS DE COBERTURA…');
 
-    // Analytics (CPU-heavy: 3179 × 115 Haversine calls)
     await new Promise(resolve => setTimeout(() => {
       schoolData   = runAnalytics(schoolsGeo.features, stationsGeo.features, crimeHourly);
       stationFeats = stationsGeo.features;
       resolve();
     }, 0));
-    setProgress(78, 'CONSTRUYENDO MARCADORES…');
+    setProgress(75, 'CONSTRUYENDO MARCADORES…');
 
     await new Promise(resolve => setTimeout(() => {
       buildSchoolMarkers(schoolData);
       buildStationMarkers(stationFeats);
       resolve();
     }, 0));
-    setProgress(92, 'ACTUALIZANDO PANEL DE INTELIGENCIA…');
+    setProgress(90, 'ACTUALIZANDO PANEL DE INTELIGENCIA…');
 
-    // Add layers to map
+    // Add layers
     const types = ['public', 'private', 'college'];
     const risks = ['safe', 'alert', 'vuln'];
     for (const t of types) for (const r of risks) map.addLayer(schoolGroups[`${t}_${r}`]);
     map.addLayer(lapdGroup);
     map.addLayer(lasdGroup);
-    // otherGroup off by default
+
+    // Populate division dropdown
+    divGeoData = divisionsGeo;
+    const sel = document.getElementById('div-select');
+    divisionsGeo.features
+      .map(f => f.properties.name)
+      .sort()
+      .forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      });
 
     updatePanel();
     setProgress(100, 'LISTO');

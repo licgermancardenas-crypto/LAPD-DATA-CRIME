@@ -67,6 +67,8 @@ const CLICK_WHAT_IS = {
   tract:              'Un Census Tract (radio censal) del US Census Bureau — la unidad estadística más granular disponible, con datos de población, densidad de crimen y nivel de riesgo.',
   vulnerability_tract:'Radio censal clasificado por un índice de vulnerabilidad socioeconómica que combina tasa de pobreza, ingreso mediano y concentración de crimen.',
   business:           'Distrito analizado por densidad de negocios vs. concentración de crimen. Muestra la relación entre actividad comercial y delitos en la zona.',
+  edu_school:         'Institución educativa de Los Ángeles clasificada por nivel de cobertura policial. La distancia a la estación más cercana determina si está en zona Segura (<1km), Alerta (1-3km) o Vulnerable (>3km). Los datos de crimen corresponden a incidentes en radio 300m durante horarios de entrada (7-9h) y salida (14-16h).',
+  edu_station:        'Estación de seguridad pública con cobertura sobre establecimientos educativos cercanos. El número de escuelas asignadas indica la carga jurisdiccional de la estación en el análisis de cobertura escolar.',
 };
 
 // ── Feed helpers ──────────────────────────────────────────────────────────
@@ -152,6 +154,19 @@ function generateInsights(info){
     bullets.push(`${cpb.toFixed(2)} crímenes por negocio — ${cpb>2?'ratio elevado: la actividad comercial atrae delitos oportunistas':'ratio bajo, baja exposición comercial a la criminalidad'}.`);
     if(info.biz_count) bullets.push(`Con ${info.biz_count} negocios, densidad ${info.biz_count>200?'alta':'moderada'} — más negocios elevan la exposición al crimen de oportunidad.`);
     bullets.push('Si crime_rank << biz_rank, el crimen es desproporcionado respecto al tejido comercial.');
+  } else if(info.clickType==='edu_school'){
+    const riskMap={safe:'ZONA SEGURA (<1km)',alert:'ALERTA (1-3km)',vuln:'VULNERABLE (>3km)'};
+    const riskLabel=riskMap[info.risk]||info.risk||'desconocido';
+    bullets.push(`Clasificación ${riskLabel} — distancia a estación más cercana: ${info.distKm||'—'} km (${info.nearestAgency||'—'}).`);
+    if(info.minLAPD&&info.minLAPD!=='—') bullets.push(`LAPD más cercano: ${info.minLAPD} km · LASD más cercano: ${info.minLASD||'—'} km. La jurisdicción efectiva depende de acuerdos interagenciales.`);
+    const cc=parseInt(info.crimeCount)||0;
+    if(cc>0) bullets.push(`⚠ ${cc} incidentes registrados en radio 300m durante horarios escolares (07-09h y 14-16h). Priorizar patrullaje en esas ventanas.`);
+    else     bullets.push('Sin incidentes registrados en horario escolar en radio 300m — entorno de bajo conflicto en horas críticas.');
+  } else if(info.clickType==='edu_station'){
+    const n=parseInt(info.schoolsAssigned)||0;
+    bullets.push(`Estación ${info.agency||'LAPD'} con ${n} escuelas asignadas jurisdiccionalmente — ${n>30?'carga alta: recurso crítico para seguridad escolar':n>15?'carga moderada':'cobertura holgada en su área'}.`);
+    bullets.push('Las ventanas de mayor riesgo son 07:00-09:00 (entrada) y 14:00-16:00 (salida). Reforzar presencia en esos horarios en escuelas vulnerables del área.');
+    bullets.push('Cruzar con mapa VULN para ver si las escuelas asignadas se ubican en tracts de alta vulnerabilidad socioeconómica.');
   }
   return bullets;
 }
@@ -297,6 +312,25 @@ function ClickIntelPanel({info,data,onDismiss}){
     if(info.crimes_per_1000) rows.push(['Crím / 1k hab',info.crimes_per_1000]);
     if(info.biz_rank)       rows.push(['Rank negocios',`#${info.biz_rank}`]);
     if(info.crime_rank)     rows.push(['Rank crimen',`#${info.crime_rank}`]);
+  } else if(info.clickType==='edu_school'){
+    const riskColors={safe:'#34d399',alert:'#fbbf24',vuln:'#ef4444'};
+    const riskLabels={safe:'ZONA SEGURA',alert:'ALERTA',vuln:'VULNERABLE'};
+    if(info.name)           rows.push(['Institución',info.name]);
+    if(info.cat2)           rows.push(['Categoría',info.cat2]);
+    if(info.city)           rows.push(['Ciudad',info.city]);
+    if(info.risk)           rows.push(['Cobertura',riskLabels[info.risk]||info.risk]);
+    if(info.distKm)         rows.push(['Dist. estación',info.distKm+' km']);
+    if(info.nearestStation&&info.nearestStation!=='—') rows.push(['Estación cercana',info.nearestStation.replace('Los Angeles Police Department - ','').replace(' Community Police Station','').slice(0,28)]);
+    if(info.nearestAgency)  rows.push(['Agencia',info.nearestAgency]);
+    if(info.minLAPD&&info.minLAPD!=='—') rows.push(['Dist. LAPD',info.minLAPD+' km']);
+    if(info.minLASD&&info.minLASD!=='—') rows.push(['Dist. LASD',info.minLASD+' km']);
+    rows.push(['Incidentes HE',String(info.crimeCount||0)]);
+  } else if(info.clickType==='edu_station'){
+    if(info.name)            rows.push(['Estación',info.name.replace('Los Angeles Police Department - ','').replace(' Community Police Station','')]);
+    if(info.agency)          rows.push(['Agencia',info.agency]);
+    if(info.addr&&info.addr!=='—') rows.push(['Dirección',info.addr]);
+    if(info.city&&info.city!=='—') rows.push(['Ciudad',info.city]);
+    rows.push(['Escuelas asignadas',String(info.schoolsAssigned||0)]);
   }
 
   return(

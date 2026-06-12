@@ -556,8 +556,9 @@ export default function OsintPage(){
       fetch(`${b}/categories.json`).then(r=>r.json()),
       fetch(`${b}/victims.json`).then(r=>r.json()),
       fetch(`${b}/hourly_dow.json`).then(r=>r.json()),
-    ]).then(([summary,division,categories,victims,hourly])=>{
-      setData({summary,division,categories,victims,hourly});
+      fetch(`${b}/cross_div_cat.json`).then(r=>r.json()),
+    ]).then(([summary,division,categories,victims,hourly,crossDivCat])=>{
+      setData({summary,division,categories,victims,hourly,crossDivCat});
     }).catch(console.error);
   },[]);
 
@@ -682,8 +683,15 @@ export default function OsintPage(){
       }
     }
     if(!filterArea&&filterPart!=='all'){total=filterPart==='p1'?s.crimes_p1:s.crimes_p2;}
-    const cats=filterPart==='all'?data.categories:data.categories.filter(c=>c.part===filterPart);
-    const topCat=cats[0]?.category?.split('–').pop()?.trim().toUpperCase()??'VEHICLE CRIME';
+    let topCat='VEHICLE CRIME';
+    if(filterArea&&data.crossDivCat){
+      const dc=data.crossDivCat.filter(r=>r.area===filterArea&&(filterPart==='all'||r.part===filterPart));
+      const map={};dc.forEach(r=>{map[r.category]=(map[r.category]||0)+r.crimes;});
+      topCat=Object.entries(map).sort((a,b)=>b[1]-a[1])[0]?.[0]?.split('–').pop()?.trim().toUpperCase()??'VEHICLE CRIME';
+    } else {
+      const cats=filterPart==='all'?data.categories:data.categories.filter(c=>c.part===filterPart);
+      topCat=cats[0]?.category?.split('–').pop()?.trim().toUpperCase()??'VEHICLE CRIME';
+    }
     return{total,clr:parseFloat(clr).toFixed(1),topCat};
   },[data,filterYear,filterArea,filterPart]);
 
@@ -696,9 +704,22 @@ export default function OsintPage(){
 
   const topCats=useMemo(()=>{
     if(!data) return[];
+    if(filterArea&&data.crossDivCat){
+      const rows=data.crossDivCat.filter(r=>r.area===filterArea&&(filterPart==='all'||r.part===filterPart));
+      const map={};
+      rows.forEach(r=>{
+        if(!map[r.category]) map[r.category]={category:r.category,crimes:0,cleared:0};
+        map[r.category].crimes+=r.crimes;
+        map[r.category].cleared+=r.cleared;
+      });
+      return Object.values(map)
+        .sort((a,b)=>b.crimes-a.crimes)
+        .slice(0,5)
+        .map((c,_,arr)=>({...c,clearance_rate:c.crimes>0?c.cleared/c.crimes*100:0}));
+    }
     const src=filterPart==='all'?data.categories:data.categories.filter(c=>c.part===filterPart);
     return src.slice(0,5);
-  },[data,filterPart]);
+  },[data,filterArea,filterPart]);
 
   const divOptions=useMemo(()=>{
     if(!data) return[{value:null,label:'ALL AREAS'}];
@@ -895,7 +916,7 @@ export default function OsintPage(){
       <div style={{...PANEL,left:12,transform:leftOpen?'translateX(0)':'translateX(-300px)'}}>
         <div className="osiris-scroll" style={{flex:1,overflow:'auto',padding:'12px 12px 8px'}}>
 
-          <PanelSection icon={Activity} title="Hourly Activity" color={C.accent}>
+          <PanelSection icon={Activity} title={filterArea?`Hourly Activity · ${filterArea.toUpperCase().slice(0,8)}`:'Hourly Activity'} color={C.accent}>
             <HourlyBars hourlyTotals={hourlyTotals} activeHour={simHour}/>
 
             {/* ── TIME SLIDER ─── */}
@@ -954,7 +975,7 @@ export default function OsintPage(){
             </div>
           </PanelSection>
 
-          <PanelSection icon={Shield} title="Top Threats" color={C.accent2}>
+          <PanelSection icon={Shield} title={filterArea?`Top Threats · ${filterArea.toUpperCase().slice(0,8)}`:'Top Threats'} color={C.accent2}>
             {topCats.length>0?topCats.map((c,i)=>(
               <ProgBar key={c.category} label={c.category} value={c.crimes} max={topCats[0].crimes}
                 color={i===0?'#38bdf8':i<3?C.accent:C.accent3}/>
@@ -962,6 +983,7 @@ export default function OsintPage(){
           </PanelSection>
 
           <PanelSection icon={TrendingUp} title="Correlación Comercial" color="#00bfff">
+            {filterArea&&<div style={{fontSize:8,color:'rgba(56,189,248,.5)',letterSpacing:'.08em',marginBottom:5}}>CIUDAD COMPLETA · sin desglose por división</div>}
             <BizCrimeCorrelation simHour={simHour}/>
           </PanelSection>
 
@@ -996,6 +1018,7 @@ export default function OsintPage(){
           {clickInfo&&<ClickIntelPanel info={clickInfo} data={data} onDismiss={()=>setClickInfo(null)}/>}
 
           <PanelSection icon={Users} title="Victim Demographics" color={C.accent3}>
+            {filterArea&&<div style={{fontSize:8,color:'rgba(56,189,248,.5)',letterSpacing:'.08em',marginBottom:6}}>CIUDAD COMPLETA · sin desglose por división</div>}
             {data?(
               <>
                 <div style={{marginBottom:10}}>

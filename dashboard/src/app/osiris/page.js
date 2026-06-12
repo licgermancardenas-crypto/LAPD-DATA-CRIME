@@ -43,7 +43,8 @@ const MAPS = [
   { id:'negocios',      label:'NEGOCIOS',     short:'NEG',    src:'/maps/business-choropleth.html',      group:'lapd',  icon:'🏪' },
   { id:'tactical',      label:'L.A. MAP',     short:'CIA',    src:'/maps/la-tactical.html',              group:'tactical', icon:'🛰' },
   { id:'mobility',      label:'MOBILITY',     short:'MOB',    src:'/maps/mobility-intelligence.html',    group:'osint',    icon:'🚌' },
-  { id:'edu-safety',    label:'EDU SAFETY',   short:'EDU',    src:'/maps/edu-safety.html',               group:'osint',    icon:'🎓' },
+  { id:'edu-safety',      label:'EDU SAFETY',     short:'EDU',  src:'/maps/edu-safety.html',         group:'osint', icon:'🎓' },
+  { id:'jurisdicciones',  label:'JURISDICCIONES', short:'JUR',  src:'/maps/jurisdicciones.html',     group:'osint', icon:'🗺' },
 ];
 
 const OSINT_IDS = new Set(['heat','cluster','choropleth','mobility']);
@@ -56,6 +57,7 @@ const MAP_LABELS = {
   tactical:'L.A. MAP TACTICAL',
   mobility:'OSINT // MOBILITY',
   'edu-safety':'EDU & PUBLIC SAFETY',
+  jurisdicciones:'JURISDICCIONES LA',
 };
 
 const CLICK_WHAT_IS = {
@@ -69,6 +71,7 @@ const CLICK_WHAT_IS = {
   business:           'Distrito analizado por densidad de negocios vs. concentración de crimen. Muestra la relación entre actividad comercial y delitos en la zona.',
   edu_school:         'Institución educativa de Los Ángeles clasificada por nivel de cobertura policial. La distancia a la estación más cercana determina si está en zona Segura (<1km), Alerta (1-3km) o Vulnerable (>3km). Los datos de crimen corresponden a incidentes en radio 300m durante horarios de entrada (7-9h) y salida (14-16h).',
   edu_station:        'Estación de seguridad pública con cobertura sobre establecimientos educativos cercanos. El número de escuelas asignadas indica la carga jurisdiccional de la estación en el análisis de cobertura escolar.',
+  jurisdiction:       'Unidad geográfica político-administrativa del condado o ciudad de Los Ángeles. Las ciudades incorporadas tienen gobierno propio; las comunidades no incorporadas dependen del condado; los Neighborhood Councils son órganos civiles; los HPOZ son distritos de preservación histórica regulados por la ciudad.',
 };
 
 // ── Feed helpers ──────────────────────────────────────────────────────────
@@ -167,6 +170,15 @@ function generateInsights(info){
     bullets.push(`Estación ${info.agency||'LAPD'} con ${n} escuelas asignadas jurisdiccionalmente — ${n>30?'carga alta: recurso crítico para seguridad escolar':n>15?'carga moderada':'cobertura holgada en su área'}.`);
     bullets.push('Las ventanas de mayor riesgo son 07:00-09:00 (entrada) y 14:00-16:00 (salida). Reforzar presencia en esos horarios en escuelas vulnerables del área.');
     bullets.push('Cruzar con mapa VULN para ver si las escuelas asignadas se ubican en tracts de alta vulnerabilidad socioeconómica.');
+  } else if(info.clickType==='jurisdiction'){
+    const typeMap={cities:'ciudad incorporada',uninc:'comunidad no incorporada',councils:'Neighborhood Council',hpoz:'zona histórica HPOZ'};
+    const tl=typeMap[info.jurisType]||'área geográfica';
+    bullets.push(`${info.name||'Esta área'} es una ${tl} ubicada en la región ${info.region||'—'} del condado/ciudad de Los Ángeles.`);
+    if(info.jurisType==='cities') bullets.push('Las ciudades incorporadas tienen su propio gobierno municipal, impuestos y policía local (o contrato con el Sheriff del condado).');
+    if(info.jurisType==='uninc')  bullets.push('Las comunidades no incorporadas reciben servicios de la Sheriffʼs Department y del condado en lugar de un municipio propio.');
+    if(info.jurisType==='councils') bullets.push('Los Neighborhood Councils son órganos civiles de participación comunitaria certificados por la Ciudad de Los Ángeles — no tienen poder ejecutivo pero tienen voz en decisiones de planeación urbana.');
+    if(info.jurisType==='hpoz')  bullets.push(`Fase ${info.phase||'—'} · Área de Planificación Comunitaria ${info.cpa||'—'}. Los HPOZ restringen demoliciones y cambios de fachada para preservar el carácter histórico.`);
+    bullets.push('Usá el filtro ÁREA para ver qué División LAPD cubre esta zona y cruzar con crimen/vulnerabilidad.');
   }
   return bullets;
 }
@@ -331,6 +343,16 @@ function ClickIntelPanel({info,data,onDismiss}){
     if(info.addr&&info.addr!=='—') rows.push(['Dirección',info.addr]);
     if(info.city&&info.city!=='—') rows.push(['Ciudad',info.city]);
     rows.push(['Escuelas asignadas',String(info.schoolsAssigned||0)]);
+  } else if(info.clickType==='jurisdiction'){
+    const typeLabels={cities:'Ciudad Incorporada',uninc:'Comunidad No Incorp.',councils:'Neighborhood Council',hpoz:'Zona Histórica (HPOZ)'};
+    if(info.name)     rows.push(['Nombre',info.name]);
+    if(info.jurisType) rows.push(['Tipo',typeLabels[info.jurisType]||info.jurisType]);
+    if(info.region)   rows.push(['Región',info.region]);
+    if(info.lat)      rows.push(['Lat',info.lat]);
+    if(info.lng)      rows.push(['Lng',info.lng]);
+    if(info.phase&&info.phase!=='—') rows.push(['Fase HPOZ',info.phase]);
+    if(info.cpa&&info.cpa!=='—')     rows.push(['CPA',info.cpa]);
+    if(info.nc_id&&info.nc_id!=='—') rows.push(['NC ID',info.nc_id]);
   }
 
   return(
@@ -581,6 +603,11 @@ export default function OsintPage(){
         {type:'EDU_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
       );
     }
+    if(activeMap==='jurisdicciones'){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'JURISD_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
+      );
+    }
   },[filterYear,filterArea,filterPart,activeMap]);
 
   // ── Receive postMessage events from all map iframes
@@ -624,6 +651,11 @@ export default function OsintPage(){
     if(activeMap==='edu-safety'){
       iframeRef.current?.contentWindow?.postMessage(
         {type:'EDU_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
+      );
+    }
+    if(activeMap==='jurisdicciones'){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'JURISD_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
       );
     }
   };

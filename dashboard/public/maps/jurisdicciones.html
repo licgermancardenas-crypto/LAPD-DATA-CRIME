@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<title>JURISDICCIONES LA</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#010d1f;font-family:'JetBrains Mono','Courier New',monospace}
+#map{position:absolute;inset:0}
+
+#ctrl{
+  position:fixed;top:115px;left:310px;z-index:1000;
+  background:rgba(1,10,26,.93);border:1px solid rgba(56,189,248,.28);
+  border-radius:8px;padding:11px 13px;min-width:218px;max-width:250px;
+  backdrop-filter:blur(14px);box-shadow:0 0 28px rgba(0,0,0,.65);
+  font-size:10px;color:#bae6fd;
+}
+.ct{font-size:9px;font-weight:800;letter-spacing:.14em;color:#38bdf8;text-transform:uppercase;
+   margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(56,189,248,.14)}
+.lr{display:flex;align-items:center;gap:8px;margin-bottom:5px;cursor:pointer;
+    padding:2px 0;transition:opacity .12s}
+.lr:hover{opacity:.8}
+.lr.off{opacity:.32}
+.dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.lc{margin-left:auto;font-size:9px;color:rgba(255,255,255,.45);font-weight:600}
+.div{height:1px;background:rgba(56,189,248,.12);margin:7px 0}
+.rrow{display:flex;gap:3px;flex-wrap:wrap}
+.rb{flex:1;min-width:36px;padding:3px 5px;border-radius:4px;
+    border:1px solid rgba(56,189,248,.22);background:transparent;
+    color:#7dd3fc;font-size:9px;font-family:'JetBrains Mono',monospace;
+    font-weight:600;cursor:pointer;letter-spacing:.05em;text-align:center;
+    transition:all .12s}
+.rb:hover{color:#bae6fd;border-color:rgba(56,189,248,.45)}
+.rb.on{color:#fff;background:rgba(103,232,249,.15);border-color:rgba(103,232,249,.65);
+       box-shadow:0 0 10px rgba(103,232,249,.25)}
+.srow{display:flex;gap:6px;margin-top:2px}
+.si{display:flex;flex-direction:column;align-items:center;flex:1;padding:4px 0;
+    border:1px solid rgba(56,189,248,.12);border-radius:4px;background:rgba(56,189,248,.04)}
+.sv{font-size:14px;font-weight:800;color:#67e8f9;line-height:1}
+.sl{font-size:8px;color:#7dd3fc;margin-top:2px;letter-spacing:.06em}
+
+#loadbar{
+  position:fixed;top:115px;left:50%;transform:translateX(-50%);
+  background:rgba(1,10,26,.9);border:1px solid rgba(56,189,248,.3);
+  border-radius:6px;padding:7px 15px;font-size:10px;color:#67e8f9;
+  z-index:999;letter-spacing:.1em;display:none;white-space:nowrap
+}
+
+.leaflet-popup-content-wrapper{
+  background:rgba(1,10,26,.96)!important;
+  border:1px solid rgba(56,189,248,.35)!important;
+  border-radius:8px!important;color:#bae6fd!important;
+  box-shadow:0 0 30px rgba(0,0,0,.7)!important;
+  font-family:'JetBrains Mono',monospace!important;
+}
+.leaflet-popup-tip{background:rgba(1,10,26,.96)!important}
+.leaflet-popup-close-button{color:#7dd3fc!important;font-size:16px!important}
+.leaflet-popup-content{margin:12px 14px!important;min-width:200px}
+.pt{font-size:12px;font-weight:800;color:#67e8f9;margin-bottom:5px}
+.ptp{font-size:9px;color:#38bdf8;letter-spacing:.1em;margin-bottom:7px}
+.pr{display:flex;justify-content:space-between;gap:8px;margin-bottom:3px}
+.pk{font-size:9px;color:#7dd3fc}.pv{font-size:9px;color:#fff;font-weight:700}
+.leaflet-control-zoom a{background:rgba(1,10,26,.9)!important;color:#38bdf8!important;border-color:rgba(56,189,248,.3)!important}
+.leaflet-bar{border-color:rgba(56,189,248,.2)!important}
+.leaflet-control-attribution{background:rgba(1,10,26,.7)!important;color:#38bdf8!important;font-size:9px!important}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="ctrl">
+  <div class="ct">⬡ CAPAS GEOGRÁFICAS</div>
+  <div class="lr" id="lr-cities" onclick="toggleLayer('cities')">
+    <div class="dot" style="background:#3b82f6"></div>
+    <span>Ciudades Incorporadas</span>
+    <span class="lc" id="c-cities">—</span>
+  </div>
+  <div class="lr" id="lr-uninc" onclick="toggleLayer('uninc')">
+    <div class="dot" style="background:#f59e0b"></div>
+    <span>Comunidades No Incorp.</span>
+    <span class="lc" id="c-uninc">—</span>
+  </div>
+  <div class="lr" id="lr-councils" onclick="toggleLayer('councils')">
+    <div class="dot" style="background:#a855f7"></div>
+    <span>Neighborhood Councils</span>
+    <span class="lc" id="c-councils">—</span>
+  </div>
+  <div class="lr" id="lr-hpoz" onclick="toggleLayer('hpoz')">
+    <div class="dot" style="background:#fbbf24"></div>
+    <span>Zonas Históricas (HPOZ)</span>
+    <span class="lc" id="c-hpoz">—</span>
+  </div>
+
+  <div class="div"></div>
+  <div class="ct" style="margin-top:0">REGIÓN</div>
+  <div class="rrow">
+    <button class="rb on" id="rb-all"   onclick="setRegion('all')">ALL</button>
+    <button class="rb"    id="rb-north" onclick="setRegion('north')">NORTE</button>
+    <button class="rb"    id="rb-south" onclick="setRegion('south')">SUR</button>
+    <button class="rb"    id="rb-west"  onclick="setRegion('west')">OESTE</button>
+    <button class="rb"    id="rb-east"  onclick="setRegion('east')">ESTE</button>
+  </div>
+
+  <div class="div"></div>
+  <div class="srow">
+    <div class="si"><span class="sv" id="sv-vis">—</span><span class="sl">VISIBLES</span></div>
+    <div class="si"><span class="sv" id="sv-tot">—</span><span class="sl">TOTAL</span></div>
+    <div class="si"><span class="sv" id="sv-div" style="font-size:9px;line-height:1.3">ALL</span><span class="sl">DIVISIÓN</span></div>
+  </div>
+</div>
+
+<div id="loadbar">⟳ CARGANDO...</div>
+
+<script>
+const map = L.map('map',{center:[34.05,-118.25],zoom:10,zoomControl:true,preferCanvas:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB',maxZoom:19}).addTo(map);
+
+// ── State ─────────────────────────────────────────────────────────────
+const ON    = {cities:true,uninc:true,councils:true,hpoz:true};
+const GRPS  = {cities:null,uninc:null,councils:null,hpoz:null};
+const DATA  = {cities:null,uninc:null,councils:null,hpoz:null};
+let region  = 'all';
+let divName = '';
+let divGeo  = null;
+let divHL   = null;
+let loadingCount = 0;
+
+const CLR = {
+  cities:  {fill:'#3b82f6',line:'#60a5fa',fo:0.18,w:1.5},
+  uninc:   {fill:'#f59e0b',line:'#fbbf24',fo:0.18,w:1.5},
+  councils:{fill:'#a855f7',line:'#c084fc',fo:0.15,w:1.2},
+  hpoz:    {fill:'#fbbf24',line:'#fde68a',fo:0.35,w:2,dash:'4,4'},
+};
+
+const REGION_LABELS = {north:'NORTE',south:'SUR',west:'OESTE',east:'ESTE',central:'CENTRAL'};
+const TYPE_LABELS = {
+  cities:'CIUDAD INCORPORADA',
+  uninc:'COMUNIDAD NO INCORP.',
+  councils:'NEIGHBORHOOD COUNCIL',
+  hpoz:'ZONA HISTÓRICA (HPOZ)',
+};
+
+// ── Geometry helpers ──────────────────────────────────────────────────
+function centroid(f){
+  const rings = f.geometry.type==='Polygon'
+    ? f.geometry.coordinates : f.geometry.coordinates[0];
+  const pts = rings[0];
+  let lat=0,lng=0;
+  for(const [lo,la] of pts){lng+=lo;lat+=la;}
+  return {lat:lat/pts.length,lng:lng/pts.length};
+}
+
+function getRegion(lat,lng){
+  if(lat>34.18) return 'north';
+  if(lat<33.99) return 'south';
+  if(lng<-118.42) return 'west';
+  if(lng>-118.14) return 'east';
+  return 'central';
+}
+
+function inRegion(f,r){
+  if(r==='all') return true;
+  try{const c=centroid(f);return getRegion(c.lat,c.lng)===r;}
+  catch{return true;}
+}
+
+function pip(pt,ring){
+  let inside=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+    if((yi>pt[1])!==(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi) inside=!inside;
+  }
+  return inside;
+}
+
+function inDiv(f,name){
+  if(!name||!divGeo) return true;
+  const div=divGeo.features.find(d=>d.properties.name===name);
+  if(!div) return true;
+  const polys=div.geometry.type==='MultiPolygon'
+    ?div.geometry.coordinates:[[div.geometry.coordinates[0]]];
+  try{
+    const c=centroid(f);
+    return polys.some(poly=>pip([c.lng,c.lat],poly[0]));
+  }catch{return true;}
+}
+
+// ── Style ─────────────────────────────────────────────────────────────
+function sty(type,ho=false){
+  const c=CLR[type];
+  return{fillColor:c.fill,color:c.line,weight:ho?c.w*1.6:c.w,
+    opacity:ho?1:.85,fillOpacity:ho?c.fo*2:c.fo,
+    dashArray:c.dash||null};
+}
+
+// ── Popup HTML ────────────────────────────────────────────────────────
+function popHtml(f,type){
+  const p=f.properties||{};
+  const name=p.name||p.NAME||p.hpoz_name||'—';
+  let extra='';
+  if(type==='hpoz'&&p.phase)
+    extra+=`<div class="pr"><span class="pk">Fase</span><span class="pv">${p.phase}</span></div>`;
+  if(type==='hpoz'&&p.cpa)
+    extra+=`<div class="pr"><span class="pk">CPA</span><span class="pv">${p.cpa}</span></div>`;
+  if(type==='councils'&&p.NC_ID)
+    extra+=`<div class="pr"><span class="pk">NC ID</span><span class="pv">${p.NC_ID}</span></div>`;
+  let reg='—';
+  try{const c=centroid(f);reg=REGION_LABELS[getRegion(c.lat,c.lng)]||'—';}catch{}
+  return `<div class="pt">${name}</div>
+    <div class="ptp">${TYPE_LABELS[type]}</div>
+    ${extra}
+    <div class="pr"><span class="pk">Región</span><span class="pv">${reg}</span></div>`;
+}
+
+// ── Build / refresh a layer ───────────────────────────────────────────
+function build(type){
+  if(GRPS[type]){map.removeLayer(GRPS[type]);}
+  if(!DATA[type]) return;
+
+  const feats=DATA[type].features.filter(f=>inRegion(f,region)&&inDiv(f,divName));
+  const cnt=document.getElementById(`c-${type}`);
+  if(cnt) cnt.textContent=feats.length;
+
+  const grp=L.geoJSON({type:'FeatureCollection',features:feats},{
+    style:()=>sty(type),
+    onEachFeature:(f,lyr)=>{
+      lyr.on('mouseover',()=>lyr.setStyle(sty(type,true)));
+      lyr.on('mouseout', ()=>lyr.setStyle(sty(type)));
+      lyr.on('click',()=>{
+        lyr.bindPopup(popHtml(f,type)).openPopup();
+        const p=f.properties||{};
+        const name=p.name||p.NAME||'—';
+        let c={lat:0,lng:0};
+        try{c=centroid(f);}catch{}
+        const reg=REGION_LABELS[getRegion(c.lat,c.lng)]||'—';
+        window.parent?.postMessage({
+          type:'OSINT_CLICK_INFO',mapId:'jurisdicciones',
+          clickType:'jurisdiction',
+          jurisType:type,name,region:reg,
+          lat:c.lat.toFixed(5),lng:c.lng.toFixed(5),
+          ...(type==='hpoz'?{phase:p.phase||'—',cpa:p.cpa||'—'}:{}),
+          ...(type==='councils'?{nc_id:p.NC_ID||p.nc_id||'—'}:{}),
+        },'*');
+      });
+    }
+  });
+
+  GRPS[type]=grp;
+  if(ON[type]) grp.addTo(map);
+}
+
+function rebuildAll(){
+  ['cities','uninc','councils','hpoz'].forEach(build);
+  updateStats();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────
+function updateStats(){
+  let vis=0,tot=0;
+  ['cities','uninc','councils','hpoz'].forEach(t=>{
+    if(!DATA[t]) return;
+    const all=DATA[t].features.length;
+    const filtered=DATA[t].features.filter(f=>inRegion(f,region)&&inDiv(f,divName)).length;
+    tot+=all;
+    if(ON[t]) vis+=filtered;
+  });
+  document.getElementById('sv-vis').textContent=vis||'—';
+  document.getElementById('sv-tot').textContent=tot||'—';
+}
+
+// ── Toggle layer ──────────────────────────────────────────────────────
+function toggleLayer(type){
+  ON[type]=!ON[type];
+  document.getElementById(`lr-${type}`)?.classList.toggle('off',!ON[type]);
+  if(GRPS[type]){
+    if(ON[type]) map.addLayer(GRPS[type]);
+    else map.removeLayer(GRPS[type]);
+  }
+  updateStats();
+}
+
+// ── Region filter ─────────────────────────────────────────────────────
+function setRegion(r){
+  region=r;
+  document.querySelectorAll('.rb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(`rb-${r}`)?.classList.add('on');
+  rebuildAll();
+}
+
+// ── Division filter ───────────────────────────────────────────────────
+function setDivisionFilter(name){
+  divName=name?name.toUpperCase():'';
+  const el=document.getElementById('sv-div');
+  if(el) el.textContent=name?name.slice(0,5).toUpperCase():'ALL';
+
+  if(divHL){map.removeLayer(divHL);divHL=null;}
+  if(name&&divGeo){
+    const div=divGeo.features.find(d=>d.properties.name===name.toUpperCase());
+    if(div){
+      divHL=L.geoJSON(div,{style:{color:'#22d3ee',weight:2.5,opacity:.9,fillColor:'#22d3ee',fillOpacity:.04,dashArray:'6,4'}}).addTo(map);
+      try{map.fitBounds(divHL.getBounds(),{padding:[40,40]});}catch{}
+    }
+  }
+  rebuildAll();
+}
+
+// ── Load data ─────────────────────────────────────────────────────────
+const lb=document.getElementById('loadbar');
+
+async function loadLayer(type,url){
+  loadingCount++;
+  lb.style.display='block';
+  try{
+    const r=await fetch(url);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const geo=await r.json();
+    if(geo.features?.length>0){
+      DATA[type]=geo;
+      build(type);
+      updateStats();
+    }
+  }catch(e){console.warn(`Layer ${type}:`,e.message);}
+  finally{
+    loadingCount--;
+    if(loadingCount<=0){lb.style.display='none';}
+  }
+}
+
+// Load LAPD divisions (base layer)
+fetch('/data/lapd_divisions_crimes.geojson').then(r=>r.json()).then(geo=>{
+  divGeo=geo;
+  L.geoJSON(geo,{style:{color:'#22d3ee',weight:1,opacity:.3,fillOpacity:0}}).addTo(map);
+}).catch(()=>{});
+
+// Load the 4 jurisdiction layers
+loadLayer('cities',   '/data/la_cities.geojson');
+loadLayer('uninc',    '/data/la_unincorporated.geojson');
+loadLayer('councils', '/data/neighborhood_councils.geojson');
+loadLayer('hpoz',     '/data/hpoz.geojson');
+
+// ── postMessage receiver ──────────────────────────────────────────────
+window.addEventListener('message',(e)=>{
+  if(!e.data) return;
+  if(e.data.type==='JURISD_DIVISION'){
+    const name=e.data.division||'';
+    setDivisionFilter(name);
+  }
+});
+</script>
+</body>
+</html>

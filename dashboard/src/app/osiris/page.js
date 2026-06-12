@@ -571,10 +571,16 @@ export default function OsintPage(){
 
   // ── Sync filters to OSINT iframes (tactical handled via React props)
   useEffect(()=>{
-    if(!OSINT_IDS.has(activeMap)) return;
-    iframeRef.current?.contentWindow?.postMessage(
-      {type:'OSINT_FILTER',year:filterYear,area:filterArea,part:filterPart},'*'
-    );
+    if(OSINT_IDS.has(activeMap)){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'OSINT_FILTER',year:filterYear,area:filterArea,part:filterPart},'*'
+      );
+    }
+    if(activeMap==='edu-safety'){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'EDU_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
+      );
+    }
   },[filterYear,filterArea,filterPart,activeMap]);
 
   // ── Receive postMessage events from all map iframes
@@ -613,6 +619,11 @@ export default function OsintPage(){
     if(OSINT_IDS.has(activeMap)){
       iframeRef.current?.contentWindow?.postMessage(
         {type:'OSINT_FILTER',year:filterYear,area:filterArea,part:filterPart},'*'
+      );
+    }
+    if(activeMap==='edu-safety'){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'EDU_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
       );
     }
   };

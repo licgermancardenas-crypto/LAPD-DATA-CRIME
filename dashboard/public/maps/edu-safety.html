@@ -1175,6 +1175,17 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+// ── Receive postMessage from OSIRIS parent ────────────────────
+window.addEventListener('message', (e) => {
+  if (!e.data) return;
+  if (e.data.type === 'EDU_DIVISION') {
+    const name = e.data.division || '';
+    const sel = document.getElementById('div-select');
+    if (sel) sel.value = name;
+    setDivisionFilter(name);
+  }
+});
 </script>
 </body>
 </html>

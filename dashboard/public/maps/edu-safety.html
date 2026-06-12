@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Educational & Public Safety Intelligence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#010d1f;overflow:hidden;font-family:'JetBrains Mono','Courier New',monospace}
+#map{position:absolute;inset:0;z-index:1}
+
+/* ── Leaflet dark ────────────────────────────────────────────── */
+.leaflet-control-zoom a{background:#0a1628!important;border-color:rgba(56,189,248,.3)!important;color:#38bdf8!important}
+.leaflet-popup-content-wrapper{background:rgba(1,8,24,.96);border:1px solid rgba(0,191,255,.3);border-radius:8px;box-shadow:0 0 24px rgba(0,191,255,.15)}
+.leaflet-popup-content{color:#e2e8f0;font-family:monospace;font-size:11px;line-height:1.65;margin:12px 15px}
+.leaflet-popup-tip{background:rgba(1,8,24,.96)}
+.leaflet-popup-close-button{color:#00bfff!important;font-size:18px!important;top:6px!important;right:8px!important}
+
+/* cluster overrides */
+.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{
+  background:rgba(0,191,255,.15)!important;
+}
+.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{
+  background:rgba(0,191,255,.35)!important;color:#fff!important;font-size:11px!important;
+  font-family:monospace!important;font-weight:700!important;
+}
+
+/* ── Loading ─────────────────────────────────────────────────── */
+#loading{position:absolute;inset:0;z-index:900;background:#010d1f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .4s}
+#loading.hidden{opacity:0;pointer-events:none}
+.ld-logo{font-size:11px;font-weight:900;color:#00bfff;letter-spacing:.35em;text-shadow:0 0 20px #00bfff}
+.ld-msg{font-size:9px;color:rgba(0,191,255,.55);letter-spacing:.18em}
+.ld-bar{width:260px;height:2px;background:rgba(0,191,255,.1);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;width:0;background:linear-gradient(90deg,#00bfff,#7dd3fc);border-radius:2px;transition:width .3s}
+
+/* ── HUD top-center ──────────────────────────────────────────── */
+#hud{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:400;pointer-events:none;text-align:center}
+.hud-title{font-size:10px;font-weight:900;color:#00bfff;letter-spacing:.22em;text-shadow:0 0 12px #00bfff88}
+.hud-sub{font-size:8px;color:rgba(0,191,255,.5);letter-spacing:.12em;margin-top:2px}
+
+/* ── Left filter panel ───────────────────────────────────────── */
+#ctrl-panel{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  z-index:500;width:240px;
+  background:rgba(1,8,24,.93);backdrop-filter:blur(14px);
+  border:1px solid rgba(0,191,255,.2);border-radius:10px;
+  overflow:hidden;
+}
+.cp-header{
+  padding:8px 12px;background:rgba(0,191,255,.06);
+  border-bottom:1px solid rgba(0,191,255,.1);
+}
+.cp-title{font-size:8px;font-weight:900;color:#00bfff;letter-spacing:.18em}
+.cp-body{padding:10px 12px}
+.cp-section{margin-bottom:12px}
+.cp-section-label{
+  font-size:7px;font-weight:900;color:rgba(56,189,248,.6);
+  letter-spacing:.14em;text-transform:uppercase;
+  margin-bottom:8px;padding-bottom:5px;
+  border-bottom:1px solid rgba(56,189,248,.08);
+}
+
+/* Checkboxes */
+.cb-row{display:flex;align-items:center;gap:7px;margin-bottom:6px;cursor:pointer;user-select:none}
+.cb-row input{display:none}
+.cb-box{
+  width:14px;height:14px;border-radius:3px;flex-shrink:0;
+  border:1.5px solid rgba(56,189,248,.4);
+  background:rgba(56,189,248,.05);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.cb-row input:checked ~ .cb-box{background:rgba(56,189,248,.22);border-color:#38bdf8}
+.cb-row input:checked ~ .cb-box::after{content:'✓';font-size:9px;color:#38bdf8;font-weight:900;line-height:1}
+.cb-label{font-size:10px;color:#bae6fd;flex:1}
+.cb-count{font-size:8px;color:rgba(255,255,255,.3);margin-left:auto}
+
+/* Toggle buttons */
+.toggle-row{display:flex;gap:5px;margin-top:4px}
+.t-toggle{
+  flex:1;padding:5px 4px;border-radius:5px;border:1px solid rgba(56,189,248,.2);
+  background:rgba(1,10,26,.8);color:rgba(56,189,248,.6);
+  font-size:8px;font-weight:700;letter-spacing:.06em;cursor:pointer;
+  transition:all .12s;text-align:center;
+}
+.t-toggle.active{border-color:rgba(0,191,255,.6);color:#fff;background:rgba(0,191,255,.12);box-shadow:0 0 10px rgba(0,191,255,.18)}
+.t-toggle.active.vuln{border-color:rgba(239,68,68,.6);color:#fca5a5;background:rgba(239,68,68,.08);box-shadow:0 0 10px rgba(239,68,68,.15)}
+.t-toggle.active.lapd{border-color:rgba(0,191,255,.6);color:#67e8f9;background:rgba(0,191,255,.1)}
+.t-toggle.active.lasd{border-color:rgba(251,191,36,.6);color:#fde68a;background:rgba(251,191,36,.08)}
+
+/* Color dots */
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;flex-shrink:0}
+
+/* ── Right OSINT panel ───────────────────────────────────────── */
+#osint-panel{
+  position:absolute;right:10px;top:10px;bottom:10px;
+  width:262px;z-index:500;
+  background:rgba(1,8,24,.93);backdrop-filter:blur(14px);
+  border:1px solid rgba(0,191,255,.2);border-radius:10px;
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+#osint-panel.collapsed{transform:translateX(274px)}
+#op-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid rgba(0,191,255,.1);
+  background:rgba(0,191,255,.05);flex-shrink:0;
+}
+.op-title{font-size:8px;font-weight:900;color:#00bfff;letter-spacing:.16em}
+.op-sub{font-size:7px;color:rgba(0,191,255,.4);letter-spacing:.08em;margin-top:1px}
+#op-toggle{background:transparent;border:none;color:#38bdf8;cursor:pointer;font-size:13px;padding:2px 4px}
+#op-body{flex:1;overflow-y:auto;padding:10px 12px}
+#op-body::-webkit-scrollbar{width:3px}
+#op-body::-webkit-scrollbar-track{background:transparent}
+#op-body::-webkit-scrollbar-thumb{background:rgba(56,189,248,.2);border-radius:2px}
+
+/* Stats sections */
+.os-section{margin-bottom:13px}
+.os-label{font-size:7px;font-weight:900;color:rgba(56,189,248,.55);letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid rgba(56,189,248,.08)}
+
+/* Vulnerability Index */
+#vuln-idx-wrap{
+  padding:10px 12px;border-radius:7px;
+  background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);
+  text-align:center;margin-bottom:5px;
+}
+.vi-num{font-size:30px;font-weight:900;line-height:1;text-shadow:0 0 20px currentColor}
+.vi-label{font-size:7px;letter-spacing:.1em;margin-top:3px;opacity:.7}
+.vi-risk{font-size:9px;font-weight:800;letter-spacing:.1em;margin-top:5px}
+
+/* Mini breakdown bars */
+.breakdown-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.br-label{font-size:9px;color:#bae6fd;width:40px;flex-shrink:0}
+.br-pct{font-size:9px;font-weight:700;width:38px;text-align:right;flex-shrink:0}
+.br-bar{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.br-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* Station load rows */
+.station-row{
+  padding:5px 8px;border-radius:5px;margin-bottom:4px;
+  background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:center;gap:7px;
+}
+.sr-rank{font-size:8px;color:rgba(255,255,255,.3);width:14px;flex-shrink:0;font-weight:700}
+.sr-name{font-size:9px;color:#e0f2fe;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sr-count{font-size:10px;font-weight:800;color:#67e8f9;white-space:nowrap}
+
+/* Conflict alert */
+#conflict-wrap{
+  padding:10px;border-radius:7px;text-align:center;
+  background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);
+  margin-bottom:5px;
+}
+.cw-num{font-size:24px;font-weight:900;color:#fbbf24;text-shadow:0 0 18px #fbbf2488;line-height:1}
+.cw-label{font-size:7px;color:rgba(251,191,36,.6);letter-spacing:.1em;margin-top:3px}
+.cw-sub{font-size:8px;color:rgba(255,255,255,.3);margin-top:3px}
+
+/* Vulnerable school rows */
+.vuln-row{
+  padding:6px 8px;border-radius:5px;margin-bottom:4px;cursor:pointer;
+  background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.1);
+  transition:all .12s;
+}
+.vuln-row:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3)}
+.vr-name{font-size:10px;color:#fca5a5;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.vr-meta{font-size:8px;color:rgba(255,255,255,.35)}
+.vr-dist{font-size:10px;font-weight:800;color:#f87171;white-space:nowrap}
+.vr-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
+
+/* ── School marker animations ────────────────────────────────── */
+@keyframes vuln-pulse{
+  0%{box-shadow:0 0 4px rgba(239,68,68,.6)}
+  50%{box-shadow:0 0 0 8px rgba(239,68,68,0),0 0 14px rgba(239,68,68,.8)}
+  100%{box-shadow:0 0 4px rgba(239,68,68,.6)}
+}
+.school-marker-vuln .sm-inner{animation:vuln-pulse 2s ease-in-out infinite}
+
+/* ── Legend ──────────────────────────────────────────────────── */
+#legend{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:400;display:flex;gap:12px;
+  background:rgba(1,8,24,.85);border:1px solid rgba(0,191,255,.15);
+  padding:5px 14px;border-radius:4px;pointer-events:none;
+}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:.06em}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-logo">◈ EDU & PUBLIC SAFETY</div>
+  <div class="ld-bar"><div class="ld-fill" id="ld-fill"></div></div>
+  <div class="ld-msg" id="ld-msg">INICIALIZANDO…</div>
+</div>
+
+<div id="map"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-title">EDUCATIONAL & PUBLIC SAFETY INTELLIGENCE</div>
+  <div class="hud-sub">COBERTURA POLICIAL · ANÁLISIS JURISDICCIONAL · HORARIOS CRÍTICOS</div>
+</div>
+
+<!-- Left control panel -->
+<div id="ctrl-panel">
+  <div class="cp-header">
+    <div class="cp-title">◈ FILTROS DE ANÁLISIS</div>
+  </div>
+  <div class="cp-body">
+
+    <!-- Institution type -->
+    <div class="cp-section">
+      <div class="cp-section-label">Tipo de Institución</div>
+      <label class="cb-row">
+        <input type="checkbox" id="cb-public" checked onchange="applyFilters()">
+        <span class="cb-box"></span>
+        <span class="dot" style="background:#00bfff"></span>
+        <span class="cb-label">Escuelas Públicas</span>
+        <span class="cb-count" id="cnt-public">—</span>
+      </label>
+      <label class="cb-row">
+        <input type="checkbox" id="cb-private" checked onchange="applyFilters()">
+        <span class="cb-box"></span>
+        <span class="dot" style="background:#a78bfa"></span>
+        <span class="cb-label">Escuelas Privadas</span>
+        <span class="cb-count" id="cnt-private">—</span>
+      </label>
+      <label class="cb-row">
+        <input type="checkbox" id="cb-college" checked onchange="applyFilters()">
+        <span class="cb-box"></span>
+        <span class="dot" style="background:#fb923c"></span>
+        <span class="cb-label">Universidades / Colegios</span>
+        <span class="cb-count" id="cnt-college">—</span>
+      </label>
+    </div>
+
+    <!-- Coverage filter -->
+    <div class="cp-section">
+      <div class="cp-section-label">Cobertura Policial</div>
+      <div class="toggle-row">
+        <button class="t-toggle active" id="btn-all-cov" onclick="setCovFilter('all')">TODAS</button>
+        <button class="t-toggle vuln" id="btn-vuln-only" onclick="setCovFilter('vuln')">SOLO VULNERABLES</button>
+      </div>
+    </div>
+
+    <!-- Force filter -->
+    <div class="cp-section" style="margin-bottom:0">
+      <div class="cp-section-label">Estaciones de Seguridad</div>
+      <div class="toggle-row">
+        <button class="t-toggle active lapd" id="btn-lapd" onclick="toggleForce('lapd')">
+          <span style="color:#00bfff">●</span> LAPD
+        </button>
+        <button class="t-toggle active lasd" id="btn-lasd" onclick="toggleForce('lasd')">
+          <span style="color:#fbbf24">●</span> LASD
+        </button>
+        <button class="t-toggle" id="btn-other" onclick="toggleForce('other')">
+          <span style="color:#94a3b8">●</span> OTROS
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OSINT panel -->
+<div id="osint-panel">
+  <div id="op-header">
+    <div>
+      <div class="op-title">◈ EDU SAFETY INTELLIGENCE</div>
+      <div class="op-sub">INDICADORES EN TIEMPO REAL</div>
+    </div>
+    <button id="op-toggle" onclick="togglePanel()">›</button>
+  </div>
+  <div id="op-body">
+
+    <!-- Vulnerability Index -->
+    <div class="os-section">
+      <div class="os-label">Índice de Vulnerabilidad Escolar Global</div>
+      <div id="vuln-idx-wrap">
+        <div class="vi-num" id="vi-num" style="color:#ef4444">—</div>
+        <div class="vi-label" style="color:#ef4444">% ESCUELAS DESPROTEGIDAS (&gt;3KM)</div>
+        <div class="vi-risk" id="vi-risk">CALCULANDO…</div>
+      </div>
+      <!-- Breakdown -->
+      <div class="breakdown-row">
+        <span class="br-label" style="color:#34d399">● Segura</span>
+        <div class="br-bar"><div class="br-fill" id="br-safe" style="background:#34d399"></div></div>
+        <span class="br-pct" id="pct-safe" style="color:#34d399">—</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="br-label" style="color:#fbbf24">● Alerta</span>
+        <div class="br-bar"><div class="br-fill" id="br-alert" style="background:#fbbf24"></div></div>
+        <span class="br-pct" id="pct-alert" style="color:#fbbf24">—</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="br-label" style="color:#ef4444">● Vuln.</span>
+        <div class="br-bar"><div class="br-fill" id="br-vuln" style="background:#ef4444"></div></div>
+        <span class="br-pct" id="pct-vuln" style="color:#ef4444">—</span>
+      </div>
+    </div>
+
+    <!-- Top 3 stations by load -->
+    <div class="os-section">
+      <div class="os-label">Top 3 Estaciones — Mayor Carga Educativa</div>
+      <div id="top-stations">
+        <div style="font-size:9px;color:rgba(255,255,255,.3);padding:6px 0">Calculando…</div>
+      </div>
+    </div>
+
+    <!-- School hour conflicts -->
+    <div class="os-section">
+      <div class="os-label">Alerta Conflictos — Horario Escolar</div>
+      <div id="conflict-wrap">
+        <div class="cw-num" id="conflict-num">—</div>
+        <div class="cw-label">INCIDENTES EN ENTORNOS ESCOLARES</div>
+        <div class="cw-sub">Entrada 07-09h · Salida 14-16h · Radio 300m</div>
+      </div>
+    </div>
+
+    <!-- Top vulnerable schools -->
+    <div class="os-section">
+      <div class="os-label">Top 10 Escuelas Más Aisladas</div>
+      <div id="vuln-schools-list">
+        <div style="font-size:9px;color:rgba(255,255,255,.3);padding:6px 0">Calculando…</div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;padding:5px 8px;border-radius:4px;background:rgba(56,189,248,.04);border:1px solid rgba(56,189,248,.07)">
+      <div style="font-size:7px;color:rgba(56,189,248,.4);letter-spacing:.07em">
+        SRC: LA CITY GEOHUB · LASD · LAPD OPEN DATA · LAPD CRIME REPORTS 2020-2024
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <div class="leg-item"><span class="dot" style="background:#34d399"></span>Zona Segura &lt;1km</div>
+  <div class="leg-item"><span class="dot" style="background:#fbbf24"></span>Alerta 1-3km</div>
+  <div class="leg-item"><span class="dot" style="background:#ef4444"></span>Vulnerable &gt;3km</div>
+  <div class="leg-item"><span style="display:inline-block;width:10px;height:10px;background:rgba(0,191,255,.25);border:1.5px solid #00bfff;border-radius:2px;margin-right:4px"></span>LAPD</div>
+  <div class="leg-item"><span style="display:inline-block;width:10px;height:10px;background:rgba(251,191,36,.2);border:1.5px solid #fbbf24;border-radius:2px;margin-right:4px"></span>LASD</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════════
+const SAFE_KM     = 1;
+const ALERT_KM    = 3;
+const CRIME_R_M   = 300;
+const SCHOOL_HRS  = [7, 8, 14, 15];
+const GRID_DEG    = 0.01;
+
+// ══════════════════════════════════════════════════════════════════
+// FILTER STATE
+// ══════════════════════════════════════════════════════════════════
+let showPublic  = true, showPrivate = true, showCollege = true;
+let covFilter   = 'all';   // 'all' | 'vuln'
+let showLAPD    = true, showLASD = true, showOther = false;
+
+// ══════════════════════════════════════════════════════════════════
+// DATA & ANALYTICS STATE
+// ══════════════════════════════════════════════════════════════════
+let schoolData    = [];   // processed school analytics objects
+let stationFeats  = [];   // raw station feature array
+
+// Leaflet layer groups per type×risk
+// Keys: 'public_safe', 'public_alert', 'public_vuln',
+//       'private_safe', ... 'college_safe', ...
+const schoolGroups = {};
+let lapdGroup, lasdGroup, otherGroup;
+let markerMap = new Map(); // school OBJECTID → L.Marker (for fly-to)
+
+let globalStats = null;
+
+// ══════════════════════════════════════════════════════════════════
+// MAP INIT
+// ══════════════════════════════════════════════════════════════════
+const map = L.map('map', {
+  center: [34.05, -118.25], zoom: 10,
+  zoomControl: true, attributionControl: false, preferCanvas: false,
+});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19, subdomains: 'abcd',
+}).addTo(map);
+
+// ══════════════════════════════════════════════════════════════════
+// PROGRESS LOADER
+// ══════════════════════════════════════════════════════════════════
+function setProgress(pct, msg) {
+  document.getElementById('ld-fill').style.width = pct + '%';
+  document.getElementById('ld-msg').textContent = msg;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SPATIAL UTILS
+// ══════════════════════════════════════════════════════════════════
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R  = 6371;
+  const dL = (lat2 - lat1) * Math.PI / 180;
+  const dG = (lng2 - lng1) * Math.PI / 180;
+  const sL = Math.sin(dL / 2), sG = Math.sin(dG / 2);
+  const a  = sL * sL + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * sG * sG;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function buildGrid(points) {
+  const grid = new Map();
+  for (const [lat, lng] of points) {
+    const k = `${Math.floor(lat / GRID_DEG)},${Math.floor(lng / GRID_DEG)}`;
+    if (!grid.has(k)) grid.set(k, []);
+    grid.get(k).push([lat, lng]);
+  }
+  return grid;
+}
+
+function countCrimesNear(lat, lng, radiusM, grid) {
+  let count = 0;
+  const delta = 1;
+  const rLat = Math.floor(lat / GRID_DEG);
+  const rLng = Math.floor(lng / GRID_DEG);
+  const R = 6371000;
+  const cosLat = Math.cos(lat * Math.PI / 180);
+  for (let dl = -delta; dl <= delta; dl++) {
+    for (let dg = -delta; dg <= delta; dg++) {
+      const cell = grid.get(`${rLat + dl},${rLng + dg}`);
+      if (!cell) continue;
+      for (const [plat, plng] of cell) {
+        const dLat = (plat - lat) * Math.PI / 180 * R;
+        const dLng = (plng - lng) * Math.PI / 180 * cosLat * R;
+        if (Math.sqrt(dLat * dLat + dLng * dLng) <= radiusM) count++;
+      }
+    }
+  }
+  return count;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ANALYTICS ENGINE
+// ══════════════════════════════════════════════════════════════════
+function classifySchoolType(cat3) {
+  if (!cat3) return 'private';
+  if (cat3 === 'Public Schools') return 'public';
+  if (cat3.includes('College') || cat3.includes('Technical') || cat3.includes('Junior College')) return 'college';
+  return 'private'; // Private + Charter
+}
+
+function runAnalytics(schools, stations, crimeHourly) {
+  // Build school-hour crime grid (07-09h + 14-16h)
+  const crimeHrPts = [];
+  for (const h of SCHOOL_HRS) {
+    for (const pt of (crimeHourly.hours[h] || [])) crimeHrPts.push(pt);
+  }
+  const crimeGrid = buildGrid(crimeHrPts);
+
+  // Pre-extract station coords for performance
+  const allSt = stations.map(f => ({
+    lat:    f.geometry.coordinates[1],
+    lng:    f.geometry.coordinates[0],
+    feat:   f,
+    agency: f.properties.agency,
+    name:   f.properties.name,
+  }));
+  const lapdSt = allSt.filter(s => s.agency === 'LAPD');
+  const lasdSt = allSt.filter(s => s.agency === 'LASD');
+
+  const results = [];
+
+  for (const school of schools) {
+    const [slng, slat] = school.geometry.coordinates;
+    const p = school.properties;
+
+    // ── Nearest station (all agencies) ──────────────────────────
+    let minDist = Infinity, nearestSt = null;
+    for (const st of allSt) {
+      const d = haversineKm(slat, slng, st.lat, st.lng);
+      if (d < minDist) { minDist = d; nearestSt = st; }
+    }
+
+    // ── Nearest LAPD ─────────────────────────────────────────────
+    let minLAPD = Infinity, nearestLAPD = null;
+    for (const st of lapdSt) {
+      const d = haversineKm(slat, slng, st.lat, st.lng);
+      if (d < minLAPD) { minLAPD = d; nearestLAPD = st; }
+    }
+
+    // ── Nearest LASD ─────────────────────────────────────────────
+    let minLASD = Infinity, nearestLASD = null;
+    for (const st of lasdSt) {
+      const d = haversineKm(slat, slng, st.lat, st.lng);
+      if (d < minLASD) { minLASD = d; nearestLASD = st; }
+    }
+
+    // ── Risk classification ──────────────────────────────────────
+    const risk = minDist < SAFE_KM ? 'safe' : minDist < ALERT_KM ? 'alert' : 'vuln';
+
+    // ── Jurisdictional: LAPD vs LASD ────────────────────────────
+    const jurisSt = minLAPD <= minLASD ? nearestLAPD : nearestLASD;
+
+    // ── School-hour crimes ───────────────────────────────────────
+    const crimeCount = countCrimesNear(slat, slng, CRIME_R_M, crimeGrid);
+
+    results.push({
+      id:          p.name + slat,
+      lat:         slat,
+      lng:         slng,
+      name:        p.name || 'Sin nombre',
+      addr:        p.addr || '',
+      city:        p.city || '',
+      cat2:        p.cat2 || '',
+      schoolType:  classifySchoolType(p.cat3),
+      risk,
+      distKm:      minDist,
+      nearestSt,
+      minLAPD,     nearestLAPD,
+      minLASD,     nearestLASD,
+      jurisSt,
+      crimeCount,
+      feat:        school,
+    });
+  }
+
+  return results;
+}
+
+function computeGlobalStats(data) {
+  const visible = getVisibleData(data);
+  const total   = visible.length;
+  const nSafe   = visible.filter(s => s.risk === 'safe').length;
+  const nAlert  = visible.filter(s => s.risk === 'alert').length;
+  const nVuln   = visible.filter(s => s.risk === 'vuln').length;
+  const vulnIdx = total > 0 ? (nVuln / total * 100) : 0;
+
+  // Station load (jurisdictional assignment)
+  const loadMap = {};
+  for (const s of visible) {
+    if (s.jurisSt) {
+      const k = s.jurisSt.name;
+      loadMap[k] = { count: (loadMap[k]?.count || 0) + 1, agency: s.jurisSt.agency };
+    }
+  }
+  const topStations = Object.entries(loadMap)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 3)
+    .map(([name, v]) => ({ name, count: v.count, agency: v.agency }));
+
+  const totalConflicts = visible.reduce((s, x) => s + x.crimeCount, 0);
+
+  const topVuln = data
+    .filter(s => s.risk === 'vuln')
+    .sort((a, b) => b.distKm - a.distKm)
+    .slice(0, 10);
+
+  return { total, nSafe, nAlert, nVuln, vulnIdx, topStations, totalConflicts, topVuln };
+}
+
+// Which schools pass current filters
+function getVisibleData(data) {
+  return data.filter(s => {
+    if (s.schoolType === 'public'   && !showPublic)  return false;
+    if (s.schoolType === 'private'  && !showPrivate) return false;
+    if (s.schoolType === 'college'  && !showCollege) return false;
+    if (covFilter === 'vuln' && s.risk !== 'vuln')   return false;
+    return true;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MARKER SVG BUILDERS
+// ══════════════════════════════════════════════════════════════════
+
+const RISK_COLORS = { safe: '#34d399', alert: '#fbbf24', vuln: '#ef4444' };
+const TYPE_COLORS = { public: '#00bfff', private: '#a78bfa', college: '#fb923c' };
+
+function schoolMarkerHTML(risk, schoolType) {
+  const rc  = RISK_COLORS[risk];
+  const tc  = TYPE_COLORS[schoolType] || '#00bfff';
+  const glow = `drop-shadow(0 0 5px ${rc}88)`;
+  return `<div class="sm-inner" style="width:22px;height:22px;filter:${glow}">
+    <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="11" cy="11" r="10" fill="rgba(0,0,0,0.75)" stroke="${rc}" stroke-width="1.5"/>
+      <!-- graduation cap -->
+      <polygon points="11,5.5 17,8.2 11,10.9 5,8.2" fill="${tc}"/>
+      <rect x="10" y="11.2" width="2" height="3.5" fill="${tc}" rx="0.4"/>
+      <circle cx="16.5" cy="8.2" r="0.8" fill="${rc}"/>
+      <line x1="16.5" y1="8.2" x2="16.5" y2="11.5" stroke="${rc}" stroke-width="1" stroke-dasharray="1,1"/>
+    </svg>
+  </div>`;
+}
+
+function stationBadgeHTML(agency) {
+  const color = agency === 'LAPD' ? '#00bfff' : agency === 'LASD' ? '#fbbf24' : '#94a3b8';
+  const glow  = agency === 'LAPD' ? '#00bfff' : agency === 'LASD' ? '#fbbf24' : '#94a3b8';
+  const star  = agency === 'LASD'
+    ? '<path d="M11 6l1.1 3.4h3.5l-2.8 2 1.1 3.4-2.9-2.1-2.9 2.1 1.1-3.4-2.8-2h3.5z" fill="'+color+'" opacity="0.9"/>'
+    : '<polygon points="11,7 12.1,10.2 15.6,10.2 12.8,12.1 13.9,15.3 11,13.4 8.1,15.3 9.2,12.1 6.4,10.2 9.9,10.2" fill="'+color+'" opacity="0.85"/>';
+  return `<div style="width:26px;height:30px;filter:drop-shadow(0 0 6px ${glow}88)">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 26" width="26" height="30">
+      <path d="M11 1 L20 5 L20 14 Q20 22 11 25 Q2 22 2 14 L2 5 Z" fill="rgba(0,6,20,0.9)" stroke="${color}" stroke-width="1.4"/>
+      ${star}
+    </svg>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER MARKERS
+// ══════════════════════════════════════════════════════════════════
+function buildSchoolMarkers(data) {
+  // Initialize layer groups (using markercluster for school groups)
+  const types = ['public', 'private', 'college'];
+  const risks = ['safe', 'alert', 'vuln'];
+  for (const t of types) {
+    for (const r of risks) {
+      schoolGroups[`${t}_${r}`] = L.markerClusterGroup({
+        maxClusterRadius: 50,
+        showCoverageOnHover: false,
+        iconCreateFunction(cluster) {
+          const color = RISK_COLORS[r];
+          const n = cluster.getChildCount();
+          return L.divIcon({
+            html: `<div style="width:30px;height:30px;border-radius:50%;background:${color}22;border:1.5px solid ${color};display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;font-weight:800;color:${color}">${n}</div>`,
+            className: '', iconSize: [30, 30], iconAnchor: [15, 15],
+          });
+        },
+      });
+    }
+  }
+
+  markerMap.clear();
+
+  for (const s of data) {
+    const key = `${s.schoolType}_${s.risk}`;
+    const html = schoolMarkerHTML(s.risk, s.schoolType);
+    const icon = L.divIcon({
+      html: `<div class="school-marker-${s.risk}">${html}</div>`,
+      className: '', iconSize: [22, 22], iconAnchor: [11, 11],
+    });
+    const marker = L.marker([s.lat, s.lng], { icon });
+
+    // Popup
+    const rc = RISK_COLORS[s.risk];
+    const riskLabel = s.risk === 'safe' ? 'ZONA SEGURA' : s.risk === 'alert' ? 'ALERTA' : 'VULNERABLE';
+    marker.bindPopup(
+      `<div style="font-size:11px;color:${rc};font-weight:900;margin-bottom:5px">${riskLabel}</div>`+
+      `<div style="color:#fff;font-size:11px;font-weight:700;margin-bottom:6px;line-height:1.3">${s.name}</div>`+
+      `<div style="color:#94a3b8;margin-bottom:3px">${s.addr || ''}${s.city ? ', ' + s.city : ''}</div>`+
+      `<div style="color:#7dd3fc;margin-bottom:3px">${s.cat2}</div>`+
+      `<div style="margin-top:7px;padding:5px 8px;background:rgba(255,255,255,.04);border-radius:4px;border:1px solid rgba(255,255,255,.06)">`+
+        `<div style="color:#94a3b8;font-size:9px;margin-bottom:2px">ESTACIÓN MÁS CERCANA</div>`+
+        `<div style="color:#e0f2fe;font-weight:600">${s.nearestSt?.name || '—'}</div>`+
+        `<div style="color:${rc};font-weight:800;font-size:13px;margin-top:3px">${s.distKm.toFixed(2)} km</div>`+
+      `</div>`+
+      (s.crimeCount > 0
+        ? `<div style="margin-top:6px;color:#fbbf24;font-size:10px">⚠ ${s.crimeCount} incidentes en horario escolar (radio 300m)</div>`
+        : `<div style="margin-top:6px;color:#34d399;font-size:10px">✓ Sin incidentes en horario escolar</div>`),
+      { maxWidth: 240 }
+    );
+
+    schoolGroups[key].addLayer(marker);
+    markerMap.set(s.id, { marker, group: key });
+  }
+}
+
+function buildStationMarkers(stations) {
+  lapdGroup  = L.layerGroup();
+  lasdGroup  = L.layerGroup();
+  otherGroup = L.layerGroup();
+
+  for (const st of stations) {
+    const p      = st.properties;
+    const agency = p.agency;
+    const [slng, slat] = st.geometry.coordinates;
+    const html   = stationBadgeHTML(agency);
+    const icon   = L.divIcon({
+      html, className: '', iconSize: [26, 30], iconAnchor: [13, 30],
+    });
+    const marker = L.marker([slat, slng], { icon, zIndexOffset: 3000 });
+    const agencyLabel = agency === 'LAPD' ? 'LAPD' : agency === 'LASD' ? 'L.A. Sheriff' : 'Otro Depto.';
+    marker.bindPopup(
+      `<div style="font-size:10px;font-weight:900;margin-bottom:3px;color:${agency === 'LAPD' ? '#00bfff' : agency === 'LASD' ? '#fbbf24' : '#94a3b8'}">${agencyLabel}</div>`+
+      `<div style="color:#fff;font-size:11px;font-weight:700;margin-bottom:4px;line-height:1.3">${p.name}</div>`+
+      `<div style="color:#94a3b8;font-size:10px">${p.addr}${p.city ? ', ' + p.city : ''}</div>`,
+      { maxWidth: 220 }
+    );
+    if      (agency === 'LAPD') lapdGroup.addLayer(marker);
+    else if (agency === 'LASD') lasdGroup.addLayer(marker);
+    else                         otherGroup.addLayer(marker);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FILTER APPLICATION
+// ══════════════════════════════════════════════════════════════════
+function applyFilters() {
+  showPublic  = document.getElementById('cb-public').checked;
+  showPrivate = document.getElementById('cb-private').checked;
+  showCollege = document.getElementById('cb-college').checked;
+  renderVisibleLayers();
+  updatePanel();
+}
+
+function setCovFilter(mode) {
+  covFilter = mode;
+  document.getElementById('btn-all-cov').classList.toggle('active', mode === 'all');
+  document.getElementById('btn-vuln-only').classList.toggle('active', mode === 'vuln');
+  renderVisibleLayers();
+  updatePanel();
+}
+
+function toggleForce(agency) {
+  if (agency === 'lapd') {
+    showLAPD = !showLAPD;
+    document.getElementById('btn-lapd').classList.toggle('active', showLAPD);
+    if (showLAPD) map.addLayer(lapdGroup); else map.removeLayer(lapdGroup);
+  } else if (agency === 'lasd') {
+    showLASD = !showLASD;
+    document.getElementById('btn-lasd').classList.toggle('active', showLASD);
+    if (showLASD) map.addLayer(lasdGroup); else map.removeLayer(lasdGroup);
+  } else {
+    showOther = !showOther;
+    document.getElementById('btn-other').classList.toggle('active', showOther);
+    if (showOther) map.addLayer(otherGroup); else map.removeLayer(otherGroup);
+  }
+}
+
+function renderVisibleLayers() {
+  const types = ['public', 'private', 'college'];
+  const risks = ['safe', 'alert', 'vuln'];
+  const typeShow = { public: showPublic, private: showPrivate, college: showCollege };
+
+  for (const t of types) {
+    for (const r of risks) {
+      const key = `${t}_${r}`;
+      const grp = schoolGroups[key];
+      if (!grp) continue;
+      const shouldShow = typeShow[t] && (covFilter === 'all' || r === 'vuln');
+      if (shouldShow && !map.hasLayer(grp)) map.addLayer(grp);
+      if (!shouldShow && map.hasLayer(grp))  map.removeLayer(grp);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PANEL UPDATES
+// ══════════════════════════════════════════════════════════════════
+function updatePanel() {
+  const st = computeGlobalStats(schoolData);
+  globalStats = st;
+
+  const { total, nSafe, nAlert, nVuln, vulnIdx, topStations, totalConflicts, topVuln } = st;
+  if (!total) return;
+
+  // Vulnerability Index
+  const viEl = document.getElementById('vi-num');
+  viEl.textContent = vulnIdx.toFixed(1) + '%';
+  const riskEl = document.getElementById('vi-risk');
+  if (vulnIdx >= 40)      { riskEl.textContent = '● CRÍTICO';  riskEl.style.color = '#ef4444'; viEl.style.color = '#ef4444'; }
+  else if (vulnIdx >= 25) { riskEl.textContent = '● ELEVADO';  riskEl.style.color = '#f97316'; viEl.style.color = '#f97316'; }
+  else if (vulnIdx >= 12) { riskEl.textContent = '● MODERADO'; riskEl.style.color = '#eab308'; viEl.style.color = '#eab308'; }
+  else                    { riskEl.textContent = '● BAJO';      riskEl.style.color = '#34d399'; viEl.style.color = '#34d399'; }
+
+  // Breakdown
+  const safePct  = (nSafe  / total * 100).toFixed(1);
+  const alertPct = (nAlert / total * 100).toFixed(1);
+  const vulnPct  = (nVuln  / total * 100).toFixed(1);
+  document.getElementById('pct-safe').textContent  = safePct + '%';
+  document.getElementById('pct-alert').textContent = alertPct + '%';
+  document.getElementById('pct-vuln').textContent  = vulnPct + '%';
+  document.getElementById('br-safe').style.width   = safePct + '%';
+  document.getElementById('br-alert').style.width  = alertPct + '%';
+  document.getElementById('br-vuln').style.width   = vulnPct + '%';
+
+  // Top stations
+  document.getElementById('top-stations').innerHTML = topStations.map((st, i) => {
+    const color = st.agency === 'LAPD' ? '#00bfff' : st.agency === 'LASD' ? '#fbbf24' : '#94a3b8';
+    const shortName = st.name
+      .replace('Los Angeles Police Department - ', '')
+      .replace(" Community Police Station", '')
+      .replace(" Sheriff's Station", '')
+      .replace(' Police Department', '');
+    return `<div class="station-row">
+      <span class="sr-rank" style="color:${color}">#${i+1}</span>
+      <span class="sr-name" title="${st.name}">${shortName}</span>
+      <span class="sr-count" style="color:${color}">${st.count} esc.</span>
+    </div>`;
+  }).join('');
+
+  // Conflict alert
+  document.getElementById('conflict-num').textContent = totalConflicts.toLocaleString();
+
+  // Top vulnerable schools
+  document.getElementById('vuln-schools-list').innerHTML = topVuln.map(s => `
+    <div class="vuln-row" onclick="flyToSchool('${s.id.replace(/'/g,"\\'")}')">
+      <div class="vr-top">
+        <span class="vr-name">${s.name}</span>
+        <span class="vr-dist">${s.distKm.toFixed(2)}km</span>
+      </div>
+      <div class="vr-meta">${s.city} · ${s.cat2} · ${s.nearestSt?.name?.replace('Los Angeles Police Department - ','').replace(' Community Police Station','').replace(" Sheriff's Station",'') || '—'}</div>
+    </div>`).join('');
+
+  // Update counts in checkboxes
+  const countByType = { public: 0, private: 0, college: 0 };
+  for (const s of schoolData) countByType[s.schoolType]++;
+  document.getElementById('cnt-public').textContent  = countByType.public.toLocaleString();
+  document.getElementById('cnt-private').textContent = countByType.private.toLocaleString();
+  document.getElementById('cnt-college').textContent = countByType.college.toLocaleString();
+}
+
+function flyToSchool(id) {
+  const s = schoolData.find(s => s.id === id);
+  if (!s) return;
+  map.setView([s.lat, s.lng], 15);
+  const entry = markerMap.get(id);
+  if (entry) {
+    // Uncluster and open popup
+    setTimeout(() => {
+      const grp = schoolGroups[entry.group];
+      if (grp) {
+        try { grp.zoomToShowLayer(entry.marker, () => entry.marker.openPopup()); }
+        catch(e) { entry.marker.openPopup(); }
+      }
+    }, 400);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PANEL TOGGLE
+// ══════════════════════════════════════════════════════════════════
+let panelOpen = true;
+function togglePanel() {
+  panelOpen = !panelOpen;
+  document.getElementById('osint-panel').classList.toggle('collapsed', !panelOpen);
+  document.getElementById('op-toggle').textContent = panelOpen ? '›' : '‹';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOOTSTRAP
+// ══════════════════════════════════════════════════════════════════
+async function bootstrap() {
+  try {
+    setProgress(5,  'CARGANDO INSTITUCIONES EDUCATIVAS…');
+    const [schoolsGeo, stationsGeo, crimeHourly] = await Promise.all([
+      fetch('/data/schools_la.geojson').then(r => r.json()),
+      fetch('/data/stations_la.geojson').then(r => r.json()),
+      fetch('/data/crime_points_hourly.json').then(r => r.json()),
+    ]);
+    setProgress(45, 'EJECUTANDO ANÁLISIS DE COBERTURA…');
+
+    // Analytics (CPU-heavy: 3179 × 115 Haversine calls)
+    await new Promise(resolve => setTimeout(() => {
+      schoolData   = runAnalytics(schoolsGeo.features, stationsGeo.features, crimeHourly);
+      stationFeats = stationsGeo.features;
+      resolve();
+    }, 0));
+    setProgress(78, 'CONSTRUYENDO MARCADORES…');
+
+    await new Promise(resolve => setTimeout(() => {
+      buildSchoolMarkers(schoolData);
+      buildStationMarkers(stationFeats);
+      resolve();
+    }, 0));
+    setProgress(92, 'ACTUALIZANDO PANEL DE INTELIGENCIA…');
+
+    // Add layers to map
+    const types = ['public', 'private', 'college'];
+    const risks = ['safe', 'alert', 'vuln'];
+    for (const t of types) for (const r of risks) map.addLayer(schoolGroups[`${t}_${r}`]);
+    map.addLayer(lapdGroup);
+    map.addLayer(lasdGroup);
+    // otherGroup off by default
+
+    updatePanel();
+    setProgress(100, 'LISTO');
+    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 350);
+
+  } catch (err) {
+    document.getElementById('ld-msg').textContent = 'ERROR: ' + err.message;
+    document.getElementById('ld-msg').style.color = '#ef4444';
+    console.error(err);
+  }
+}
+
+bootstrap();
+</script>
+</body>
+</html>

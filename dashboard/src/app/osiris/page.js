@@ -43,6 +43,7 @@ const MAPS = [
   { id:'negocios',      label:'NEGOCIOS',     short:'NEG',    src:'/maps/business-choropleth.html',      group:'lapd',  icon:'🏪' },
   { id:'tactical',      label:'L.A. MAP',     short:'CIA',    src:'/maps/la-tactical.html',              group:'tactical', icon:'🛰' },
   { id:'mobility',      label:'MOBILITY',     short:'MOB',    src:'/maps/mobility-intelligence.html',    group:'osint',    icon:'🚌' },
+  { id:'edu-safety',    label:'EDU SAFETY',   short:'EDU',    src:'/maps/edu-safety.html',               group:'osint',    icon:'🎓' },
 ];
 
 const OSINT_IDS = new Set(['heat','cluster','choropleth','mobility']);
@@ -54,6 +55,7 @@ const MAP_LABELS = {
   vulnerability:'VULNERABILIDAD', barrios:'BARRIOS', negocios:'NEGOCIOS',
   tactical:'L.A. MAP TACTICAL',
   mobility:'OSINT // MOBILITY',
+  'edu-safety':'EDU & PUBLIC SAFETY',
 };
 
 const CLICK_WHAT_IS = {

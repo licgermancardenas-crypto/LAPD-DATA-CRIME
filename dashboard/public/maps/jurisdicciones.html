@@ -93,6 +93,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#010d1f;font-family:
     <span>Zonas Históricas (HPOZ)</span>
     <span class="lc" id="c-hpoz">—</span>
   </div>
+  <div class="lr" id="lr-council" onclick="toggleLayer('council')">
+    <div class="dot" style="background:#34d399"></div>
+    <span>Council Districts (CD)</span>
+    <span class="lc" id="c-council">—</span>
+  </div>
 
   <div class="div"></div>
   <div class="ct" style="margin-top:0">REGIÓN</div>
@@ -119,9 +124,9 @@ const map = L.map('map',{center:[34.05,-118.25],zoom:10,zoomControl:true,preferC
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB',maxZoom:19}).addTo(map);
 
 // ── State ─────────────────────────────────────────────────────────────
-const ON    = {cities:true,uninc:true,councils:true,hpoz:true};
-const GRPS  = {cities:null,uninc:null,councils:null,hpoz:null};
-const DATA  = {cities:null,uninc:null,councils:null,hpoz:null};
+const ON    = {cities:true,uninc:true,councils:true,hpoz:true,council:true};
+const GRPS  = {cities:null,uninc:null,councils:null,hpoz:null,council:null};
+const DATA  = {cities:null,uninc:null,councils:null,hpoz:null,council:null};
 let region  = 'all';
 let divName = '';
 let divGeo  = null;
@@ -133,6 +138,7 @@ const CLR = {
   uninc:   {fill:'#f59e0b',line:'#fbbf24',fo:0.18,w:1.5},
   councils:{fill:'#a855f7',line:'#c084fc',fo:0.15,w:1.2},
   hpoz:    {fill:'#fbbf24',line:'#fde68a',fo:0.35,w:2,dash:'4,4'},
+  council: {fill:'#10b981',line:'#34d399',fo:0.12,w:2,dash:'6,3'},
 };
 
 const REGION_LABELS = {north:'NORTE',south:'SUR',west:'OESTE',east:'ESTE',central:'CENTRAL'};
@@ -141,6 +147,7 @@ const TYPE_LABELS = {
   uninc:'COMUNIDAD NO INCORP.',
   councils:'NEIGHBORHOOD COUNCIL',
   hpoz:'ZONA HISTÓRICA (HPOZ)',
+  council:'COUNCIL DISTRICT (CD)',
 };
 
 // ── Geometry helpers ──────────────────────────────────────────────────
@@ -197,8 +204,26 @@ function sty(type,ho=false){
 }
 
 // ── Popup HTML ────────────────────────────────────────────────────────
+function fmt(n){return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(n);}
+
 function popHtml(f,type){
   const p=f.properties||{};
+  let reg='—';
+  try{const c=centroid(f);reg=REGION_LABELS[getRegion(c.lat,c.lng)]||'—';}catch{}
+
+  if(type==='council'){
+    const vPct=p.vacancy_pct||0;
+    const vColor=vPct>15?'#ef4444':vPct>10?'#f59e0b':'#34d399';
+    return `<div class="pt">CD ${p.District} · ${p.NAME||'—'}</div>
+      <div class="ptp">COUNCIL DISTRICT</div>
+      <div class="pr"><span class="pk">Distrito</span><span class="pv">${p.District_Name||'—'}</span></div>
+      <div class="pr"><span class="pk">Concejal</span><span class="pv">${p.NAME||'—'}</span></div>
+      <div class="pr"><span class="pk">Direcciones activas</span><span class="pv">${fmt(p.active_addresses||0)}</span></div>
+      <div class="pr"><span class="pk">Total direcciones</span><span class="pv">${fmt(p.total_addresses||0)}</span></div>
+      <div class="pr"><span class="pk">% Vacancia</span><span class="pv" style="color:${vColor}">${vPct}%</span></div>
+      <div class="pr"><span class="pk">Región</span><span class="pv">${reg}</span></div>`;
+  }
+
   const name=p.name||p.NAME||p.hpoz_name||'—';
   let extra='';
   if(type==='hpoz'&&p.phase)
@@ -207,8 +232,6 @@ function popHtml(f,type){
     extra+=`<div class="pr"><span class="pk">CPA</span><span class="pv">${p.cpa}</span></div>`;
   if(type==='councils'&&p.NC_ID)
     extra+=`<div class="pr"><span class="pk">NC ID</span><span class="pv">${p.NC_ID}</span></div>`;
-  let reg='—';
-  try{const c=centroid(f);reg=REGION_LABELS[getRegion(c.lat,c.lng)]||'—';}catch{}
   return `<div class="pt">${name}</div>
     <div class="ptp">${TYPE_LABELS[type]}</div>
     ${extra}
@@ -232,17 +255,19 @@ function build(type){
       lyr.on('click',()=>{
         lyr.bindPopup(popHtml(f,type)).openPopup();
         const p=f.properties||{};
-        const name=p.name||p.NAME||'—';
+        const name=type==='council'?`CD ${p.District} · ${p.NAME||'—'}`:(p.name||p.NAME||'—');
         let c={lat:0,lng:0};
         try{c=centroid(f);}catch{}
         const reg=REGION_LABELS[getRegion(c.lat,c.lng)]||'—';
+        const msgExtra = type==='hpoz'  ? {phase:p.phase||'—',cpa:p.cpa||'—'} :
+                         type==='councils'? {nc_id:p.NC_ID||p.nc_id||'—'} :
+                         type==='council' ? {district:p.District,councilmember:p.NAME||'—',active_addresses:p.active_addresses||0,vacancy_pct:p.vacancy_pct||0} : {};
         window.parent?.postMessage({
           type:'OSINT_CLICK_INFO',mapId:'jurisdicciones',
           clickType:'jurisdiction',
           jurisType:type,name,region:reg,
           lat:c.lat.toFixed(5),lng:c.lng.toFixed(5),
-          ...(type==='hpoz'?{phase:p.phase||'—',cpa:p.cpa||'—'}:{}),
-          ...(type==='councils'?{nc_id:p.NC_ID||p.nc_id||'—'}:{}),
+          ...msgExtra,
         },'*');
       });
     }
@@ -253,14 +278,14 @@ function build(type){
 }
 
 function rebuildAll(){
-  ['cities','uninc','councils','hpoz'].forEach(build);
+  ['cities','uninc','councils','hpoz','council'].forEach(build);
   updateStats();
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────
 function updateStats(){
   let vis=0,tot=0;
-  ['cities','uninc','councils','hpoz'].forEach(t=>{
+  ['cities','uninc','councils','hpoz','council'].forEach(t=>{
     if(!DATA[t]) return;
     const all=DATA[t].features.length;
     const filtered=DATA[t].features.filter(f=>inRegion(f,region)&&inDiv(f,divName)).length;
@@ -335,11 +360,12 @@ fetch('/data/lapd_divisions_crimes.geojson').then(r=>r.json()).then(geo=>{
   L.geoJSON(geo,{style:{color:'#22d3ee',weight:1,opacity:.3,fillOpacity:0}}).addTo(map);
 }).catch(()=>{});
 
-// Load the 4 jurisdiction layers
+// Load the 5 jurisdiction layers
 loadLayer('cities',   '/data/la_cities.geojson');
 loadLayer('uninc',    '/data/la_unincorporated.geojson');
 loadLayer('councils', '/data/neighborhood_councils.geojson');
 loadLayer('hpoz',     '/data/hpoz.geojson');
+loadLayer('council',  '/data/council_districts.geojson');
 
 // ── postMessage receiver ──────────────────────────────────────────────
 window.addEventListener('message',(e)=>{

@@ -178,6 +178,11 @@ function generateInsights(info){
     if(info.jurisType==='uninc')  bullets.push('Las comunidades no incorporadas reciben servicios de la Sheriffʼs Department y del condado en lugar de un municipio propio.');
     if(info.jurisType==='councils') bullets.push('Los Neighborhood Councils son órganos civiles de participación comunitaria certificados por la Ciudad de Los Ángeles — no tienen poder ejecutivo pero tienen voz en decisiones de planeación urbana.');
     if(info.jurisType==='hpoz')  bullets.push(`Fase ${info.phase||'—'} · Área de Planificación Comunitaria ${info.cpa||'—'}. Los HPOZ restringen demoliciones y cambios de fachada para preservar el carácter histórico.`);
+    if(info.jurisType==='council'){
+      const vPct=parseFloat(info.vacancy_pct)||0;
+      bullets.push(`CD ${info.district||'—'} tiene ${Number(info.active_addresses||0).toLocaleString()} direcciones activas — proxy de densidad residencial/comercial para normalizar crimen.`);
+      bullets.push(`Vacancia urbana ${vPct}%: ${vPct>15?'alta — zona con posible abandono estructural, factor de riesgo criminal':vPct>10?'moderada — monitorear evolución':'baja — tejido urbano estable'}.`);
+    }
     bullets.push('Usá el filtro ÁREA para ver qué División LAPD cubre esta zona y cruzar con crimen/vulnerabilidad.');
   }
   return bullets;
@@ -352,7 +357,11 @@ function ClickIntelPanel({info,data,onDismiss}){
     if(info.lng)      rows.push(['Lng',info.lng]);
     if(info.phase&&info.phase!=='—') rows.push(['Fase HPOZ',info.phase]);
     if(info.cpa&&info.cpa!=='—')     rows.push(['CPA',info.cpa]);
-    if(info.nc_id&&info.nc_id!=='—') rows.push(['NC ID',info.nc_id]);
+    if(info.nc_id&&info.nc_id!=='—')            rows.push(['NC ID',info.nc_id]);
+    if(info.district)                           rows.push(['Distrito',`CD ${info.district}`]);
+    if(info.councilmember)                      rows.push(['Concejal',info.councilmember]);
+    if(info.active_addresses)                   rows.push(['Dir. activas',Number(info.active_addresses).toLocaleString()]);
+    if(info.vacancy_pct!=null&&info.jurisType==='council') rows.push(['% Vacancia',`${info.vacancy_pct}%`]);
   }
 
   return(

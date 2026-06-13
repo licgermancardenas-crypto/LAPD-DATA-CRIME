@@ -9,6 +9,7 @@ data/external/*.shx
 data/external/*.zip
 *.csv
 *.parquet
+!datasets/*.parquet
 *.feather
 *.pkl
 *.pickle
@@ -75,3 +76,4 @@ outputs/figures/*.pdf
 !outputs/figures/.gitkeep
 outputs/reports/*.html
 !outputs/reports/.gitkeep
+.vercel

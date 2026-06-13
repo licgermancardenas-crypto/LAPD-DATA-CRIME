@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Crime Density · LA Council Districts</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body,#map{width:100%;height:100%;background:#010a1a}
+  .leaflet-container{background:#010a1a}
+  .leaflet-tile{filter:brightness(0.38) saturate(0.6)}
+
+  /* ── Control panel ─────────────────────────────────────────────────────── */
+  #ctrl{
+    position:fixed;top:115px;left:310px;z-index:1000;
+    display:flex;flex-direction:column;gap:6px;
+    font-family:'Courier New',monospace;
+  }
+
+  /* Region buttons */
+  #regions{display:flex;gap:4px;flex-wrap:wrap}
+  .rbtn{
+    padding:3px 10px;font-size:9px;font-weight:700;
+    letter-spacing:.1em;cursor:pointer;border:none;border-radius:3px;
+    background:rgba(0,191,255,0.10);color:rgba(0,191,255,0.65);
+    border:1px solid rgba(0,191,255,0.20);transition:all .2s;
+  }
+  .rbtn:hover{background:rgba(0,191,255,0.22);color:#67e8f9}
+  .rbtn.active{background:rgba(0,191,255,0.28);color:#00bfff;
+    border-color:rgba(0,191,255,0.55);box-shadow:0 0 6px rgba(0,191,255,0.30)}
+
+  /* Layer toggle */
+  #layers{display:flex;gap:4px;flex-wrap:wrap}
+  .ltog{
+    padding:3px 10px;font-size:9px;font-weight:700;letter-spacing:.08em;
+    cursor:pointer;border-radius:3px;transition:all .2s;
+    border:1px solid;
+  }
+
+  /* Division badge */
+  #div-badge{
+    display:none;padding:3px 10px;font-size:9px;font-weight:800;
+    letter-spacing:.1em;border-radius:3px;
+    background:rgba(249,115,22,0.15);color:#fb923c;
+    border:1px solid rgba(249,115,22,0.35);
+  }
+  #div-badge.visible{display:block}
+
+  /* Status bar */
+  #statusbar{
+    font-size:8px;color:rgba(255,255,255,0.28);
+    letter-spacing:.07em;padding:2px 0;
+  }
+
+  /* ── Legend ─────────────────────────────────────────────────────────────── */
+  #legend{
+    position:fixed;bottom:24px;left:310px;z-index:1000;
+    background:rgba(1,10,26,0.88);border:1px solid rgba(0,191,255,0.18);
+    border-radius:6px;padding:10px 14px;
+    font-family:'Courier New',monospace;min-width:200px;
+  }
+  #legend h4{
+    font-size:8px;color:rgba(0,191,255,0.65);letter-spacing:.12em;
+    text-transform:uppercase;margin-bottom:8px;font-weight:800;
+  }
+  .leg-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .leg-swatch{width:16px;height:10px;border-radius:2px;flex-shrink:0}
+  .leg-label{font-size:9px;color:rgba(255,255,255,0.55)}
+  #legend-footer{
+    font-size:7.5px;color:rgba(255,255,255,0.22);
+    margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);
+    padding-top:6px;line-height:1.5;
+  }
+
+  /* ── Tooltip ─────────────────────────────────────────────────────────────── */
+  .leaflet-tooltip{
+    background:rgba(1,10,26,0.92)!important;
+    border:1px solid rgba(0,191,255,0.25)!important;
+    border-radius:4px!important;color:#e0f2fe!important;
+    font-family:'Courier New',monospace!important;
+    font-size:10px!important;padding:4px 8px!important;
+    box-shadow:0 2px 12px rgba(0,191,255,0.12)!important;
+  }
+  .leaflet-tooltip::before{border:none!important}
+
+  /* ── Popup ─────────────────────────────────────────────────────────────── */
+  .leaflet-popup-content-wrapper{
+    background:rgba(1,10,26,0.95)!important;
+    border:1px solid rgba(0,191,255,0.22)!important;
+    border-radius:6px!important;box-shadow:0 4px 24px rgba(0,191,255,0.12)!important;
+  }
+  .leaflet-popup-tip{background:rgba(1,10,26,0.95)!important}
+  .leaflet-popup-close-button{color:rgba(255,255,255,0.4)!important;font-size:14px!important;top:6px!important;right:8px!important}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- Control panel -->
+<div id="ctrl">
+  <div id="regions">
+    <button class="rbtn active" data-r="all">ALL LA</button>
+    <button class="rbtn" data-r="north">NORTH</button>
+    <button class="rbtn" data-r="south">SOUTH</button>
+    <button class="rbtn" data-r="west">WEST</button>
+    <button class="rbtn" data-r="east">EAST</button>
+  </div>
+  <div id="div-badge">◈ <span id="div-name">—</span></div>
+  <div id="statusbar">CRIMES / 1K ACTIVE ADDRESSES · 15 COUNCIL DISTRICTS</div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <h4>Crimes / 1,000 Active Addresses</h4>
+  <div class="leg-row"><div class="leg-swatch" style="background:#1e3a5f"></div><span class="leg-label">&lt; 750 — Bajo</span></div>
+  <div class="leg-row"><div class="leg-swatch" style="background:#1d6694"></div><span class="leg-label">750 – 950 — Moderado</span></div>
+  <div class="leg-row"><div class="leg-swatch" style="background:#c2770a"></div><span class="leg-label">950 – 1,150 — Elevado</span></div>
+  <div class="leg-row"><div class="leg-swatch" style="background:#b91c1c"></div><span class="leg-label">1,150 – 1,350 — Alto</span></div>
+  <div class="leg-row"><div class="leg-swatch" style="background:#7f1d1d"></div><span class="leg-label">&gt; 1,350 — Crítico</span></div>
+  <div id="legend-footer">
+    Muestra: 120,000 pts → estimados ~1M crímenes<br>
+    Click en un distrito para ver detalles
+  </div>
+</div>
+
+<script>
+// ── Map init ────────────────────────────────────────────────────────────────
+const map = L.map('map',{
+  center:[34.05,-118.35],zoom:10,
+  zoomControl:true,attributionControl:false,
+});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  maxZoom:18,subdomains:'abcd',
+}).addTo(map);
+
+// ── LAPD division → Council District mapping ────────────────────────────────
+const DIVISION_CD = {
+  'MISSION':[6,7],'DEVONSHIRE':[12],'FOOTHILL':[6,7],
+  'TOPANGA':[3,12],'WEST VALLEY':[3,4,6],'NORTH HOLLYWOOD':[2,4],
+  'VAN NUYS':[2,4],'NORTHEAST':[1,4,13,14],'HOLLYWOOD':[4,13],
+  'WEST LOS ANGELES':[5,11],'HOLLENBECK':[1,14],'RAMPART':[1,13],
+  'WILSHIRE':[5,10],'OLYMPIC':[10],'SOUTHWEST':[8,10],
+  'NEWTON':[9],'PACIFIC':[11],'77TH STREET':[8,9],
+  'SOUTHEAST':[8,15],'HARBOR':[15],'CENTRAL':[9,14,1],
+};
+
+// ── Color scale ─────────────────────────────────────────────────────────────
+function getCrimeColor(v) {
+  if (v > 1350) return '#7f1d1d';
+  if (v > 1150) return '#b91c1c';
+  if (v >  950) return '#c2770a';
+  if (v >  750) return '#1d6694';
+  return '#1e3a5f';
+}
+
+function getRiskLabel(v) {
+  if (v > 1350) return {txt:'CRÍTICO',  clr:'#ef4444'};
+  if (v > 1150) return {txt:'ALTO',     clr:'#f97316'};
+  if (v >  950) return {txt:'ELEVADO',  clr:'#eab308'};
+  if (v >  750) return {txt:'MODERADO', clr:'#60a5fa'};
+  return                {txt:'BAJO',    clr:'#34d399'};
+}
+
+// ── Region classifier ───────────────────────────────────────────────────────
+function getRegion(lat, lng) {
+  if (lat > 34.18) return 'north';
+  if (lat < 33.99) return 'south';
+  if (lng < -118.42) return 'west';
+  if (lng > -118.14) return 'east';
+  return 'central';
+}
+
+// ── State ───────────────────────────────────────────────────────────────────
+let activeRegion = 'all';
+let activeDivision = '';
+let cdLayer = null;
+let allFeatures = [];
+
+// ── Popup builder ────────────────────────────────────────────────────────────
+function buildPopup(p) {
+  const rl = getRiskLabel(p.crimes_per_1k_addr);
+  const vacClr = p.vacancy_pct > 15 ? '#ef4444' : p.vacancy_pct > 10 ? '#f59e0b' : '#34d399';
+  return `
+    <div style="font-family:'Courier New',monospace;min-width:220px;padding:4px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:9px;color:rgba(0,191,255,0.6);letter-spacing:.12em;font-weight:800">CONSEJO MUNICIPAL</div>
+          <div style="font-size:14px;font-weight:800;color:#fff">CD ${p.District}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:8px;background:${rl.clr}18;border:1px solid ${rl.clr}40;
+            border-radius:3px;padding:2px 7px;color:${rl.clr};font-weight:800;letter-spacing:.1em">
+            ${rl.txt}
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#bae6fd;font-weight:600;margin-bottom:10px">
+        ${p.NAME}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
+          border-radius:4px;padding:6px 8px">
+          <div style="font-size:7.5px;color:rgba(255,255,255,0.4);letter-spacing:.1em;margin-bottom:2px">CRÍMENES EST.</div>
+          <div style="font-size:15px;font-weight:800;color:#fca5a5">${(p.crime_estimated||0).toLocaleString()}</div>
+        </div>
+        <div style="background:rgba(0,191,255,0.06);border:1px solid rgba(0,191,255,0.18);
+          border-radius:4px;padding:6px 8px">
+          <div style="font-size:7.5px;color:rgba(255,255,255,0.4);letter-spacing:.1em;margin-bottom:2px">CRIMEN / 1K ADDR</div>
+          <div style="font-size:15px;font-weight:800;color:#00bfff">${(p.crimes_per_1k_addr||0).toFixed(1)}</div>
+        </div>
+      </div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-bottom:4px;display:flex;justify-content:space-between">
+        <span>Addr. activas: <strong style="color:#e0f2fe">${(p.active_addresses||0).toLocaleString()}</strong></span>
+        <span>Total addr: <strong style="color:#e0f2fe">${(p.total_addresses||0).toLocaleString()}</strong></span>
+      </div>
+      <div style="font-size:9px;display:flex;align-items:center;gap:6px;margin-top:4px">
+        <span style="color:rgba(255,255,255,0.4)">Vacancia:</span>
+        <span style="font-weight:800;color:${vacClr}">${p.vacancy_pct}%</span>
+        ${p.vacancy_pct > 15 ? '<span style="font-size:8px;color:rgba(239,68,68,0.7)">▲ RIESGO ESTRUCTURAL</span>' : ''}
+      </div>
+    </div>`;
+}
+
+// ── Click intel broadcast ─────────────────────────────────────────────────────
+function broadcastClick(p, latlng) {
+  const rl = getRiskLabel(p.crimes_per_1k_addr||0);
+  window.parent.postMessage({
+    type: 'OSINT_CLICK_INFO',
+    payload: {
+      type: 'crime_density',
+      name: `CD ${p.District} · ${p.NAME}`,
+      district: p.District,
+      councilmember: p.NAME,
+      crime_estimated: p.crime_estimated || 0,
+      crimes_per_1k_addr: p.crimes_per_1k_addr || 0,
+      active_addresses: p.active_addresses || 0,
+      vacancy_pct: p.vacancy_pct || 0,
+      risk: rl.txt,
+      lat: latlng.lat.toFixed(5),
+      lng: latlng.lng.toFixed(5),
+    }
+  }, '*');
+}
+
+// ── Build GeoJSON layer ────────────────────────────────────────────────────
+function buildLayer(features) {
+  if (cdLayer) { map.removeLayer(cdLayer); cdLayer = null; }
+  if (!features.length) return;
+
+  cdLayer = L.geoJSON(features, {
+    style: feat => {
+      const v = feat.properties.crimes_per_1k_addr || 0;
+      return {
+        fillColor: getCrimeColor(v),
+        fillOpacity: 0.55,
+        color: '#fff',
+        weight: 1,
+        opacity: 0.35,
+      };
+    },
+    onEachFeature: (feat, layer) => {
+      const p = feat.properties;
+      layer.bindTooltip(
+        `CD ${p.District} · ${p.NAME}<br><b style="color:#fca5a5">${(p.crimes_per_1k_addr||0).toFixed(1)}</b> c/1k addr`,
+        {sticky:true, direction:'top'}
+      );
+      layer.bindPopup(buildPopup(p), {maxWidth:280, minWidth:240});
+      layer.on('click', e => broadcastClick(p, e.latlng));
+      layer.on('mouseover', () => layer.setStyle({fillOpacity:0.78, weight:2, opacity:0.7}));
+      layer.on('mouseout', () => cdLayer && cdLayer.resetStyle(layer));
+    }
+  }).addTo(map);
+}
+
+// ── Filter logic ─────────────────────────────────────────────────────────────
+function applyFilters() {
+  let features = allFeatures;
+
+  // 1. Region filter
+  if (activeRegion !== 'all') {
+    features = features.filter(feat => {
+      const geom = feat.geometry;
+      let lat = 0, lng = 0, count = 0;
+      const coords = geom.type === 'Polygon' ? geom.coordinates[0]
+                   : geom.type === 'MultiPolygon' ? geom.coordinates[0][0] : [];
+      coords.forEach(c => { lng += c[0]; lat += c[1]; count++; });
+      if (!count) return false;
+      return getRegion(lat/count, lng/count) === activeRegion;
+    });
+  }
+
+  // 2. Division filter — highlight matching CDs, dim others
+  const divCDs = activeDivision ? (DIVISION_CD[activeDivision] || []) : null;
+
+  buildLayer(features);
+
+  // Dim non-matching CDs when division active
+  if (divCDs && divCDs.length > 0 && cdLayer) {
+    cdLayer.eachLayer(layer => {
+      const dist = layer.feature.properties.District;
+      if (!divCDs.includes(dist)) {
+        layer.setStyle({fillOpacity:0.08, weight:0.5, opacity:0.15});
+      }
+    });
+  }
+
+  // Update status
+  const divStr = activeDivision ? ` · DIV: ${activeDivision}` : '';
+  document.getElementById('statusbar').textContent =
+    `CRIMES / 1K ACTIVE ADDRESSES · ${features.length} DISTRITOS${divStr}`;
+}
+
+// ── Load GeoJSON ──────────────────────────────────────────────────────────────
+fetch('/data/council_districts.geojson')
+  .then(r => r.json())
+  .then(gj => {
+    allFeatures = gj.features;
+    applyFilters();
+
+    // Fit bounds
+    const tmp = L.geoJSON(gj);
+    map.fitBounds(tmp.getBounds(), {padding:[20,20]});
+  })
+  .catch(() => {
+    document.getElementById('statusbar').textContent = '⚠ Error cargando council_districts.geojson';
+  });
+
+// ── Region button handlers ────────────────────────────────────────────────────
+document.querySelectorAll('.rbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeRegion = btn.dataset.r;
+    document.querySelectorAll('.rbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  });
+});
+
+// ── PostMessage from OSIRIS ───────────────────────────────────────────────────
+window.addEventListener('message', e => {
+  if (!e.data) return;
+
+  if (e.data.type === 'DENSITY_DIVISION') {
+    const name = (e.data.division || '').toUpperCase();
+    activeDivision = name;
+
+    const badge = document.getElementById('div-badge');
+    const divName = document.getElementById('div-name');
+    if (name) {
+      divName.textContent = name;
+      badge.classList.add('visible');
+    } else {
+      badge.classList.remove('visible');
+    }
+    applyFilters();
+  }
+});
+</script>
+</body>
+</html>

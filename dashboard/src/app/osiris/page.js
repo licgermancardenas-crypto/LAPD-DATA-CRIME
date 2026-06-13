@@ -45,6 +45,7 @@ const MAPS = [
   { id:'mobility',      label:'MOBILITY',     short:'MOB',    src:'/maps/mobility-intelligence.html',    group:'osint',    icon:'🚌' },
   { id:'edu-safety',      label:'EDU SAFETY',     short:'EDU',  src:'/maps/edu-safety.html',         group:'osint', icon:'🎓' },
   { id:'jurisdicciones',  label:'JURISDICCIONES', short:'JUR',  src:'/maps/jurisdicciones.html',     group:'osint', icon:'🗺' },
+  { id:'density',         label:'CRIME DENSITY',  short:'DEN',  src:'/maps/crime-density.html',      group:'osint', icon:'📊' },
 ];
 
 const OSINT_IDS = new Set(['heat','cluster','choropleth','mobility']);
@@ -58,6 +59,7 @@ const MAP_LABELS = {
   mobility:'OSINT // MOBILITY',
   'edu-safety':'EDU & PUBLIC SAFETY',
   jurisdicciones:'JURISDICCIONES LA',
+  density:'CRIME DENSITY · CD',
 };
 
 const CLICK_WHAT_IS = {
@@ -72,6 +74,7 @@ const CLICK_WHAT_IS = {
   edu_school:         'Institución educativa de Los Ángeles clasificada por nivel de cobertura policial. La distancia a la estación más cercana determina si está en zona Segura (<1km), Alerta (1-3km) o Vulnerable (>3km). Los datos de crimen corresponden a incidentes en radio 300m durante horarios de entrada (7-9h) y salida (14-16h).',
   edu_station:        'Estación de seguridad pública con cobertura sobre establecimientos educativos cercanos. El número de escuelas asignadas indica la carga jurisdiccional de la estación en el análisis de cobertura escolar.',
   jurisdiction:       'Unidad geográfica político-administrativa del condado o ciudad de Los Ángeles. Las ciudades incorporadas tienen gobierno propio; las comunidades no incorporadas dependen del condado; los Neighborhood Councils son órganos civiles; los HPOZ son distritos de preservación histórica regulados por la ciudad.',
+  crime_density:      'Choropleth de densidad criminal normalizado por direcciones activas del Consejo Municipal de LA. La métrica "crímenes por 1.000 direcciones activas" elimina el sesgo de población y refleja la exposición real al crimen en el tejido urbano construido del distrito.',
 };
 
 // ── Feed helpers ──────────────────────────────────────────────────────────
@@ -184,6 +187,15 @@ function generateInsights(info){
       bullets.push(`Vacancia urbana ${vPct}%: ${vPct>15?'alta — zona con posible abandono estructural, factor de riesgo criminal':vPct>10?'moderada — monitorear evolución':'baja — tejido urbano estable'}.`);
     }
     bullets.push('Usá el filtro ÁREA para ver qué División LAPD cubre esta zona y cruzar con crimen/vulnerabilidad.');
+  } else if(info.clickType==='crime_density'){
+    const cPer1k=parseFloat(info.crimes_per_1k_addr)||0;
+    const vPct=parseFloat(info.vacancy_pct)||0;
+    const riskMap={'CRÍTICO':'este CD lidera el ranking de exposición criminal en la ciudad — prioridad máxima de intervención.','ALTO':'exposición criminal alta sobre la base residencial/comercial activa.','ELEVADO':'nivel elevado — supera la media de los 15 distritos.','MODERADO':'exposición moderada — monitorear tendencia.','BAJO':'exposición baja relativa al parque inmobiliario activo.'};
+    bullets.push(`CD ${info.district} (${info.councilmember||'—'}): ${cPer1k} crím/1k dir. activas — ${riskMap[info.risk]||'nivel no determinado.'}`);
+    bullets.push(`Con ~${Number(info.crime_estimated||0).toLocaleString()} crímenes estimados y ${Number(info.active_addresses||0).toLocaleString()} direcciones activas, la métrica normalizada elimina el sesgo de densidad poblacional.`);
+    if(vPct>15) bullets.push(`⚠ Vacancia ${vPct}% — alta proporción de inmuebles inactivos correlaciona con abandono urbano y mayor riesgo delictivo. Cruzar con mapa VULN.`);
+    else if(vPct>10) bullets.push(`Vacancia ${vPct}% — moderada. Comparar con CD12 (593 c/1k, vacancia baja) como benchmark de tejido urbano estable.`);
+    else bullets.push(`Vacancia ${vPct}% — baja. El tejido urbano activo sugiere que el crimen es de oportunidad más que de abandono estructural.`);
   }
   return bullets;
 }
@@ -362,6 +374,16 @@ function ClickIntelPanel({info,data,onDismiss}){
     if(info.councilmember)                      rows.push(['Concejal',info.councilmember]);
     if(info.active_addresses)                   rows.push(['Dir. activas',Number(info.active_addresses).toLocaleString()]);
     if(info.vacancy_pct!=null&&info.jurisType==='council') rows.push(['% Vacancia',`${info.vacancy_pct}%`]);
+  } else if(info.clickType==='crime_density'){
+    if(info.district)             rows.push(['Distrito',`CD ${info.district}`]);
+    if(info.councilmember)        rows.push(['Concejal',info.councilmember]);
+    if(info.crime_estimated)      rows.push(['Crímenes est.',Number(info.crime_estimated).toLocaleString()]);
+    if(info.active_addresses)     rows.push(['Dir. activas',Number(info.active_addresses).toLocaleString()]);
+    if(info.crimes_per_1k_addr)   rows.push(['Crím / 1k dir',parseFloat(info.crimes_per_1k_addr).toFixed(1)]);
+    if(info.vacancy_pct!=null)    rows.push(['% Vacancia',`${info.vacancy_pct}%`]);
+    if(info.risk)                 rows.push(['Nivel riesgo',info.risk]);
+    if(info.lat)                  rows.push(['Lat',info.lat]);
+    if(info.lng)                  rows.push(['Lng',info.lng]);
   }
 
   return(
@@ -618,6 +640,11 @@ export default function OsintPage(){
         {type:'JURISD_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
       );
     }
+    if(activeMap==='density'){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'DENSITY_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
+      );
+    }
   },[filterYear,filterArea,filterPart,activeMap]);
 
   // ── Receive postMessage events from all map iframes
@@ -666,6 +693,11 @@ export default function OsintPage(){
     if(activeMap==='jurisdicciones'){
       iframeRef.current?.contentWindow?.postMessage(
         {type:'JURISD_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
+      );
+    }
+    if(activeMap==='density'){
+      iframeRef.current?.contentWindow?.postMessage(
+        {type:'DENSITY_DIVISION',division:filterArea?filterArea.toUpperCase():''},'*'
       );
     }
   };

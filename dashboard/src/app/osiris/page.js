@@ -48,6 +48,24 @@ const MAPS = [
   { id:'density',         label:'CRIME DENSITY',  short:'DEN',  src:'/maps/crime-density.html',      group:'osint', icon:'📊' },
 ];
 
+const CD_DENSITY_RANKING = [
+  { district:14, crimes_per_1k:1691.2, vacancy:17.7 },
+  { district:1,  crimes_per_1k:1432.9, vacancy:17.5 },
+  { district:9,  crimes_per_1k:1342.8, vacancy:6.8  },
+  { district:13, crimes_per_1k:1291.7, vacancy:9.0  },
+  { district:10, crimes_per_1k:1245.3, vacancy:8.6  },
+  { district:6,  crimes_per_1k:1200.1, vacancy:7.9  },
+  { district:8,  crimes_per_1k:1169.9, vacancy:6.4  },
+  { district:15, crimes_per_1k:1044.9, vacancy:17.2 },
+  { district:5,  crimes_per_1k:985.6,  vacancy:11.1 },
+  { district:2,  crimes_per_1k:974.1,  vacancy:7.9  },
+  { district:11, crimes_per_1k:951.3,  vacancy:11.5 },
+  { district:3,  crimes_per_1k:912.8,  vacancy:7.2  },
+  { district:4,  crimes_per_1k:806.3,  vacancy:14.0 },
+  { district:7,  crimes_per_1k:693.4,  vacancy:12.8 },
+  { district:12, crimes_per_1k:593.7,  vacancy:5.6  },
+];
+
 const OSINT_IDS = new Set(['heat','cluster','choropleth','mobility']);
 const YEARS     = [null, 2020, 2021, 2022, 2023, 2024];
 
@@ -190,12 +208,17 @@ function generateInsights(info){
   } else if(info.clickType==='crime_density'){
     const cPer1k=parseFloat(info.crimes_per_1k_addr)||0;
     const vPct=parseFloat(info.vacancy_pct)||0;
-    const riskMap={'CRÍTICO':'este CD lidera el ranking de exposición criminal en la ciudad — prioridad máxima de intervención.','ALTO':'exposición criminal alta sobre la base residencial/comercial activa.','ELEVADO':'nivel elevado — supera la media de los 15 distritos.','MODERADO':'exposición moderada — monitorear tendencia.','BAJO':'exposición baja relativa al parque inmobiliario activo.'};
-    bullets.push(`CD ${info.district} (${info.councilmember||'—'}): ${cPer1k} crím/1k dir. activas — ${riskMap[info.risk]||'nivel no determinado.'}`);
-    bullets.push(`Con ~${Number(info.crime_estimated||0).toLocaleString()} crímenes estimados y ${Number(info.active_addresses||0).toLocaleString()} direcciones activas, la métrica normalizada elimina el sesgo de densidad poblacional.`);
-    if(vPct>15) bullets.push(`⚠ Vacancia ${vPct}% — alta proporción de inmuebles inactivos correlaciona con abandono urbano y mayor riesgo delictivo. Cruzar con mapa VULN.`);
-    else if(vPct>10) bullets.push(`Vacancia ${vPct}% — moderada. Comparar con CD12 (593 c/1k, vacancia baja) como benchmark de tejido urbano estable.`);
-    else bullets.push(`Vacancia ${vPct}% — baja. El tejido urbano activo sugiere que el crimen es de oportunidad más que de abandono estructural.`);
+    const dist=parseInt(info.district)||0;
+    const rank=CD_DENSITY_RANKING.findIndex(r=>r.district===dist)+1;
+    const rankStr=rank>0?`#${rank} de 15`:info.risk||'—';
+    bullets.push(`CD ${info.district} (${info.councilmember||'—'}): ${cPer1k} crím/1k dir. activas — puesto ${rankStr}. Extremos: CD14 lidera (1.691) · CD12 es el más seguro (594).`);
+    bullets.push(`~${Number(info.crime_estimated||0).toLocaleString()} crímenes sobre ${Number(info.active_addresses||0).toLocaleString()} dirs. activas. Normalizar por dirección elimina el sesgo de densidad poblacional y expone el tejido construido real.`);
+    const highCrimeLoVac=[9,13,10,6,8];
+    if(dist===7) bullets.push(`Paradoja CD7: vacancia ${vPct}% alta pero crimen bajo (693/1k, #14). El tipo de vacancia importa — aquí no genera riesgo criminal. Contrastar con CD14 (vacancia 17.7% + 1.691 c/1k).`);
+    else if(highCrimeLoVac.includes(dist)) bullets.push(`Paradoja activa: vacancia baja (${vPct}%) con crimen elevado. Patrón de corredor comercial bajo presión — el riesgo es de oportunidad, no de abandono estructural.`);
+    else if(vPct>15) bullets.push(`⚠ Doble presión: crimen ${rank<=3?'crítico':'alto'} + vacancia ${vPct}% (abandono estructural). Cruzar con mapa VULN para contexto socioeconómico completo.`);
+    else if(vPct>10) bullets.push(`Vacancia ${vPct}% moderada. Benchmark estable: CD12 (594 c/1k, 5.6% vacancia) — tejido activo con crimen bajo.`);
+    else bullets.push(`Vacancia ${vPct}% baja. Tejido activo sugiere que el crimen es de oportunidad. Cruzar con VULN para confirmar ausencia de vulnerabilidad estructural.`);
   }
   return bullets;
 }
@@ -1022,6 +1045,33 @@ export default function OsintPage(){
                 color={i===0?'#38bdf8':i<3?C.accent:C.accent3}/>
             )):<div style={{height:70,display:'flex',alignItems:'center',justifyContent:'center',color:C.dim,fontSize:10}}>LOADING…</div>}
           </PanelSection>
+
+          {activeMap==='density'&&(
+            <PanelSection icon={Layers} title="CD DENSITY · RANKING" color="#a78bfa">
+              <div style={{fontSize:9,color:'rgba(167,139,250,.55)',letterSpacing:'.08em',marginBottom:7}}>CRÍM / 1K DIRS ACTIVAS · 15 DISTRITOS</div>
+              {CD_DENSITY_RANKING.slice(0,3).map((r,i)=>(
+                <div key={r.district} style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5,padding:'4px 7px',borderRadius:4,
+                  background:i===0?'rgba(239,68,68,.08)':'rgba(56,189,248,.04)',
+                  border:`1px solid ${i===0?'rgba(239,68,68,.22)':'rgba(56,189,248,.10)'}`}}>
+                  <span style={{fontSize:9,color:i===0?'#fca5a5':'#bae6fd',fontWeight:700}}>#{i+1} CD{r.district}</span>
+                  <span style={{fontSize:10,color:'#fff',fontWeight:800}}>{r.crimes_per_1k.toFixed(0)}</span>
+                  <span style={{fontSize:9,color:'rgba(167,139,250,.65)'}}>vac {r.vacancy}%</span>
+                </div>
+              ))}
+              <div style={{borderTop:'1px solid rgba(56,189,248,.08)',margin:'6px 0'}}/>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 7px',borderRadius:4,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.15)'}}>
+                <span style={{fontSize:9,color:'#6ee7b7',fontWeight:700}}>#15 CD12</span>
+                <span style={{fontSize:10,color:'#fff',fontWeight:800}}>594</span>
+                <span style={{fontSize:9,color:'rgba(167,139,250,.65)'}}>vac 5.6%</span>
+              </div>
+              <div style={{marginTop:7,padding:'5px 8px',borderRadius:4,background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.12)'}}>
+                <span style={{fontSize:9,color:'#fbbf24',lineHeight:1.55}}>⚡ CD9: 1.343 c/1k con solo 6.8% vacancia — corredor activo bajo presión, no abandono estructural</span>
+              </div>
+              <div style={{marginTop:5,padding:'5px 8px',borderRadius:4,background:'rgba(167,139,250,.04)',border:'1px solid rgba(167,139,250,.12)'}}>
+                <span style={{fontSize:9,color:'#c4b5fd',lineHeight:1.55}}>CD7: vacancia 12.8% pero solo 693 c/1k — la vacancia no siempre predice crimen</span>
+              </div>
+            </PanelSection>
+          )}
 
           <PanelSection icon={TrendingUp} title="Correlación Comercial" color="#00bfff">
             {filterArea&&<div style={{fontSize:8,color:'rgba(56,189,248,.5)',letterSpacing:'.08em',marginBottom:5}}>CIUDAD COMPLETA · sin desglose por división</div>}

@@ -394,30 +394,51 @@ export default function Home() {
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <main style={{ flex: 1, padding: '44px 40px 80px', maxWidth: 1160, width: '100%' }}>
 
+        {/* 2024 partial-data notice */}
+        <div style={{
+          marginBottom: 16, padding: '8px 14px', borderRadius: 8,
+          background: 'rgba(251,191,36,.05)', border: '1px solid rgba(251,191,36,.2)',
+          display: 'flex', alignItems: 'flex-start', gap: 9,
+        }}>
+          <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>⚠</span>
+          <span style={{ fontSize: 11, color: '#a07820', lineHeight: 1.55 }}>
+            <strong style={{ color: '#fbbf24' }}>Datos 2024 parciales.</strong>{' '}
+            El volumen cae desde abril por <em>reporting lag</em> acumulado — los delitos recientes tardan semanas en ingresarse al sistema LAPD.
+            La variación interanual de <strong style={{ color: '#fbbf24' }}>−45%</strong> no refleja una caída real del crimen.
+            Para comparaciones interanuales confiables usar <strong style={{ color: '#fbbf24' }}>2020–2023</strong>.
+          </span>
+        </div>
+
         {/* Annual mini cards */}
         {(() => {
           const byYear = computedByYear || summary.by_year;
           const isFiltered = !!computedByYear;
           return (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginBottom: 44 }}>
-              {byYear.map(yr => (
-                <div key={yr.year} style={{
-                  background: '#1a1d27', borderRadius: 10,
-                  border: isFiltered ? '1px solid rgba(79,142,247,.25)' : '1px solid #2a2d3a',
-                  padding: '12px 10px', textAlign: 'center', cursor: 'default',
-                  transition: 'all 0.2s ease',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#3a3f55'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = isFiltered ? 'rgba(79,142,247,.25)' : '#2a2d3a'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                  <p style={{ fontSize: 11, color: '#7b82a0', marginBottom: 5 }}>{yr.year}</p>
-                  <p style={{ fontSize: 20, fontWeight: 800, color: '#e8eaf0', marginBottom: 3 }}>
-                    {yr.crimes >= 1000 ? `${(yr.crimes / 1000).toFixed(0)}k` : yr.crimes.toLocaleString()}
-                  </p>
-                  <p style={{ fontSize: 10, color: '#3ecf8e' }}>CLR {yr.clearance_rate}%</p>
-                  <p style={{ fontSize: 10, color: '#e05252' }}>VIO {yr.violent_pct}%</p>
-                </div>
-              ))}
+              {byYear.map(yr => {
+                const is2024 = yr.year === 2024;
+                const baseBorder = is2024 ? 'rgba(251,191,36,.3)' : isFiltered ? 'rgba(79,142,247,.25)' : '#2a2d3a';
+                return (
+                  <div key={yr.year} style={{
+                    background: is2024 ? 'rgba(251,191,36,.03)' : '#1a1d27', borderRadius: 10,
+                    border: `1px solid ${baseBorder}`,
+                    padding: '12px 10px', textAlign: 'center', cursor: 'default',
+                    transition: 'all 0.2s ease',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = is2024 ? 'rgba(251,191,36,.55)' : '#3a3f55'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = baseBorder; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
+                    <p style={{ fontSize: 11, color: is2024 ? '#fbbf24' : '#7b82a0', marginBottom: 5, fontWeight: is2024 ? 700 : 400 }}>
+                      {yr.year}{is2024 ? ' *' : ''}
+                    </p>
+                    <p style={{ fontSize: 20, fontWeight: 800, color: is2024 ? '#c49b30' : '#e8eaf0', marginBottom: 3 }}>
+                      {yr.crimes >= 1000 ? `${(yr.crimes / 1000).toFixed(0)}k` : yr.crimes.toLocaleString()}
+                    </p>
+                    <p style={{ fontSize: 10, color: '#3ecf8e' }}>CLR {yr.clearance_rate}%</p>
+                    <p style={{ fontSize: 10, color: '#e05252' }}>VIO {yr.violent_pct}%</p>
+                  </div>
+                );
+              })}
             </div>
           );
         })()}
@@ -430,7 +451,7 @@ export default function Home() {
             <KpiCard label="Total de Delitos"          value={summary.total_crimes.toLocaleString()}   sub="Incidentes confirmados LAPD 2020-2024"                                          color="#4f8ef7" icon={Shield} />
             <KpiCard label="Tasa de Esclarecimiento"   value={`${summary.clearance_rate}%`}           sub="Casos con arresto o cierre excepcional"                                        color={clrColor} icon={CheckCircle} />
             <KpiCard label="Proporción Violenta"       value={`${summary.violent_pct}%`}              sub={`${summary.violent_crimes.toLocaleString()} incidentes violentos registrados`} color="#e05252" icon={Zap} />
-            <KpiCard label="Volumen 2024"              value={summary.crimes_2024.toLocaleString()}   trend={summary.yoy_2024_vs_2023} sub="Variación interanual 2024 vs. 2023"          color="#e0883a" icon={TrendingUp} />
+            <KpiCard label="Volumen 2024 *"             value={summary.crimes_2024.toLocaleString()}   trend={summary.yoy_2024_vs_2023} sub="⚠ Dato parcial — reporting lag desde abr. 2024" color="#e0883a" icon={TrendingUp} />
             <KpiCard label="Demora de Reporte"         value={`${summary.avg_reporting_lag}d`}        sub="Días promedio entre ocurrencia y denuncia"                                     color="#a78bfa" icon={Clock} />
           </div>
           <ExecutiveInsights />

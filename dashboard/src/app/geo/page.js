@@ -94,6 +94,19 @@ const MAPS = [
       { icon: '🗂️', text: 'Each popup breaks down the 10 business sectors (Food, Retail, Real Estate, Entertainment, etc.) and cross-references income, poverty and LAPD division clearance rate.' },
     ],
   },
+  {
+    id: 'council-density',
+    label: 'CD Densidad',
+    icon: '🏛️',
+    src: '/maps/crime-density.html',
+    title: 'Crime Density by Council District — Crimes per 1,000 Active Addresses',
+    badge: '15 Council Districts · 5 Risk Tiers',
+    insight: [
+      { icon: '🏛️', text: 'Normalises by active address count — not population — capturing commercial and residential load equally. Districts with dense business corridors rank very differently than population-based metrics suggest.' },
+      { icon: '🗺️', text: 'Regional filter (Norte / Sur / Este / Oeste) clusters the 15 CDs geographically. Use it to compare crime pressure across quadrants without jumping between individual districts.' },
+      { icon: '🔴', text: '"Crítico" tier (>1,350 crimes/1k addresses) flags districts where street-level activity outpaces the address base — a leading indicator of commercial corridor risk and displacement pressure.' },
+    ],
+  },
 ];
 
 function MapTab({ map, active, onClick }) {
@@ -188,7 +201,7 @@ export default function GeoPage() {
             fontSize: 11, color: '#4f8ef7', fontWeight: 700,
             background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
             borderRadius: 6, padding: '4px 11px',
-          }}>7 Layers</span>
+          }}>8 Layers</span>
           <span style={{
             fontSize: 11, color: '#7b82a0',
             background: '#1a1d27', border: '1px solid #2a2d3a',

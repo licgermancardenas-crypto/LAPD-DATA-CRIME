@@ -28,8 +28,10 @@ const MAIN_NAV = [
       { id: 'per1000',       label: 'Delitos / 1.000',   icon: '👥' },
       { id: 'vulnerability', label: 'Vulnerabilidad',    icon: '⚠️' },
       { id: 'neighborhoods', label: 'Barrios',            icon: '🏘️' },
-      { id: 'mortality',     label: 'Estab. Comercial',  icon: '📉' },
-      { id: 'business',      label: 'Comercio y Crimen', icon: '🏪' },
+      { id: 'mortality',        label: 'Estab. Comercial',  icon: '📉' },
+      { id: 'heatmap',          label: 'Heatmap',           icon: '🔥' },
+      { id: 'business',         label: 'Comercio y Crimen', icon: '🏪' },
+      { id: 'council-density',  label: 'CD Densidad',       icon: '🏛️' },
     ],
   },
   {

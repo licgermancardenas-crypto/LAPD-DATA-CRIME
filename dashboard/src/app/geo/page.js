@@ -102,9 +102,9 @@ const MAPS = [
     title: 'Crime Density by Council District — Crimes per 1,000 Active Addresses',
     badge: '15 Council Districts · 5 Risk Tiers',
     insight: [
-      { icon: '🏛️', text: 'Normalises by active address count — not population — capturing commercial and residential load equally. Districts with dense business corridors rank very differently than population-based metrics suggest.' },
-      { icon: '🗺️', text: 'Regional filter (Norte / Sur / Este / Oeste) clusters the 15 CDs geographically. Use it to compare crime pressure across quadrants without jumping between individual districts.' },
-      { icon: '🔴', text: '"Crítico" tier (>1,350 crimes/1k addresses) flags districts where street-level activity outpaces the address base — a leading indicator of commercial corridor risk and displacement pressure.' },
+      { icon: '🔴', text: 'CD14 (Jurado) leads at 1,691 crimes/1k addresses — highest density AND 17.7% vacancy, the 2nd-highest abandonment rate. Total estimated crimes: 110,968, far above any other district. Two simultaneous pressure vectors.' },
+      { icon: '⚡', text: 'CD9 (Price) hits 1,342 crimes/1k with only 6.8% vacancy — one of the lowest abandonment rates. High crime without abandonment signals an active commercial corridor under pressure, not decay-driven disorder.' },
+      { icon: '🟢', text: 'CD7 (Rodriguez) breaks the vacancy→crime logic: 12.8% vacancy (high) but only 693 crimes/1k (2nd lowest). CD12 (Lee) is the calmest: 594 crimes/1k and 5.6% vacancy — both lowest in the city.' },
     ],
   },
 ];

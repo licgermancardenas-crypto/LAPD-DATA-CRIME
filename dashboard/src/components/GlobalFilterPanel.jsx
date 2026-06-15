@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react';
 import { LayoutGrid, FolderOpen, MapPin } from 'lucide-react';
 import InfoTooltip from './InfoTooltip';
 
@@ -89,12 +90,22 @@ function ActiveChip({ filterKey, value, onClear }) {
   );
 }
 
+const TOGGLE_BTN = {
+  width: 28, height: 28, borderRadius: 8,
+  border: '1px solid rgba(255,255,255,.1)',
+  background: 'rgba(255,255,255,.04)', color: '#9aa3bf',
+  cursor: 'pointer', fontSize: 18,
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  flexShrink: 0, transition: 'all 0.15s ease',
+};
+
 export default function GlobalFilterPanel({
   activePart, setActivePart,
   filters, setFilters,
   categories,
   divisions,
 }) {
+  const [collapsed, setCollapsed] = useState(false);
   const interactiveKeys = ['ageGroup', 'timeSlot'].filter(k => filters[k] !== null);
   const hasDropdownFilter = filters.category !== null || filters.area !== null;
   const hasPartFilter     = activePart !== 'all';
@@ -105,6 +116,33 @@ export default function GlobalFilterPanel({
     setActivePart('all');
   };
   const clearOne = (key) => setFilters(f => ({ ...f, [key]: null }));
+
+  if (collapsed) {
+    return (
+      <aside style={{
+        width: 36, flexShrink: 0,
+        backgroundColor: '#08091a',
+        borderRight: '1px solid rgba(255,255,255,0.03)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        position: 'sticky', top: 0, height: '100vh', zIndex: 30,
+      }}>
+        <div style={{ height: 2, width: '100%', background: 'linear-gradient(90deg,#d946ef,#00f3ff)', flexShrink: 0 }} />
+        <button
+          onClick={() => setCollapsed(false)}
+          title="Mostrar panel de control"
+          style={{ ...TOGGLE_BTN, marginTop: 14 }}
+          onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.background='rgba(255,255,255,.09)'; e.currentTarget.style.borderColor='rgba(255,255,255,.22)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color='#9aa3bf'; e.currentTarget.style.background='rgba(255,255,255,.04)'; e.currentTarget.style.borderColor='rgba(255,255,255,.1)'; }}
+        >›</button>
+        {hasAnyFilter && (
+          <div style={{
+            marginTop: 10, width: 7, height: 7, borderRadius: '50%',
+            background: '#00f3ff', boxShadow: '0 0 8px rgba(0,243,255,.7)',
+          }} />
+        )}
+      </aside>
+    );
+  }
 
   return (
     <aside style={{
@@ -137,15 +175,22 @@ export default function GlobalFilterPanel({
         <p style={{ fontSize: 14, fontWeight: 700, color: '#e8eaf0', marginTop: 4 }}>
           Filtros
         </p>
-        {/* Active-filters indicator dot */}
-        {hasAnyFilter && (
-          <div style={{
-            position: 'absolute', top: 16, right: 18,
-            width: 7, height: 7, borderRadius: '50%',
-            background: '#00f3ff',
-            boxShadow: '0 0 8px rgba(0,243,255,.7)',
-          }} />
-        )}
+        {/* Collapse button + active-filters dot */}
+        <div style={{ position: 'absolute', top: 14, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {hasAnyFilter && (
+            <div style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#00f3ff', boxShadow: '0 0 8px rgba(0,243,255,.7)',
+            }} />
+          )}
+          <button
+            onClick={() => setCollapsed(true)}
+            title="Ocultar panel de control"
+            style={TOGGLE_BTN}
+            onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.background='rgba(255,255,255,.09)'; e.currentTarget.style.borderColor='rgba(255,255,255,.22)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color='#9aa3bf'; e.currentTarget.style.background='rgba(255,255,255,.04)'; e.currentTarget.style.borderColor='rgba(255,255,255,.1)'; }}
+          >‹</button>
+        </div>
       </div>
 
       {/* Scrollable filter content */}

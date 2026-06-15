@@ -121,11 +121,15 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
             onClick={() => setCollapsed(true)}
             title="Collapse sidebar"
             style={{
-              width: 22, height: 22, borderRadius: 8, border: `1px solid ${C.border}`,
-              background: '#0f1117', color: C.dim, cursor: 'pointer', fontSize: 12,
+              width: 28, height: 28, borderRadius: 8,
+              border: '1px solid rgba(255,255,255,.1)',
+              background: 'rgba(255,255,255,.04)', color: '#9aa3bf',
+              cursor: 'pointer', fontSize: 18,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              transition: 'all 0.2s ease',
+              transition: 'all 0.15s ease',
             }}
+            onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.background='rgba(255,255,255,.09)'; e.currentTarget.style.borderColor='rgba(255,255,255,.22)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color='#9aa3bf'; e.currentTarget.style.background='rgba(255,255,255,.04)'; e.currentTarget.style.borderColor='rgba(255,255,255,.1)'; }}
           >‹</button>
         )}
       </div>
@@ -136,10 +140,13 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
           onClick={() => setCollapsed(false)}
           title="Expand sidebar"
           style={{
-            width: '100%', padding: '8px 0', border: 'none', borderBottom: `1px solid ${C.border}`,
-            background: 'transparent', color: C.dim, cursor: 'pointer', fontSize: 14,
+            width: '100%', padding: '10px 0', border: 'none', borderBottom: `1px solid ${C.border}`,
+            background: 'rgba(255,255,255,.02)', color: '#9aa3bf', cursor: 'pointer', fontSize: 18,
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            transition: 'all 0.15s ease',
           }}
+          onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.background='rgba(255,255,255,.06)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color='#9aa3bf'; e.currentTarget.style.background='rgba(255,255,255,.02)'; }}
         >›</button>
       )}
 

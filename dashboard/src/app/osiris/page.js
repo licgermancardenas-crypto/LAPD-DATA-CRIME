@@ -70,6 +70,11 @@ const CD_DENSITY_RANKING = [
 const OSINT_IDS = new Set(['heat','cluster','choropleth','mobility']);
 const YEARS     = [null, 2020, 2021, 2022, 2023, 2024];
 
+function readURLParam(key) {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get(key);
+}
+
 const MAP_LABELS = {
   heat:'HEATMAP OSINT', cluster:'CLUSTER OSINT', choropleth:'CHOROPLETH OSINT',
   divisions:'DIVISIONES LAPD', 'lapd-heat':'CALOR LAPD', per1k:'CRIMEN/1K HAB',
@@ -225,6 +230,69 @@ function generateInsights(info){
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────
+
+function YoYPanel({byYear}){
+  if(!byYear?.length) return null;
+  const full=byYear.filter(y=>y.year<=2023);
+  const maxC=Math.max(...byYear.map(y=>y.crimes));
+  return(
+    <div>
+      {byYear.map((yr,i)=>{
+        const prev=byYear[i-1];
+        const pct=prev?((yr.crimes-prev.crimes)/prev.crimes*100):null;
+        const isPartial=yr.year===2024;
+        const isUp=pct>0;
+        const barW=((yr.crimes/maxC)*100).toFixed(1);
+        const barColor=isUp?'#f87171':i===0?'#38bdf8':'#34d399';
+        const clrColor=yr.clearance_rate>22?'#34d399':yr.clearance_rate>18?'#fbbf24':'#f87171';
+        return(
+          <div key={yr.year} style={{marginBottom:10}}>
+            <div style={{display:'flex',alignItems:'baseline',gap:4,marginBottom:3}}>
+              <span style={{fontSize:12,color:'#e0f2fe',fontWeight:800,fontFamily:'monospace',minWidth:34}}>
+                {yr.year}{isPartial?'*':''}
+              </span>
+              <span style={{fontSize:11,color:'#fff',fontWeight:700,fontFamily:'monospace',flex:1,textAlign:'right'}}>
+                {fmt(yr.crimes)}
+              </span>
+              <span style={{
+                fontSize:10,fontWeight:700,fontFamily:'monospace',minWidth:50,textAlign:'right',
+                color: isPartial?'rgba(56,189,248,.45)':pct===null?'#38bdf8':isUp?'#f87171':'#34d399',
+              }}>
+                {isPartial?'⚑ prc':pct===null?'BASE':((isUp?'▲':'▼')+Math.abs(pct).toFixed(1)+'%')}
+              </span>
+            </div>
+            <div style={{height:3,background:'rgba(255,255,255,.05)',borderRadius:2,overflow:'hidden'}}>
+              <div style={{height:'100%',width:`${barW}%`,borderRadius:2,background:`linear-gradient(90deg,${barColor}50,${barColor})`,transition:'width .4s ease'}}/>
+            </div>
+            {!isPartial&&yr.clearance_rate&&(
+              <div style={{fontSize:8,color:clrColor,opacity:.7,marginTop:2,fontFamily:'monospace'}}>
+                clr {yr.clearance_rate}% · viol {yr.violent_pct}%
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {/* Trend arrow for full years */}
+      {full.length>=2&&(()=>{
+        const trend=((full[full.length-1].crimes-full[0].crimes)/full[0].crimes*100);
+        const tUp=trend>0;
+        return(
+          <div style={{marginTop:8,padding:'5px 8px',borderRadius:4,
+            background:tUp?'rgba(248,113,113,.06)':'rgba(52,211,153,.06)',
+            border:`1px solid ${tUp?'rgba(248,113,113,.2)':'rgba(52,211,153,.2)'}`,
+          }}>
+            <span style={{fontSize:9,color:tUp?'#fca5a5':'#6ee7b7',lineHeight:1.5}}>
+              2020→2023: {tUp?'▲':'▼'}{Math.abs(trend).toFixed(1)}% total · 2024 data partial
+            </span>
+          </div>
+        );
+      })()}
+      <div style={{fontSize:8,color:'rgba(56,189,248,.3)',marginTop:5,fontStyle:'italic'}}>
+        * 2024 partial — reporting lag, not full year
+      </div>
+    </div>
+  );
+}
 
 function KpiBlock({label,value,sub,color,confidence}){
   return(
@@ -614,10 +682,19 @@ const SBTN={
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function OsintPage(){
   const [data,       setData]       = useState(null);
-  const [activeMap,  setActiveMap]  = useState('choropleth');
-  const [filterYear, setFilterYear] = useState(null);
-  const [filterArea, setFilterArea] = useState(null);
-  const [filterPart, setFilterPart] = useState('all');
+  const [activeMap,  setActiveMap]  = useState(() => {
+    const m = readURLParam('map');
+    return (m && MAPS.find(mp => mp.id === m)) ? m : 'choropleth';
+  });
+  const [filterYear, setFilterYear] = useState(() => {
+    const y = readURLParam('year');
+    return y ? parseInt(y) : null;
+  });
+  const [filterArea, setFilterArea] = useState(() => readURLParam('area'));
+  const [filterPart, setFilterPart] = useState(() => {
+    const p = readURLParam('part');
+    return (p && ['all','p1','p2'].includes(p)) ? p : 'all';
+  });
   const [leftOpen,   setLeftOpen]   = useState(true);
   const [rightOpen,  setRightOpen]  = useState(true);
   const [feedLog,    setFeedLog]    = useState([]);
@@ -717,6 +794,18 @@ export default function OsintPage(){
       );
     }
   },[filterYear,filterArea,filterPart,activeMap]);
+
+  // ── Sync state → URL (shareable links)
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    const p=new URLSearchParams();
+    if(activeMap!=='choropleth') p.set('map',activeMap);
+    if(filterYear) p.set('year',String(filterYear));
+    if(filterArea) p.set('area',filterArea);
+    if(filterPart!=='all') p.set('part',filterPart);
+    const q=p.toString();
+    window.history.replaceState(null,'',q?`${window.location.pathname}?${q}`:window.location.pathname);
+  },[activeMap,filterYear,filterArea,filterPart]);
 
   // ── Receive postMessage events from all map iframes
   useEffect(()=>{
@@ -1089,6 +1178,10 @@ export default function OsintPage(){
                 </div>
               )}
             </div>
+          </PanelSection>
+
+          <PanelSection icon={TrendingUp} title="YoY Trend · 2020–2024" color="#a78bfa">
+            <YoYPanel byYear={data?.summary?.by_year}/>
           </PanelSection>
 
           <PanelSection icon={Shield} title={filterArea?`Top Threats · ${filterArea.toUpperCase().slice(0,8)}`:'Top Threats'} color={C.accent2}>

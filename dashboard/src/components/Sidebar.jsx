@@ -7,50 +7,50 @@ import { usePathname } from 'next/navigation';
 const MAIN_NAV = [
   {
     id: 'dashboard',
-    label: 'Panel Principal',
+    label: 'Dashboard',
     icon: '⊞',
     href: '/',
     sub: [
-      { id: 'overview',   label: 'Resumen',     href: '/#overview' },
-      { id: 'geographic', label: 'Geografía',   href: '/#geographic' },
+      { id: 'overview',   label: 'Overview',    href: '/#overview' },
+      { id: 'geographic', label: 'Geography',   href: '/#geographic' },
       { id: 'temporal',   label: 'Temporal',    href: '/#temporal' },
-      { id: 'categories', label: 'Categorías',  href: '/#categories' },
-      { id: 'external',   label: 'Contexto',    href: '/#external' },
+      { id: 'categories', label: 'Categories',  href: '/#categories' },
+      { id: 'external',   label: 'Context',     href: '/#external' },
     ],
   },
   {
     id: 'geo',
-    label: 'Análisis Geográfico',
+    label: 'Geo Analysis',
     icon: '◎',
     href: '/geo',
     sub: [
-      { id: 'divisions',     label: 'Mapa Divisiones',   icon: '🗺️' },
-      { id: 'per1000',       label: 'Delitos / 1.000',   icon: '👥' },
-      { id: 'vulnerability', label: 'Vulnerabilidad',    icon: '⚠️' },
-      { id: 'neighborhoods', label: 'Barrios',            icon: '🏘️' },
-      { id: 'mortality',        label: 'Estab. Comercial',  icon: '📉' },
-      { id: 'heatmap',          label: 'Heatmap',           icon: '🔥' },
-      { id: 'business',         label: 'Comercio y Crimen', icon: '🏪' },
-      { id: 'council-density',  label: 'CD Densidad',       icon: '🏛️' },
+      { id: 'divisions',      label: 'Division Map',      icon: '🗺️' },
+      { id: 'per1000',        label: 'Crimes / 1,000',    icon: '👥' },
+      { id: 'vulnerability',  label: 'Vulnerability',     icon: '⚠️' },
+      { id: 'neighborhoods',  label: 'Neighborhoods',     icon: '🏘️' },
+      { id: 'mortality',      label: 'Biz Stability',     icon: '📉' },
+      { id: 'heatmap',        label: 'Heatmap',           icon: '🔥' },
+      { id: 'business',       label: 'Biz & Crime',       icon: '🏪' },
+      { id: 'council-density',label: 'CD Density',        icon: '🏛️' },
     ],
   },
   {
     id: 'osiris',
-    label: 'Terminal OSINT',
+    label: 'OSINT Terminal',
     icon: '◈',
     href: '/osiris',
     sub: [],
   },
   {
     id: 'glossary',
-    label: 'Diccionario',
+    label: 'Glossary',
     icon: '📖',
     href: '/glossary',
     sub: [
-      { id: 'temporal',     label: 'Métricas Temporales',    href: '/glossary#temporal'    },
-      { id: 'demographic',  label: 'Variables Demográficas', href: '/glossary#demographic' },
-      { id: 'crime-code',   label: 'Códigos de Crimen',      href: '/glossary#crime-code'  },
-      { id: 'lapd-concept', label: 'Conceptos LAPD',         href: '/glossary#lapd-concept'},
+      { id: 'temporal',     label: 'Temporal Metrics',    href: '/glossary#temporal'    },
+      { id: 'demographic',  label: 'Demographic Vars',    href: '/glossary#demographic' },
+      { id: 'crime-code',   label: 'Crime Codes',         href: '/glossary#crime-code'  },
+      { id: 'lapd-concept', label: 'LAPD Concepts',       href: '/glossary#lapd-concept'},
     ],
   },
 ];
@@ -58,20 +58,21 @@ const MAIN_NAV = [
 const DATA_ITEMS = [
   { label: 'LAPD Open Data', icon: '📋', desc: '2020–2024' },
   { label: 'Census ACS',     icon: '🏘️', desc: '5-Year Estimates' },
-  { label: 'Open-Meteo',     icon: '🌦️', desc: 'Weather & Climate' },
+  { label: 'Open-Meteo',     icon: '🌦️', desc: 'Weather API' },
   { label: 'BLS',            icon: '💼', desc: 'Unemployment' },
 ];
 
 const C = {
-  sidebar:  '#080a12',
-  border:   '#161926',
-  active:   'rgba(79,142,247,.11)',
-  hover:    'rgba(255,255,255,.035)',
-  accent:   '#4f8ef7',
-  text:     '#e8eaf0',
-  muted:    '#7b82a0',
-  dim:      '#3d4255',
-  dimmer:   '#252840',
+  sidebar: '#080a12',
+  border:  '#1e2235',
+  active:  'rgba(79,142,247,.13)',
+  hover:   'rgba(255,255,255,.045)',
+  accent:  '#4f8ef7',
+  text:    '#e8eaf0',
+  navInactive: '#b0b7d0',
+  muted:   '#7b82a0',
+  dim:     '#4a5070',
+  dimmer:  '#2a2e48',
 };
 
 export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
@@ -107,12 +108,12 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
             width: 34, height: 34, borderRadius: 8, flexShrink: 0,
             background: 'linear-gradient(135deg,#4f8ef7 0%,#7c5cbf 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, boxShadow: '0 0 16px rgba(79,142,247,.2)',
+            fontSize: 18, boxShadow: '0 0 20px rgba(79,142,247,.3)',
           }}>🏛️</div>
           {!collapsed && (
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: C.text, whiteSpace: 'nowrap' }}>LAPD</div>
-              <div style={{ fontSize: 10, color: C.dim, whiteSpace: 'nowrap', marginTop: 1 }}>Crime Analytics</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', letterSpacing: '.02em' }}>LAPD</div>
+              <div style={{ fontSize: 10, color: C.muted, whiteSpace: 'nowrap', marginTop: 1, letterSpacing: '.08em' }}>Crime Analytics</div>
             </div>
           )}
         </div>
@@ -122,14 +123,14 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
             title="Collapse sidebar"
             style={{
               width: 28, height: 28, borderRadius: 8,
-              border: '1px solid rgba(255,255,255,.1)',
-              background: 'rgba(255,255,255,.04)', color: '#9aa3bf',
+              border: '1px solid rgba(255,255,255,.12)',
+              background: 'rgba(255,255,255,.05)', color: '#9aa3bf',
               cursor: 'pointer', fontSize: 18,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               transition: 'all 0.15s ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.background='rgba(255,255,255,.09)'; e.currentTarget.style.borderColor='rgba(255,255,255,.22)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color='#9aa3bf'; e.currentTarget.style.background='rgba(255,255,255,.04)'; e.currentTarget.style.borderColor='rgba(255,255,255,.1)'; }}
+            onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.background='rgba(255,255,255,.1)'; e.currentTarget.style.borderColor='rgba(255,255,255,.25)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color='#9aa3bf'; e.currentTarget.style.background='rgba(255,255,255,.05)'; e.currentTarget.style.borderColor='rgba(255,255,255,.12)'; }}
           >‹</button>
         )}
       </div>
@@ -151,14 +152,19 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
       )}
 
       {/* ── Nav scroll area ── */}
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none', padding: '10px 0' }}>
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none', padding: '12px 0' }}>
 
         {/* Section label */}
         {!collapsed && (
           <div style={{
-            fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: '.14em',
-            textTransform: 'uppercase', padding: '8px 18px 5px',
-          }}>Menú Principal</div>
+            fontSize: 10, fontWeight: 700, color: C.dim, letterSpacing: '.16em',
+            textTransform: 'uppercase', padding: '4px 18px 8px',
+            display: 'flex', alignItems: 'center', gap: 7,
+          }}>
+            <span style={{ flex: 1, height: 1, background: C.dimmer }} />
+            Navigation
+            <span style={{ flex: 1, height: 1, background: C.dimmer }} />
+          </div>
         )}
 
         {/* Main nav items */}
@@ -202,14 +208,19 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
         })}
 
         {/* Divider */}
-        <div style={{ height: 1, background: C.border, margin: '10px 0' }} />
+        <div style={{ height: 1, background: C.border, margin: '12px 0' }} />
 
         {/* Data sources section */}
         {!collapsed && (
           <div style={{
-            fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: '.14em',
-            textTransform: 'uppercase', padding: '4px 18px 5px',
-          }}>Fuentes de Datos</div>
+            fontSize: 10, fontWeight: 700, color: C.dim, letterSpacing: '.16em',
+            textTransform: 'uppercase', padding: '4px 18px 8px',
+            display: 'flex', alignItems: 'center', gap: 7,
+          }}>
+            <span style={{ flex: 1, height: 1, background: C.dimmer }} />
+            Data Sources
+            <span style={{ flex: 1, height: 1, background: C.dimmer }} />
+          </div>
         )}
 
         {DATA_ITEMS.map(item => (
@@ -218,15 +229,15 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
             style={{
               display: 'flex', alignItems: 'center',
               gap: collapsed ? 0 : 10,
-              padding: collapsed ? '8px 0' : '7px 14px 7px 18px',
+              padding: collapsed ? '8px 0' : '6px 14px 6px 18px',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              color: C.dim, fontSize: 11,
             }}
           >
-            <span style={{ fontSize: 14, flexShrink: 0, opacity: .6 }}>{item.icon}</span>
+            <span style={{ fontSize: 14, flexShrink: 0, opacity: .65 }}>{item.icon}</span>
             {!collapsed && (
-              <div>
-                <div style={{ color: '#3d4560', fontSize: 11, whiteSpace: 'nowrap' }}>{item.label}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ color: '#7b88aa', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap' }}>{item.label}</div>
+                <div style={{ color: '#4a5070', fontSize: 10, marginTop: 1 }}>{item.desc}</div>
               </div>
             )}
           </div>
@@ -234,29 +245,33 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
 
       </div>
 
-      {/* ── Footer profile ── */}
+      {/* ── Footer ── */}
       <div style={{ borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
         {!collapsed ? (
-          <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 8, background: '#1a1d27',
+              width: 32, height: 32, borderRadius: 8,
+              background: 'linear-gradient(135deg,rgba(79,142,247,.15),rgba(124,92,191,.15))',
+              border: '1px solid rgba(79,142,247,.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 16, flexShrink: 0,
             }}>🏛️</div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, whiteSpace: 'nowrap' }}>LAPD Open Data</div>
-              <div style={{ fontSize: 10, color: C.dim, whiteSpace: 'nowrap' }}>Los Angeles · 2020-2024</div>
+            <div style={{ overflow: 'hidden', flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#b0b7d0', whiteSpace: 'nowrap' }}>LAPD Open Data</div>
+              <div style={{ fontSize: 10, color: C.dim, whiteSpace: 'nowrap', marginTop: 1 }}>Los Angeles · 2020–2024</div>
             </div>
             <div style={{
-              marginLeft: 'auto', fontSize: 9, fontWeight: 700, color: C.accent,
-              background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.2)',
-              borderRadius: 4, padding: '2px 6px', whiteSpace: 'nowrap',
+              fontSize: 9, fontWeight: 800, color: C.accent,
+              background: 'rgba(79,142,247,.1)', border: '1px solid rgba(79,142,247,.25)',
+              borderRadius: 4, padding: '3px 7px', whiteSpace: 'nowrap', letterSpacing: '.06em',
             }}>LIVE</div>
           </div>
         ) : (
           <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center' }}>
             <div style={{
-              width: 28, height: 28, borderRadius: 6, background: '#1a1d27',
+              width: 28, height: 28, borderRadius: 6,
+              background: 'linear-gradient(135deg,rgba(79,142,247,.12),rgba(124,92,191,.12))',
+              border: '1px solid rgba(79,142,247,.12)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
             }}>🏛️</div>
           </div>
@@ -280,17 +295,18 @@ function NavItem({ href, icon, label, active, collapsed }) {
         textDecoration: 'none',
         background: active ? C.active : 'transparent',
         borderLeft: active ? `3px solid ${C.accent}` : '3px solid transparent',
-        color: active ? C.text : C.muted,
-        fontSize: 13, fontWeight: active ? 600 : 400,
+        color: active ? '#fff' : C.navInactive,
+        fontSize: 14, fontWeight: active ? 700 : 500,
+        letterSpacing: '.01em',
         transition: 'background .12s, color .12s',
         cursor: 'pointer',
       }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = C.hover; }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = '#e0e4f0'; }}}
+      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.navInactive; }}}
     >
       <span style={{
         fontSize: 16, flexShrink: 0, lineHeight: 1,
-        opacity: active ? 1 : .55,
+        opacity: active ? 1 : .7,
         transition: 'opacity .12s',
       }}>{icon}</span>
       {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
@@ -298,7 +314,7 @@ function NavItem({ href, icon, label, active, collapsed }) {
   );
 }
 
-const C_active  = 'rgba(79,142,247,.07)';
+const C_active  = 'rgba(79,142,247,.08)';
 const C_accent  = '#4f8ef7';
 
 function SubItem({ href, label, icon, active }) {
@@ -310,21 +326,22 @@ function SubItem({ href, label, icon, active }) {
         padding: '6px 14px 6px 40px',
         textDecoration: 'none',
         background: active ? C_active : 'transparent',
-        color: active ? '#98b4f7' : '#454a65',
+        color: active ? '#98b4f7' : '#6b7590',
         fontSize: 12, fontWeight: active ? 600 : 400,
         borderLeft: '3px solid transparent',
         transition: 'color .12s, background .12s',
         whiteSpace: 'nowrap',
+        letterSpacing: '.01em',
       }}
-      onMouseEnter={e => { e.currentTarget.style.color = '#7b82a0'; }}
-      onMouseLeave={e => { e.currentTarget.style.color = active ? '#98b4f7' : '#454a65'; }}
+      onMouseEnter={e => { e.currentTarget.style.color = '#b0b7d0'; }}
+      onMouseLeave={e => { e.currentTarget.style.color = active ? '#98b4f7' : '#6b7590'; }}
     >
       {icon ? (
-        <span style={{ fontSize: 12, opacity: active ? .9 : .5 }}>{icon}</span>
+        <span style={{ fontSize: 12, opacity: active ? .9 : .6 }}>{icon}</span>
       ) : (
         <span style={{
           width: 5, height: 5, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
-          background: active ? C_accent : '#252840',
+          background: active ? C_accent : '#3a3f5a',
         }} />
       )}
       {label}

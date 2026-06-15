@@ -4,36 +4,36 @@ import { useState } from 'react';
 import { LayoutGrid, FolderOpen, MapPin } from 'lucide-react';
 import InfoTooltip from './InfoTooltip';
 
-const DAYS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const PART_OPTIONS = [
-  { v: 'all', label: 'Todos los delitos' },
-  { v: 'p1',  label: 'Part 1 — Graves'  },
-  { v: 'p2',  label: 'Part 2 — Menores' },
+  { v: 'all', label: 'All Crimes'        },
+  { v: 'p1',  label: 'Part 1 — Serious'  },
+  { v: 'p2',  label: 'Part 2 — Minor'    },
 ];
 
 const FILTER_META = {
-  area:      { icon: '📍', label: 'División' },
-  category:  { icon: '📂', label: 'Delito'   },
-  ageGroup:  { icon: '👤', label: 'Edad'     },
-  timeSlot:  { icon: '🕐', label: 'Horario'  },
+  area:      { icon: '📍', label: 'Division'  },
+  category:  { icon: '📂', label: 'Crime Type' },
+  ageGroup:  { icon: '👤', label: 'Age Group'  },
+  timeSlot:  { icon: '🕐', label: 'Time Slot'  },
 };
 
 const SCOPE = {
-  part:        ['Tendencia', 'Divisiones', 'Categorías', 'Locales'],
-  category:    ['Mapa', 'Divisiones', 'Víctimas'],
-  area:        ['Categorías', 'Víctimas'],
-  interactive: ['Categorías', 'Divisiones', 'Víctimas'],
+  part:        ['Trend', 'Divisions', 'Categories', 'Premises'],
+  category:    ['Map', 'Divisions', 'Victims'],
+  area:        ['Categories', 'Victims'],
+  interactive: ['Categories', 'Divisions', 'Victims'],
 };
 
 const LABEL = {
-  fontSize: 11,
+  fontSize: 12,
   fontWeight: 700,
-  color: '#64748b',
+  color: '#9aa3bf',
   textTransform: 'uppercase',
-  letterSpacing: '0.05em',
+  letterSpacing: '0.06em',
   display: 'block',
-  marginBottom: 8,
+  marginBottom: 9,
 };
 
 const CHEVRON = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E")`;
@@ -47,10 +47,10 @@ function ScopeBadges({ keys }) {
     <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 6 }}>
       {keys.map(k => (
         <span key={k} style={{
-          fontSize: 9, fontWeight: 600, color: '#3a4060',
-          background: 'rgba(79,142,247,.05)',
-          border: '1px solid #1e2230',
-          borderRadius: 4, padding: '1px 5px', letterSpacing: '.02em',
+          fontSize: 9, fontWeight: 600, color: '#5a637a',
+          background: 'rgba(79,142,247,.06)',
+          border: '1px solid rgba(79,142,247,.12)',
+          borderRadius: 4, padding: '1px 6px', letterSpacing: '.03em',
         }}>{k}</span>
       ))}
     </div>
@@ -169,11 +169,11 @@ export default function GlobalFilterPanel({
         flexShrink: 0,
         position: 'relative',
       }}>
-        <p style={{ fontSize: 10, fontWeight: 700, color: '#3a4060', letterSpacing: '.12em', textTransform: 'uppercase' }}>
-          PANEL DE CONTROL
+        <p style={{ fontSize: 10, fontWeight: 700, color: '#5a637a', letterSpacing: '.14em', textTransform: 'uppercase' }}>
+          CONTROL PANEL
         </p>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#e8eaf0', marginTop: 4 }}>
-          Filtros
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#e8eaf0', marginTop: 4, letterSpacing: '.01em' }}>
+          Filters
         </p>
         {/* Collapse button + active-filters dot */}
         <div style={{ position: 'absolute', top: 14, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -196,10 +196,10 @@ export default function GlobalFilterPanel({
       {/* Scrollable filter content */}
       <div style={{ flex: 1, padding: '18px 16px', display: 'flex', flexDirection: 'column' }}>
 
-        {/* ── PERÍODO ─────────────────────────────────── */}
+        {/* ── PERIOD ─────────────────────────────────── */}
         <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <LayoutGrid size={12} color="#475569" strokeWidth={2} />
-          Período
+          <LayoutGrid size={12} color="#6b7590" strokeWidth={2} />
+          Period
           <InfoTooltip
             text="Part 1 — Delitos Graves: homicidio, robo violento, agresión, violación y hurto calificado según estándar FBI. Part 2 — Delitos Menores: resto de infracciones (vandalismo, fraude, drogas, etc.)."
             width={250}
@@ -240,10 +240,10 @@ export default function GlobalFilterPanel({
 
         <Divider />
 
-        {/* ── CATEGORÍA ───────────────────────────────── */}
+        {/* ── CRIME CATEGORY ───────────────────────────── */}
         <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <FolderOpen size={12} color="#475569" strokeWidth={2} />
-          Categoría de Delito
+          <FolderOpen size={12} color="#6b7590" strokeWidth={2} />
+          Crime Category
         </span>
         <select
           value={filters.category ?? ''}
@@ -258,7 +258,7 @@ export default function GlobalFilterPanel({
             backgroundPosition: 'right 10px center',
             border: filters.category ? '1px solid rgba(79,142,247,.35)' : '1px solid #242936',
             borderRadius: 6,
-            color: filters.category ? '#4f8ef7' : '#94a3b8',
+            color: filters.category ? '#4f8ef7' : '#b0b7d0',
             fontSize: 12,
             fontFamily: 'inherit',
             cursor: 'pointer',
@@ -266,7 +266,7 @@ export default function GlobalFilterPanel({
             transition: 'all 0.2s ease',
           }}
         >
-          <option value="">Todas las categorías</option>
+          <option value="">All categories</option>
           {categories?.map(c => (
             <option key={c.category} value={c.category}>{c.category}</option>
           ))}
@@ -275,10 +275,10 @@ export default function GlobalFilterPanel({
 
         <Divider />
 
-        {/* ── DIVISIÓN ────────────────────────────────── */}
+        {/* ── POLICE DIVISION ─────────────────────────── */}
         <span style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <MapPin size={12} color="#475569" strokeWidth={2} />
-          División Policial
+          <MapPin size={12} color="#6b7590" strokeWidth={2} />
+          Police Division
         </span>
         <select
           value={filters.area ?? ''}
@@ -293,7 +293,7 @@ export default function GlobalFilterPanel({
             backgroundPosition: 'right 10px center',
             border: filters.area ? '1px solid rgba(79,142,247,.35)' : '1px solid #242936',
             borderRadius: 6,
-            color: filters.area ? '#4f8ef7' : '#94a3b8',
+            color: filters.area ? '#4f8ef7' : '#b0b7d0',
             fontSize: 12,
             fontFamily: 'inherit',
             cursor: 'pointer',
@@ -301,18 +301,18 @@ export default function GlobalFilterPanel({
             transition: 'all 0.2s ease',
           }}
         >
-          <option value="">Todas las divisiones</option>
+          <option value="">All divisions</option>
           {divisions?.map(d => (
             <option key={d.name} value={d.name}>{d.name}</option>
           ))}
         </select>
         <ScopeBadges keys={SCOPE.area} />
 
-        {/* ── DESDE GRÁFICOS ──────────────────────────── */}
+        {/* ── FROM CHARTS ─────────────────────────────── */}
         {interactiveKeys.length > 0 && (
           <>
             <Divider />
-            <span style={LABEL}>Desde Gráficos</span>
+            <span style={LABEL}>From Charts</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {interactiveKeys.map(k => (
                 <ActiveChip key={k} filterKey={k} value={filters[k]} onClear={clearOne} />
@@ -345,7 +345,7 @@ export default function GlobalFilterPanel({
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(224,82,82,.12)'; e.currentTarget.style.borderColor = 'rgba(224,82,82,.4)'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(224,82,82,.06)'; e.currentTarget.style.borderColor = 'rgba(224,82,82,.2)'; }}
             >
-              ✕ Limpiar filtros
+              ✕ Clear Filters
             </button>
           </>
         )}

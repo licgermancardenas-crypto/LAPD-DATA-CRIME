@@ -42,6 +42,22 @@ const MAIN_NAV = [
     sub: [],
   },
   {
+    id: 'insights',
+    label: 'Intelligence',
+    icon: '◉',
+    href: '/insights',
+    sub: [
+      { id: 'scale',         label: 'Scope & Scale',        href: '/insights#scale'        },
+      { id: 'clearance',     label: 'Clearance Crisis',     href: '/insights#clearance'    },
+      { id: 'geography',     label: 'Geography',            href: '/insights#geography'    },
+      { id: 'categories',    label: 'Crime Categories',     href: '/insights#categories'   },
+      { id: 'temporal',      label: 'Temporal Patterns',    href: '/insights#temporal'     },
+      { id: 'victims',       label: 'Victim Demographics',  href: '/insights#victims'      },
+      { id: 'neighborhoods', label: 'Neighborhood Risk',    href: '/insights#neighborhoods'},
+      { id: 'findings',      label: 'Key Findings',         href: '/insights#findings'     },
+    ],
+  },
+  {
     id: 'glossary',
     label: 'Glossary',
     icon: '📖',
@@ -82,6 +98,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const isHome     = pathname === '/' || pathname === '';
   const isGeo      = pathname === '/geo';
   const isOsiris   = pathname === '/osiris';
+  const isInsights = pathname === '/insights';
   const isGlossary = pathname === '/glossary';
 
   const W = collapsed ? 60 : 244;
@@ -172,6 +189,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
           const active = item.id === 'dashboard' ? isHome
                        : item.id === 'geo'       ? isGeo
                        : item.id === 'osiris'    ? isOsiris
+                       : item.id === 'insights'  ? isInsights
                        : item.id === 'glossary'  ? isGlossary
                        : false;
           return (

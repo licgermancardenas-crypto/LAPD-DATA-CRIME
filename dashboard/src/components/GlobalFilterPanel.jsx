@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutGrid, FolderOpen, MapPin } from 'lucide-react';
 import InfoTooltip from './InfoTooltip';
 
@@ -106,6 +106,16 @@ export default function GlobalFilterPanel({
   divisions,
 }) {
   const [collapsed, setCollapsed] = useState(false);
+
+  // Auto-collapse on narrow screens — mirrors Sidebar's breakpoint so both
+  // rails don't fight the content for space on tablets/small laptops.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth < 1024) setCollapsed(true);
+    const handler = () => { if (window.innerWidth < 1024 && !collapsed) setCollapsed(true); };
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
   const interactiveKeys = ['ageGroup', 'timeSlot'].filter(k => filters[k] !== null);
   const hasDropdownFilter = filters.category !== null || filters.area !== null;
   const hasPartFilter     = activePart !== 'all';

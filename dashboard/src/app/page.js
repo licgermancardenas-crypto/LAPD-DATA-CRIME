@@ -13,6 +13,7 @@ import WeatherChart       from '@/components/WeatherChart';
 import UnemploymentChart  from '@/components/UnemploymentChart';
 import ReportingLagChart  from '@/components/ReportingLagChart';
 import VictimChart        from '@/components/VictimChart';
+import ArrestChart        from '@/components/ArrestChart';
 import PremiseChart       from '@/components/PremiseChart';
 import GlobalFilterPanel  from '@/components/GlobalFilterPanel';
 import ChartSkeleton      from '@/components/ChartSkeleton';
@@ -34,6 +35,7 @@ const NAV_SECTIONS = [
   { id: 'temporal' },
   { id: 'categories' },
   { id: 'victims' },
+  { id: 'arrests' },
   { id: 'external' },
 ];
 
@@ -155,8 +157,20 @@ export default function Home() {
       fetch(`${b}/premises.json`).then(r => r.json()),
       fetch(`${b}/cross_div_cat.json`).then(r => r.json()),
       fetch(`${b}/monthly_cross.json`).then(r => r.json()).catch(() => null),
-    ]).then(([summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat, monthlyCross]) => {
-      setData({ summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat, monthlyCross });
+      fetch(`${b}/arrests_summary.json`).then(r => r.json()).catch(() => null),
+      fetch(`${b}/arrests_monthly.json`).then(r => r.json()).catch(() => null),
+      fetch(`${b}/arrests_division.json`).then(r => r.json()).catch(() => null),
+      fetch(`${b}/arrests_demographics.json`).then(r => r.json()).catch(() => null),
+      fetch(`${b}/arrests_categories.json`).then(r => r.json()).catch(() => null),
+    ]).then(([
+      summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat, monthlyCross,
+      arrSummary, arrMonthly, arrDivision, arrDemographics, arrCategories,
+    ]) => {
+      const arrests = arrSummary ? {
+        summary: arrSummary, monthly: arrMonthly, division: arrDivision,
+        demographics: arrDemographics, categories: arrCategories,
+      } : null;
+      setData({ summary, monthly, hourly, division, categories, weather, victims, premises, crossDivCat, monthlyCross, arrests });
     }).catch(() => setData('error'));
   }, []);
 
@@ -367,6 +381,7 @@ export default function Home() {
           { id: 'temporal',   label: 'Temporal',   icon: '🕐' },
           { id: 'categories', label: 'Categorías', icon: '📂' },
           { id: 'victims',    label: 'Víctimas',   icon: '👥' },
+          { id: 'arrests',    label: 'Arrestos',   icon: '🚔' },
           { id: 'external',   label: 'Contexto',   icon: '🌦️' },
         ].map(item => (
           <a
@@ -534,6 +549,18 @@ export default function Home() {
               filters={filters}
               onFilter={handleFilter}
             />
+          </ChartWrapper>
+        </Section>
+
+        {/* ARRESTS */}
+        <Section id="arrests">
+          <SectionHeader
+            title="¿A Quién Arresta el LAPD?"
+            sub="Perfil completo de arrestos: volumen, tipo de cargo, división y demografía. A diferencia del crimen reportado, el arresto refleja la acción policial — no necesariamente dónde ocurre más delito."
+            badge={data.arrests ? `${data.arrests.summary.total_arrests.toLocaleString()} arrestos` : undefined}
+          />
+          <ChartWrapper pending={isFiltering} minHeight={460}>
+            <ArrestChart data={data.arrests} />
           </ChartWrapper>
         </Section>
 

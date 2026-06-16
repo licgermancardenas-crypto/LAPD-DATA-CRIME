@@ -26,7 +26,8 @@ button:focus-visible,
 select:focus-visible,
 input[type="range"]:focus-visible,
 input[type="text"]:focus-visible,
-input[type="number"]:focus-visible {
+input[type="number"]:focus-visible,
+a:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(76,201,240,.45), 0 0 8px rgba(76,201,240,.15) !important;
 }

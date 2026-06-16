@@ -156,6 +156,22 @@ export default function GeoPage() {
   const iframeRefs = useRef({});
   const current = MAPS.find(m => m.id === active);
 
+  const selectTab = useCallback((id) => {
+    setActive(id);
+    if (typeof window !== 'undefined') window.history.replaceState(null, '', `#${id}`);
+  }, []);
+
+  // Sync tab with URL hash — lets Sidebar links (and back/forward) jump to a specific layer
+  useEffect(() => {
+    const applyHash = () => {
+      const id = window.location.hash.slice(1);
+      if (MAPS.some(m => m.id === id)) setActive(id);
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
+  }, []);
+
   const hasFilter   = !!(yearFilter || monthFilter);
   const canFilter   = active === 'divisions';  // only lapd-map.html has dynamic filtering
 
@@ -218,7 +234,7 @@ export default function GeoPage() {
         paddingBottom: 18,
       }}>
         {MAPS.map(m => (
-          <MapTab key={m.id} map={m} active={active === m.id} onClick={() => setActive(m.id)} />
+          <MapTab key={m.id} map={m} active={active === m.id} onClick={() => selectTab(m.id)} />
         ))}
       </div>
 

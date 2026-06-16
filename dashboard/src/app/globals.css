@@ -99,6 +99,18 @@ select:focus, input:focus {
 .osiris-scroll::-webkit-scrollbar-track { background:transparent }
 .osiris-scroll::-webkit-scrollbar-thumb { background:#2a3060;border-radius:2px }
 
+/* ── Insights print styles ─────────────────────────────────────────────── */
+@media print {
+  body { background:#fff !important; color:#111 !important; }
+  aside, nav.insights-toc, .no-print { display:none !important; }
+  h2   { font-size:20px; margin-bottom:8px; }
+  p    { font-size:12px; line-height:1.6; }
+  table { border-collapse:collapse; width:100%; }
+  td,th { border:1px solid #ddd; padding:6px 10px; font-size:11px; }
+  .chapter-sep { display:none; }
+  a { text-decoration:none; color:inherit; }
+}
+
 /* ── OSINT time slider ─────────────────────────────────────────────────── */
 .osint-slider {
   -webkit-appearance: none;

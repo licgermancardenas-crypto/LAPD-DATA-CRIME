@@ -23,19 +23,6 @@ const CHAPTERS = [
   {id:'findings',      n:'08', label:'Key Findings'},
 ];
 
-const PRINT_CSS = `
-@media print {
-  body { background:#fff !important; color:#111 !important; }
-  aside, nav.insights-toc, .no-print { display:none !important; }
-  h2 { font-size:20px; margin-bottom:8px; }
-  p  { font-size:12px; line-height:1.6; }
-  table { border-collapse:collapse; width:100%; }
-  td,th { border:1px solid #ddd; padding:6px 10px; font-size:11px; }
-  .chapter-sep { display:none; }
-  svg rect { fill:#ccc !important; }
-  a { text-decoration:none; color:inherit; }
-}
-`;
 
 function n2(n){ if(n>=1e6) return (n/1e6).toFixed(2)+'M'; if(n>=1e3) return (n/1e3).toFixed(1)+'k'; return String(n); }
 function clrColor(r){ return r>=25?C.green:r>=15?C.yellow:C.red; }
@@ -360,7 +347,6 @@ export default function InsightsPage(){
 
   return(
     <Shell>
-      <style>{PRINT_CSS}</style>
       <div style={{background:C.bg,minHeight:'100vh',color:C.text,fontFamily:'Inter,system-ui,sans-serif'}}>
 
         {/* HERO */}

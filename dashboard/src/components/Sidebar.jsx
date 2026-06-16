@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -39,6 +39,13 @@ const MAIN_NAV = [
     label: 'OSINT Terminal',
     icon: '◈',
     href: '/osiris',
+    sub: [],
+  },
+  {
+    id: 'compare',
+    label: 'Compare',
+    icon: '⊜',
+    href: '/compare',
     sub: [],
   },
   {
@@ -98,8 +105,18 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const isHome     = pathname === '/' || pathname === '';
   const isGeo      = pathname === '/geo';
   const isOsiris   = pathname === '/osiris';
+  const isCompare  = pathname === '/compare';
   const isInsights = pathname === '/insights';
   const isGlossary = pathname === '/glossary';
+
+  // Auto-collapse on narrow screens
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    if(window.innerWidth < 768) setCollapsed(true);
+    const handler=()=>{ if(window.innerWidth<768&&!collapsed) setCollapsed(true); };
+    window.addEventListener('resize',handler);
+    return()=>window.removeEventListener('resize',handler);
+  },[]);
 
   const W = collapsed ? 60 : 244;
 
@@ -189,6 +206,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
           const active = item.id === 'dashboard' ? isHome
                        : item.id === 'geo'       ? isGeo
                        : item.id === 'osiris'    ? isOsiris
+                       : item.id === 'compare'   ? isCompare
                        : item.id === 'insights'  ? isInsights
                        : item.id === 'glossary'  ? isGlossary
                        : false;

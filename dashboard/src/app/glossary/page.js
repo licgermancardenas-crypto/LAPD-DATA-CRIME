@@ -6,11 +6,11 @@ import { Search, BookOpen, Clock, Users, AlertTriangle, Building2 } from 'lucide
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const CATS = [
-  { id: 'all',          label: 'Todos',                  color: '#7b82a0',  bg: 'rgba(123,130,160,.1)' },
-  { id: 'temporal',     label: 'Métricas Temporales',    color: '#00f3ff',  bg: 'rgba(0,243,255,.08)'  },
-  { id: 'demographic',  label: 'Variables Demográficas', color: '#d946ef',  bg: 'rgba(217,70,239,.08)' },
-  { id: 'crime-code',   label: 'Códigos de Crimen',      color: '#fbbf24',  bg: 'rgba(251,191,36,.08)' },
-  { id: 'lapd-concept', label: 'Conceptos LAPD',         color: '#4f8ef7',  bg: 'rgba(79,142,247,.08)' },
+  { id: 'all',          label: 'All Terms',              color: '#7b82a0',  bg: 'rgba(123,130,160,.1)' },
+  { id: 'temporal',     label: 'Temporal Metrics',       color: '#00f3ff',  bg: 'rgba(0,243,255,.08)'  },
+  { id: 'demographic',  label: 'Demographic Variables',  color: '#d946ef',  bg: 'rgba(217,70,239,.08)' },
+  { id: 'crime-code',   label: 'Crime Codes',            color: '#fbbf24',  bg: 'rgba(251,191,36,.08)' },
+  { id: 'lapd-concept', label: 'LAPD Concepts',          color: '#4f8ef7',  bg: 'rgba(79,142,247,.08)' },
 ];
 
 const CAT_MAP = Object.fromEntries(CATS.map(c => [c.id, c]));
@@ -24,8 +24,8 @@ const TERMS = [
     native: 'Retraso de Denuncia',
     category: 'temporal',
     field: 'date_rptd − date_occ',
-    definition: 'Brecha en días entre el momento en que ocurrió el delito y la fecha en que fue registrado formalmente en el sistema LAPD. Indicador clave de confianza institucional y eficiencia operativa de cada comisaría.',
-    example: 'Robo ocurrido el lunes 3, denunciado el viernes 7 → Lag = 4 días. Si el Reporting Lag promedio de una división sube de 12 a 31 días en un año, puede indicar pérdida de confianza ciudadana o saturación de la guardia.',
+    definition: 'Gap in days between when the crime occurred and when it was formally logged in the LAPD system. A key indicator of institutional trust and the operational efficiency of each station.',
+    example: 'Robbery occurred Monday the 3rd, reported Friday the 7th → Lag = 4 days. If a division\'s average Reporting Lag rises from 12 to 31 days over a year, it may indicate declining community trust or report processing bottlenecks.',
   },
   {
     id: 'date-occ',
@@ -33,8 +33,8 @@ const TERMS = [
     native: 'Fecha de Ocurrencia',
     category: 'temporal',
     field: 'date_occ',
-    definition: 'Fecha en que el delito realmente ocurrió según el relato de la víctima o evidencia física/forense. Es la referencia real del incidente. Todos los análisis de estacionalidad del dashboard se calculan sobre esta fecha.',
-    example: 'Si un auto fue robado la noche del 15 de marzo, DATE OCC = 2023-03-15. Usar DATE RPTD en su lugar inflaría artificialmente los delitos del mes en que llegan las denuncias tardías.',
+    definition: 'The date the crime actually occurred, per the victim\'s account or physical/forensic evidence. This is the true temporal anchor of each incident. All seasonality analyses in this dashboard are computed on DATE OCC, not DATE RPTD.',
+    example: 'If a car was stolen the night of March 15, DATE OCC = 2023-03-15. Using DATE RPTD instead would artificially inflate crime counts in the months when late reports are filed — distorting trend analysis.',
   },
   {
     id: 'date-rptd',
@@ -42,8 +42,8 @@ const TERMS = [
     native: 'Fecha de Denuncia',
     category: 'temporal',
     field: 'date_rptd',
-    definition: 'Fecha en que el incidente fue formalmente reportado a la policía e ingresado al RMS (Records Management System). Siempre es igual o posterior a DATE OCC.',
-    example: 'Un fraude bancario ocurrido en enero puede denunciarse en marzo cuando el banco notifica al cliente. El Reporting Lag resultante es ~60 días, distorsionando las cifras si se usa DATE RPTD como eje temporal.',
+    definition: 'The date the incident was formally reported to police and entered into the RMS (Records Management System). Always equal to or later than DATE OCC. Used for operational tracking; not suitable as the temporal axis for crime trend analysis.',
+    example: 'A bank fraud occurring in January may not be reported until March when the bank notifies the victim. The resulting Reporting Lag is ~60 days — if DATE RPTD were used as the time axis, January would appear artificially quiet and March inflated.',
   },
   {
     id: 'time-occ',
@@ -51,8 +51,8 @@ const TERMS = [
     native: 'Hora del Hecho',
     category: 'temporal',
     field: 'time_occ (HHMM)',
-    definition: 'Hora estimada en que ocurrió el delito, expresada en formato militar de 4 dígitos (0000–2359). Es la fuente del heatmap horario del dashboard. Valores en bloques redondos (0000, 1200) suelen indicar hora desconocida.',
-    example: 'TIME OCC = 0230 → 2:30 AM. La franja 2200–0400 concentra asaltos y vandalismo. Los robos a comercios pican entre 1400–1800 (máximo tráfico peatonal). La hora 0000 tiene sobreconteo por registros sin hora precisa.',
+    definition: 'Estimated time the crime occurred, expressed in 4-digit military format (0000–2359). This is the source for the dashboard\'s hourly heatmap. Round block values (0000, 1200) typically indicate an unknown time rather than a true midnight or noon incident.',
+    example: 'TIME OCC = 0230 → 2:30 AM. The 22:00–04:00 window concentrates assaults and vandalism. Commercial robberies peak 14:00–18:00 (peak foot traffic). Hour 0000 is overrepresented due to records filed without a precise time.',
   },
   // ── Variables Demográficas ────────────────────────────────────────────────
   {
@@ -61,8 +61,8 @@ const TERMS = [
     native: 'Edad de la Víctima',
     category: 'demographic',
     field: 'vict_age',
-    definition: 'Edad en años completos de la víctima al momento del hecho. Puede contener valores atípicos: 0 (persona jurídica), negativos (error de carga) o valores extremos. Requiere limpieza antes del análisis demográfico.',
-    example: 'La distribución modal en LAPD 2020-2024 se concentra en 25–34 años. Víctimas registradas menores de 12 años activan automáticamente protocolos de reporte al DCFS (Departamento de Servicios Infantiles).',
+    definition: 'Age in full years of the victim at the time of the incident. May contain outliers: 0 (legal entity), negative values (data entry error), or extreme ages. Requires cleaning before demographic analysis to avoid distorting age-group statistics.',
+    example: 'The modal distribution in LAPD 2020–2024 concentrates in the 25–34 age bracket. Victims recorded as under 12 automatically trigger mandatory reporting protocols to DCFS (Department of Children and Family Services).',
   },
   {
     id: 'vict-age-zero',
@@ -70,8 +70,8 @@ const TERMS = [
     native: 'Persona Jurídica / Negocio',
     category: 'demographic',
     field: 'vict_age = 0',
-    definition: 'Cuando la víctima no es una persona física sino una entidad legal (comercio, vehículo institucional, banco, gobierno), el sistema registra edad 0 por defecto. No representa recién nacidos ni menores de 1 año.',
-    example: 'Un robo a una farmacia de Hollywood tiene VICT AGE = 0. El 12% del dataset total corresponde a este caso. Excluir estos registros del análisis demográfico eleva la edad media real de víctimas humanas en +4.2 años.',
+    definition: 'When the victim is not a physical person but a legal entity (business, institutional vehicle, bank, government agency), the system records age 0 by default. This does not represent newborns or children under 1 year old.',
+    example: 'A robbery at a Hollywood pharmacy → VICT AGE = 0. Approximately 12% of the total dataset corresponds to this case. Excluding these records from demographic analysis raises the real mean age of human victims by +4.2 years.',
   },
   {
     id: 'vict-sex',
@@ -79,8 +79,8 @@ const TERMS = [
     native: 'Sexo de la Víctima',
     category: 'demographic',
     field: 'vict_sex',
-    definition: 'Género registrado de la víctima según los códigos LAPD: M (Masculino), F (Femenino), X (No especificado / No binario / No aplica). Históricamente se usaron códigos H y N que hoy están deprecados.',
-    example: 'Los delitos violentos (Part 1) muestran 64% de víctimas masculinas. Los delitos domésticos invierten ese ratio: 71% femeninas. El código X (~3%) concentra en su mayoría casos donde la víctima era un negocio (VICT AGE = 0).',
+    definition: 'Recorded gender of the victim using LAPD codes: M (Male), F (Female), X (Unspecified / Non-binary / Not applicable). Historical codes H and N are now deprecated. The X code is disproportionately assigned when no individual victim is present.',
+    example: 'Violent crimes (Part 1) show 64% male victims. Domestic violence incidents invert that ratio: 71% female. The X code (~3%) primarily covers cases where the victim was a business or entity (VICT AGE = 0).',
   },
   {
     id: 'vict-descent',
@@ -88,8 +88,8 @@ const TERMS = [
     native: 'Etnia de la Víctima',
     category: 'demographic',
     field: 'vict_descent',
-    definition: 'Código de una letra que representa la etnia auto-declarada o estimada de la víctima según la clasificación del Departamento de Justicia de California. Refleja percepción del oficial respondiente cuando la víctima no está presente.',
-    example: 'H = Hispanic/Latino · W = White · B = Black · A = Asian · O = Other · X = Unknown · I = American Indian · Z = Asian Indian. El código B concentra incidencia de violencia desproporcionada en divisiones como 77th Street y Southeast.',
+    definition: 'Single-letter code representing the self-declared or estimated ethnicity of the victim, per California Department of Justice classification. When the victim is not present, reflects the responding officer\'s observation — introducing potential classification bias.',
+    example: 'H = Hispanic/Latino · W = White · B = Black · A = Asian · O = Other · X = Unknown · I = American Indian · Z = Asian Indian. Code B shows disproportionate violent crime incidence in divisions like 77th Street and Southeast.',
   },
   // ── Códigos de Crimen ─────────────────────────────────────────────────────
   {
@@ -98,8 +98,8 @@ const TERMS = [
     native: 'Delitos Graves (FBI)',
     category: 'crime-code',
     field: 'part_1_2 = 1',
-    definition: 'Clasificación del FBI que agrupa los 8 delitos más graves del Programa UCR: Homicidio, Violación, Robo con violencia, Agresión grave, Robo a domicilio, Robo de auto, Hurto mayor y Arson. Son los indicadores de seguridad pública más monitoreados.',
-    example: 'Si una división tiene 200 incidentes Part 1 y 500 Part 2, el 71% de su crimen es menor. Una suba del Part 1 sin suba del Part 2 indica agravamiento real de la violencia, no simplemente mayor registro administrativo.',
+    definition: 'FBI classification grouping the 8 most serious crimes in the UCR program: Homicide, Rape, Robbery, Aggravated Assault, Burglary, Vehicle Theft, Larceny-Theft, and Arson. These are the most closely monitored public safety indicators at the federal level.',
+    example: 'If a division has 200 Part 1 and 500 Part 2 incidents, 71% of its crime is minor. A Part 1 increase without a Part 2 increase signals actual violence escalation — not just broader reporting or administrative reclassification.',
   },
   {
     id: 'part-2',
@@ -107,8 +107,8 @@ const TERMS = [
     native: 'Delitos Menores (FBI)',
     category: 'crime-code',
     field: 'part_1_2 = 2',
-    definition: 'Categoría residual del UCR que incluye fraudes, vandalismo, posesión de armas, disturbios, embriaguez pública, prostitución y otras infracciones de menor gravedad pero mayor frecuencia estadística.',
-    example: 'Un pico de Part 2 en diciembre suele correlacionar con fraudes navideños y delitos de identidad. No refleja violencia, pero es un indicador anticipado de deterioro del tejido social en una zona.',
+    definition: 'Residual UCR category covering fraud, vandalism, weapons possession, disturbances, public intoxication, prostitution, and other lower-severity offenses. Higher in frequency than Part 1 but lower individual impact.',
+    example: 'A December Part 2 spike typically correlates with holiday fraud and identity theft. It does not reflect violence, but serves as a leading indicator of social fabric deterioration — particularly in commercial corridors.',
   },
   {
     id: 'crm-cd',
@@ -116,8 +116,8 @@ const TERMS = [
     native: 'Código de Crimen LAPD',
     category: 'crime-code',
     field: 'crm_cd / crm_cd_1…4',
-    definition: 'Código numérico de 3 dígitos asignado por el LAPD al tipo específico de delito. El código primario (CRM CD) es siempre el más grave del incidente. Pueden existir hasta 4 códigos adicionales por evento.',
-    example: 'CRM CD 510 = Robo de Vehículo · 330 = Allanamiento · 624 = Agresión simple · 210 = Robo con violencia. Un incidente con robo Y agresión registra ambos: 210 como primario, 624 como secundario.',
+    definition: '3-digit numeric code assigned by the LAPD to the specific crime type. The primary code (CRM CD) always represents the most serious offense in the incident. Up to 4 additional codes can be attached to a single event.',
+    example: 'CRM CD 510 = Vehicle Theft · 330 = Burglary · 624 = Simple Assault · 210 = Robbery. An incident involving both robbery and assault records both: 210 as primary, 624 as secondary. Only the primary code drives Part 1/2 classification.',
   },
   {
     id: 'ucr-class',
@@ -125,8 +125,8 @@ const TERMS = [
     native: 'Clasificación Uniforme de Delitos',
     category: 'crime-code',
     field: 'crm_cd_desc',
-    definition: 'Sistema de reportes del FBI (Uniform Crime Reporting) que estandariza la clasificación delictiva entre los ~18.000 departamentos de policía de EE.UU. Permite comparaciones nacionales y temporales.',
-    example: 'Gracias al UCR, el Clearance Rate de Vehicle Theft en LAPD (≈13%) puede compararse directamente con el promedio nacional del FBI (≈13.8%) o con NYPD (≈11.4%) sin ajustes metodológicos.',
+    definition: 'The FBI\'s Uniform Crime Reporting program, which standardizes crime classification across ~18,000 U.S. law enforcement agencies. Enables direct national and cross-jurisdictional comparisons without methodological adjustment.',
+    example: 'Using UCR standards, LAPD\'s Vehicle Theft Clearance Rate (≈13%) can be directly compared to the FBI national average (≈13.8%) or NYPD (≈11.4%) — because all three agencies use identical classification rules.',
   },
   // ── Conceptos de la LAPD ─────────────────────────────────────────────────
   {
@@ -135,8 +135,8 @@ const TERMS = [
     native: 'Tasa de Esclarecimiento',
     category: 'lapd-concept',
     field: 'status IN (AA, JA, JO, IC)',
-    definition: 'Porcentaje de casos que la LAPD considera "cerrados" mediante arresto de adulto (AA), arresto juvenil (JA/JO) o cierre excepcional (muerte del sospechoso, extradición negada, etc.). No equivale a condena judicial.',
-    example: 'Clearance Rate = 15% en Vehicle Theft → solo 15 de cada 100 robos de autos derivaron en detención. La LAPD pasa de 17.8% en 2020 a 12.3% en 2024: pérdida del 31% de eficacia investigativa en 5 años.',
+    definition: 'Percentage of cases the LAPD considers "closed" via adult arrest (AA), juvenile arrest (JA/JO), or exceptional closure (suspect deceased, extradition denied, etc.). Clearance does NOT equal conviction — a case can be cleared without prosecution.',
+    example: 'Clearance Rate = 15% for Vehicle Theft → only 15 of every 100 auto thefts led to any arrest. LAPD\'s overall rate dropped from 24.0% in 2020 to 12.1% in 2024 — a 50% relative collapse in investigative effectiveness.',
   },
   {
     id: 'status',
@@ -144,8 +144,8 @@ const TERMS = [
     native: 'Estado Procesal del Caso',
     category: 'lapd-concept',
     field: 'status',
-    definition: 'Código de 2 letras que refleja el estado procesal actual del caso: IC (Investigación Continua), AA (Adulto Arrestado), JA (Juvenil Arrestado), JO (Juvenil Derivado a Otras Agencias), AO (Adulto Derivado).',
-    example: 'IC = el caso sigue abierto, sin resolución → no suma al Clearance Rate. Un expediente IC abierto en 2020 que sigue IC en 2024 presiona el denominador acumulado, hundiendo el ratio de eficacia histórico de la división.',
+    definition: '2-letter code reflecting the current procedural status of the case: IC (Investigation Continuing), AA (Adult Arrested), JA (Juvenile Arrested), JO (Juvenile Other), AO (Adult Other). IC cases remain open and unsolved.',
+    example: 'IC = the case is still open with no resolution → it does not count toward the Clearance Rate. A case filed as IC in 2020 and still IC in 2024 remains in the unresolved denominator — compounding the historical efficiency decline visible in trend analysis.',
   },
   {
     id: 'premis-desc',
@@ -153,8 +153,8 @@ const TERMS = [
     native: 'Escenario del Hecho',
     category: 'lapd-concept',
     field: 'premis_cd / premis_desc',
-    definition: 'Descripción del tipo de propiedad o entorno físico donde se ejecutó el incidente. El LAPD registra más de 80 categorías granulares que el dashboard consolida en 5 macro-grupos para el análisis.',
-    example: 'Street/Sidewalk → Vía Pública · Single Family Dwelling → Residencial · Commercial/Business → Comercio · Parking Lot → Estacionamiento. El 72% de los delitos graves (Part 1) ocurren en Vía Pública.',
+    definition: 'Description of the property type or physical setting where the incident was executed. The LAPD records 80+ granular premise categories, which this dashboard consolidates into 5 macro-groups for analytical clarity.',
+    example: 'Street/Sidewalk → Public space · Single Family Dwelling → Residential · Commercial/Business → Retail · Parking Lot → Parking. 72% of serious (Part 1) crimes occur in public spaces — making street-level patrol the primary prevention lever.',
   },
   {
     id: 'area-name',
@@ -162,8 +162,8 @@ const TERMS = [
     native: 'División Policial',
     category: 'lapd-concept',
     field: 'area / area_name',
-    definition: 'Nombre de una de las 21 divisiones policiales de Los Ángeles que recibió y tramitó el reporte del incidente. Cada división opera con autonomía táctica y tiene su propio capitán y estadísticas de desempeño.',
-    example: '"77th Street" cubre South LA con los índices históricos más altos de violencia. "West LA" concentra delitos de propiedad en zonas residenciales premium. La división de menor densidad delictiva por habitante es "Foothill" (San Fernando Valley Norte).',
+    definition: 'Name of one of the 21 LAPD police divisions that received and processed the crime report. Each division operates with tactical autonomy and has its own captain, patrol resources, and published performance statistics.',
+    example: '"77th Street" covers South LA with historically the highest violence indices in the city. "West LA" concentrates property crime in premium residential zones. "Foothill" (North San Fernando Valley) has the lowest crime density per resident of any division.',
   },
   {
     id: 'weapon-used',
@@ -171,8 +171,82 @@ const TERMS = [
     native: 'Arma Utilizada',
     category: 'lapd-concept',
     field: 'weapon_used_cd',
-    definition: 'Código numérico que identifica el arma o método de fuerza empleado en el delito. Campo vacío o nulo indica que no hubo arma o que no se determinó. Es crítico para calcular el índice de violencia letal.',
-    example: 'Código 400 = Manos/Puños (pelea sin arma) · 101–109 = Armas de fuego (distintos tipos) · 504 = Cuchillo/Navaja. El 58% de los homicidios en el dataset involucran armas de fuego (serie 200+), tasa consistente con el promedio de California.',
+    definition: 'Numeric code identifying the weapon or method of force used in the crime. An empty or null field indicates no weapon was used or the type was not determined. Critical for calculating the lethal violence index.',
+    example: 'Code 400 = Hands/Fists (no weapon) · 101–109 = Firearms (various types) · 504 = Knife/Blade. 58% of homicides in the dataset involve firearms (200+ series), consistent with the California state average.',
+  },
+  // ── Additional Temporal ──────────────────────────────────────────────────
+  {
+    id: 'dow',
+    term: 'DOW',
+    native: 'Day of Week',
+    category: 'temporal',
+    field: 'dow (0=Mon … 6=Sun)',
+    definition: 'Integer encoding of the weekday on which the crime occurred, following Python/pandas convention (0 = Monday, 6 = Sunday). Used to construct the hourly heatmap grid (168 hour×dow cells). Note: this differs from JavaScript\'s convention where 0 = Sunday.',
+    example: 'DOW=4 (Friday) combined with hour 20–23 represents the peak crime window. Weekend nights (DOW 4–6, hours 22–02) account for a disproportionate share of violent crime relative to their share of total hours.',
+  },
+  {
+    id: 'rolling3',
+    term: 'Rolling 3-Month Average',
+    native: '3-Month Smoothed Trend',
+    category: 'temporal',
+    field: 'rolling3 / rolling3_daily',
+    definition: 'Moving average of crime counts over a 3-month window. Smooths out month-to-month noise from reporting lag spikes, holidays, and short-term anomalies. The daily version divides by days in the period to allow fair cross-period comparisons.',
+    example: 'January 2022 raw: 21,847 crimes. Rolling 3-month (Nov–Jan): 20,914. The smoothed value reveals the underlying trend without the December dip or January catch-up effects that inflate raw monthly comparisons.',
+  },
+  {
+    id: 'unemp-rate',
+    term: 'Unemployment Rate',
+    native: 'External Correlate — BLS',
+    category: 'temporal',
+    field: 'unemp_rate',
+    definition: 'Los Angeles County monthly unemployment rate sourced from the U.S. Bureau of Labor Statistics (BLS). Included as a socioeconomic correlate for crime trends. Not used as a causal variable — correlation direction varies by crime type.',
+    example: 'April 2020: unemployment spiked to 19.4% during COVID lockdowns. Property crime dipped simultaneously due to reduced foot traffic, not reduced unemployment per se — illustrating why correlation analysis requires crime-type segmentation.',
+  },
+  // ── Additional LAPD Concepts ─────────────────────────────────────────────
+  {
+    id: 'beat',
+    term: 'Beat',
+    native: 'Police Beat / Patrol Sector',
+    category: 'lapd-concept',
+    field: 'rpt_dist_no',
+    definition: 'The smallest geographic unit of LAPD patrol operations. Each division is subdivided into ~6–12 reporting districts (RDs), each covering a few city blocks to several square miles. Crimes are logged to a specific RD, which maps to a beat. Granular enough to enable block-level deployment decisions.',
+    example: 'Division 77th Street has 20+ reporting districts. RD 7701 covers the intersection of Florence & Normandie — historically significant as the epicenter of the 1992 civil unrest. Beat-level data can reveal crime hot-spots invisible at division level.',
+  },
+  {
+    id: 'mo-codes',
+    term: 'MO Codes',
+    native: 'Modus Operandi Codes',
+    category: 'lapd-concept',
+    field: 'mocodes',
+    definition: 'Free-form list of numeric codes describing the offender\'s method of operation — entry techniques, victim selection, tools used, behavioral patterns. Multiple MO codes can apply to a single incident. Valuable for linking serial crimes across different geographic areas.',
+    example: 'MO Code 0300 = Suspect used a screwdriver as a prying tool · MO Code 1501 = Victim was elderly. If the same MO combination (e.g., 0300+1400) appears in 15 burglaries across three divisions, investigators can hypothesize a single offender or crew.',
+  },
+  {
+    id: 'rms',
+    term: 'RMS',
+    native: 'Records Management System',
+    category: 'lapd-concept',
+    field: 'Internal LAPD system',
+    definition: 'The LAPD\'s digital case management platform into which all crime reports are entered. The public dataset is a filtered export from RMS, excluding PII (personally identifiable information), ongoing investigations flagged as sensitive, and juvenile victim details per California law.',
+    example: 'When an officer files a report on a vehicle theft, it enters the RMS within 24–72 hours of the incident. The public CSV dataset represents the anonymized, aggregated output — DATE RPTD reflects when the report cleared RMS review, not when the officer submitted it.',
+  },
+  {
+    id: 'crimes-per-1000',
+    term: 'Crimes per 1,000 Residents',
+    native: 'Crime Rate (Population-Normalized)',
+    category: 'lapd-concept',
+    field: 'crimes_per_1000',
+    definition: 'Total crime count divided by residential population × 1,000. The preferred metric for comparing crime intensity across neighborhoods of vastly different population sizes. Raw counts favor dense neighborhoods; rate normalizes for population exposure.',
+    example: 'Downtown LA: 71,808 crimes · ~70,678 residents → 1,016 crimes per 1,000. El Sereno: 3,200 crimes · ~42,000 residents → 76 crimes per 1,000. By raw count Downtown looks 22× worse; by rate it\'s 13× — both significant, but rate is the fairer comparison for resource allocation.',
+  },
+  {
+    id: 'vulnerability-score',
+    term: 'Vulnerability Score',
+    native: 'Composite Risk Index',
+    category: 'lapd-concept',
+    field: 'vulnerability_score / vulnerability_label',
+    definition: 'A composite index combining poverty rate, crime rate, educational attainment proxies, and demographic concentration to rank neighborhood vulnerability. Computed from Census ACS data and LAPD crime counts. Labels: Low / Medium / High / Very High.',
+    example: 'Skid Row (Downtown) scores Very High vulnerability: 38% poverty rate, 1,016 crimes per 1,000, limited social infrastructure. Brentwood scores Low: 4% poverty rate, 22 crimes per 1,000, dense educational/healthcare infrastructure. Vulnerability is the denominator behind crime impact — the same crime hits differently in each neighborhood.',
   },
 ];
 
@@ -252,7 +326,7 @@ function TermCard({ term: t, visible }) {
           display: 'flex', alignItems: 'center', gap: 5,
         }}>
           <span style={{ display: 'inline-block', width: 3, height: 3, borderRadius: '50%', background: cat.color, boxShadow: `0 0 5px ${cat.color}` }} />
-          Caso Práctico
+          Practical Example
         </p>
         <p style={{ fontSize: 11.5, color: '#636880', lineHeight: 1.7, margin: 0 }}>{t.example}</p>
       </div>
@@ -308,10 +382,10 @@ export default function GlossaryPage() {
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}>
-                Centro de Terminología e Inteligencia
+                Terminology & Intelligence Reference
               </h1>
               <p style={{ fontSize: 13, color: '#5a6080', margin: '4px 0 0' }}>
-                Diccionario de variables, métricas y conceptos operativos del sistema LAPD 2020–2024
+                Dictionary of variables, metrics, and operational concepts in the LAPD dataset 2020–2024
               </p>
             </div>
             <div style={{ marginLeft: 'auto' }}>
@@ -339,7 +413,7 @@ export default function GlossaryPage() {
           }} />
           <input
             type="text"
-            placeholder="Buscar término, campo, definición…"
+            placeholder="Search term, field, definition…"
             value={query}
             onChange={e => setQuery(e.target.value)}
             style={{
@@ -402,8 +476,8 @@ export default function GlossaryPage() {
         {(query || activeCat !== 'all') && (
           <p style={{ fontSize: 11.5, color: '#3d4255', marginBottom: 20 }}>
             {filtered.length === 0
-              ? 'Sin resultados — probá otra búsqueda'
-              : `${filtered.length} término${filtered.length > 1 ? 's' : ''} encontrado${filtered.length > 1 ? 's' : ''}`
+              ? 'No results — try a different search'
+              : `${filtered.length} term${filtered.length > 1 ? 's' : ''} found`
             }
           </p>
         )}
@@ -414,7 +488,7 @@ export default function GlossaryPage() {
             textAlign: 'center', padding: '80px 0', color: '#2d3147',
           }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>🔍</div>
-            <p style={{ fontSize: 14, color: '#3d4255' }}>Sin resultados para &ldquo;{query}&rdquo;</p>
+            <p style={{ fontSize: 14, color: '#3d4255' }}>No results for &ldquo;{query}&rdquo;</p>
           </div>
         ) : (
           <div style={{

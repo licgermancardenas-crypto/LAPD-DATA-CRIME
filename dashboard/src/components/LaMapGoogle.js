@@ -230,14 +230,14 @@ function renderClusters(ctx, clusters, proj, w, h) {
     const fsize = count > 400 ? 11 : count > 100 ? 10 : 9;
     const label = count > 9999 ? '9k+' : count > 999 ? `${(count/1000).toFixed(1)}k` : String(count);
 
-    // Dark navy fill — rgba(15, 23, 42, 0.85)
-    ctx.fillStyle = 'rgba(15,23,42,0.87)';
+    // Transparent fill — map base stays legible through overlay (bg-opacity-20)
+    ctx.fillStyle = 'rgba(15,23,42,0.18)';
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI*2);
     ctx.fill();
 
-    // Violet neon border with glow
-    ctx.shadowBlur  = 10;
+    // Violet neon border with amplified glow
+    ctx.shadowBlur  = 14;
     ctx.shadowColor = '#9d4edd';
     ctx.strokeStyle = '#9d4edd';
     ctx.lineWidth   = 2.2;

@@ -74,12 +74,14 @@ function CatSexTip({ active, payload }) {
 function KpiMini({ label, value, sub, color, border }) {
   return (
     <div style={{
-      background: '#0f1117', borderRadius: 10, padding: '14px 16px', textAlign: 'center',
-      border: `1px solid ${border ?? '#2a2d3a'}`,
+      background: 'linear-gradient(135deg, #08091a 0%, rgba(13,18,36,0.93) 50%, #08091a 100%)',
+      borderRadius: 10, padding: '14px 16px', textAlign: 'center',
+      border: `1px solid ${border ?? 'rgba(148,163,184,0.07)'}`,
+      transition: 'box-shadow 0.3s ease',
     }}>
       <p style={{ fontSize: 10, color: '#7b82a0', marginBottom: 4, letterSpacing: '.06em' }}>{label.toUpperCase()}</p>
       <p style={{ fontSize: 22, fontWeight: 800, color, marginBottom: 4 }}>{value}</p>
-      <p style={{ fontSize: 11, color: '#7b82a0', lineHeight: 1.4 }}>{sub}</p>
+      <p style={{ fontSize: 11, color: '#7b82a0', lineHeight: 1.55, fontFamily: 'Inter,system-ui,sans-serif' }}>{sub}</p>
     </div>
   );
 }
@@ -290,8 +292,11 @@ export default function VictimChart({ data, filters, onFilter }) {
             </div>
           ))}
         </div>
-        <p style={{ fontSize: 11, color: '#3a3f55', marginTop: 10 }}>
-          Nota: registros con vict_sex="Unknown" excluidos · edad≤0 excluida en preprocessing
+        <p style={{
+          fontSize: 11, color: '#4a5480', lineHeight: 1.65, marginTop: 12,
+          fontFamily: 'Inter,system-ui,sans-serif', fontStyle: 'italic',
+        }}>
+          Nota: registros con vict_sex &ldquo;Unknown&rdquo; excluidos · edad ≤ 0 excluida en preprocesamiento
         </p>
       </div>
 

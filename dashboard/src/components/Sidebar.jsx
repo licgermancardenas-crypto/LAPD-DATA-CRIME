@@ -188,7 +188,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
       )}
 
       {/* ── Nav scroll area ── */}
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none', padding: '12px 0' }}>
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'thin', scrollbarColor: 'rgba(42,45,58,0.8) transparent', padding: '12px 0' }}>
 
         {/* Section label */}
         {!collapsed && (
@@ -347,7 +347,12 @@ function NavItem({ href, icon, label, active, collapsed }) {
         opacity: active ? 1 : .7,
         transition: 'opacity .12s',
       }}>{icon}</span>
-      {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
+      {!collapsed && (
+        <span style={{
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          flex: 1, minWidth: 0,
+        }}>{label}</span>
+      )}
     </Link>
   );
 }
@@ -368,21 +373,23 @@ function SubItem({ href, label, icon, active }) {
         fontSize: 12, fontWeight: active ? 600 : 400,
         borderLeft: '3px solid transparent',
         transition: 'color .12s, background .12s',
-        whiteSpace: 'nowrap',
+        overflow: 'hidden',
         letterSpacing: '.01em',
       }}
       onMouseEnter={e => { e.currentTarget.style.color = '#b0b7d0'; }}
       onMouseLeave={e => { e.currentTarget.style.color = active ? '#98b4f7' : '#6b7590'; }}
     >
       {icon ? (
-        <span style={{ fontSize: 12, opacity: active ? .9 : .6 }}>{icon}</span>
+        <span style={{ fontSize: 12, opacity: active ? .9 : .6, flexShrink: 0 }}>{icon}</span>
       ) : (
         <span style={{
           width: 5, height: 5, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
           background: active ? C_accent : '#3a3f5a',
         }} />
       )}
-      {label}
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>
+        {label}
+      </span>
     </a>
   );
 }

@@ -166,7 +166,8 @@ export default function GlobalFilterPanel({
       top: 0,
       height: '100vh',
       overflowY: 'auto',
-      scrollbarWidth: 'none',
+      scrollbarWidth: 'thin',
+      scrollbarColor: 'rgba(42,45,58,0.85) transparent',
       zIndex: 30,
     }}>
       {/* Neon gradient accent */}

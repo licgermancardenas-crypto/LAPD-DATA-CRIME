@@ -4,12 +4,28 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
   const trendColor = trend > 0 ? '#e05252' : trend < 0 ? '#3ecf8e' : '#7b82a0';
   const trendSign  = trend > 0 ? '+' : '';
 
+  const hasTrend = trend !== undefined && trend !== null;
+  const idleGlow = hasTrend
+    ? trend > 0
+      ? '0 0 20px rgba(239,68,68,0.12), 0 0 40px rgba(239,68,68,0.06)'
+      : trend < 0
+      ? '0 0 20px rgba(34,197,94,0.12), 0 0 40px rgba(34,197,94,0.06)'
+      : 'none'
+    : 'none';
+  const hoverGlow = hasTrend
+    ? trend > 0
+      ? '0 10px 32px rgba(239,68,68,0.2), 0 0 24px rgba(239,68,68,0.14)'
+      : trend < 0
+      ? '0 10px 32px rgba(34,197,94,0.2), 0 0 24px rgba(34,197,94,0.14)'
+      : '0 10px 30px rgba(0,243,255,0.1)'
+    : '0 10px 30px rgba(0,243,255,0.1)';
+
   return (
     <div style={{
-      background: 'rgba(30, 34, 48, 0.45)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      border: '1px solid rgba(255, 255, 255, 0.05)',
+      background: 'linear-gradient(135deg, #08091a 0%, rgba(13,18,36,0.92) 50%, #08091a 100%)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      border: '1px solid rgba(148,163,184,0.07)',
       borderRadius: 14,
       padding: 24,
       display: 'flex',
@@ -18,15 +34,16 @@ export default function KpiCard({ label, value, sub, trend, color = '#4f8ef7', i
       overflow: 'hidden',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       cursor: 'default',
+      boxShadow: idleGlow,
     }}
     onMouseEnter={e => {
-      e.currentTarget.style.boxShadow = '0 10px 30px -10px rgba(0, 243, 255, 0.1)';
-      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+      e.currentTarget.style.boxShadow = hoverGlow;
+      e.currentTarget.style.border = '1px solid rgba(148,163,184,0.13)';
       e.currentTarget.style.transform = 'translateY(-2px)';
     }}
     onMouseLeave={e => {
-      e.currentTarget.style.boxShadow = 'none';
-      e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+      e.currentTarget.style.boxShadow = idleGlow;
+      e.currentTarget.style.border = '1px solid rgba(148,163,184,0.07)';
       e.currentTarget.style.transform = 'translateY(0)';
     }}>
 

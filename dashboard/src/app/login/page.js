@@ -4,9 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 
-/* ── LAPD Badge SVG (monochromatic, cyan-tinted) ─────────────────────── */
+/* ── LAPD Badge SVG ──────────────────────────────────────────────────── */
 function LAPDBadge() {
   return (
     <svg
@@ -50,119 +49,15 @@ function LAPDBadge() {
   );
 }
 
-/* ── Input field component ───────────────────────────────────────────── */
-function TacticalInput({ label, type = 'text', value, onChange, placeholder, autoComplete, children }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="font-mono text-[10px] text-slate-500 tracking-widest uppercase">
-        {label}
-      </label>
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 font-mono text-xs select-none">›</span>
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          required
-          className="w-full bg-slate-900/40 border border-slate-800 focus:border-cyan-500/50
-                     rounded-lg text-slate-200 font-mono text-sm placeholder-slate-600
-                     focus:ring-0 focus:outline-none transition-all duration-200
-                     px-4 py-3 pl-7 hover:border-slate-700"
-        />
-        {children}
-      </div>
-    </div>
-  );
-}
-
 /* ── Main page ───────────────────────────────────────────────────────── */
 export default function LoginPage() {
   const router = useRouter();
+  const [entering, setEntering] = useState(false);
 
-  const [mode, setMode]         = useState('login');   // 'login' | 'signup'
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [showPwd, setShowPwd]   = useState(false);
-  const [loading, setLoading]       = useState(false);
-  const [guestLoading, setGuestLoading] = useState(false);
-  const [error, setError]         = useState('');
-  const [notice, setNotice]       = useState('');
-
-  function switchMode(next) {
-    setMode(next);
-    setError('');
-    setNotice('');
-    setFullName('');
-    setEmail('');
-    setPassword('');
+  function handleEnter() {
+    setEntering(true);
+    setTimeout(() => router.push('/'), 600);
   }
-
-  async function handleGuestAccess() {
-    setGuestLoading(true);
-    setError('');
-    setNotice('');
-    const demoEmail = process.env.NEXT_PUBLIC_DEMO_EMAIL;
-    const demoPass  = process.env.NEXT_PUBLIC_DEMO_PASSWORD;
-    if (!demoEmail || !demoPass) {
-      setError('DEMO MODE UNAVAILABLE — CONTACT SYSTEM ADMINISTRATOR.');
-      setGuestLoading(false);
-      return;
-    }
-    try {
-      const { data, error: err } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPass,
-      });
-      if (err) throw err;
-      if (data.session) router.push('/');
-    } catch (err) {
-      setError('GUEST ACCESS DENIED — ' + (err.message?.toUpperCase() ?? 'SYSTEM UNAVAILABLE'));
-      setGuestLoading(false);
-    }
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setNotice('');
-    setLoading(true);
-
-    try {
-      if (mode === 'signup') {
-        const { data, error: err } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: fullName } },
-        });
-
-        if (err) throw err;
-
-        if (data.session) {
-          router.push('/');
-        } else {
-          setNotice('ACCESS REQUEST RECEIVED. CHECK YOUR EMAIL TO CONFIRM AND ACTIVATE YOUR ACCOUNT.');
-        }
-
-      } else {
-        const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (err) throw err;
-
-        if (data.session) {
-          router.push('/');
-        }
-      }
-    } catch (err) {
-      setError(err.message?.toUpperCase() ?? 'AUTHENTICATION FAILURE. CHECK CREDENTIALS.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const isSignup = mode === 'signup';
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-slate-950 flex">
@@ -180,185 +75,84 @@ export default function LoginPage() {
               <span className="font-mono tracking-widest text-[9px] text-slate-500 uppercase leading-none">
                 Los Angeles Police Department
               </span>
-              <span className="font-mono tracking-widest text-[10px] text-slate-400 uppercase leading-none">
-                OSIRIS // CRIMINAL INTELLIGENCE SYSTEM
+              <span className="font-mono tracking-widest text-[10px] text-cyan-500/80 uppercase leading-none">
+                L.A.I.S.S. // INTELLIGENT SECURITY SYSTEM
               </span>
             </div>
           </div>
 
-          <div className="w-full h-px bg-gradient-to-r from-cyan-500/30 via-slate-700/40 to-transparent mb-8" />
+          <div className="w-full h-px bg-gradient-to-r from-cyan-500/30 via-slate-700/40 to-transparent mb-10" />
 
-          {/* Mode toggle */}
-          <div className="flex gap-1 p-1 bg-slate-900/60 rounded-lg border border-slate-800/60 mb-8">
-            {[
-              { key: 'login',  label: 'SIGN IN' },
-              { key: 'signup', label: 'REQUEST ACCESS' },
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => switchMode(key)}
-                className={`flex-1 font-mono text-[10px] tracking-widest py-2 rounded-md transition-all duration-200 ${
-                  mode === key
-                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]'
-                    : 'text-slate-600 hover:text-slate-400'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          {/* System name */}
+          <div className="mb-2">
+            <p className="font-mono text-[10px] text-slate-600 tracking-[0.25em] uppercase mb-3">
+              CLASSIFIED SYSTEM ACCESS
+            </p>
+            <h1 className="font-mono text-2xl font-bold text-white tracking-tight leading-tight mb-1">
+              LOS ANGELES<br />
+              <span className="text-cyan-400">INTELLIGENT</span><br />
+              SECURITY SYSTEM
+            </h1>
+            <p className="font-mono text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-3">
+              REAL-TIME CRIMINAL INTELLIGENCE<br />
+              LOS ANGELES METROPOLITAN AREA
+            </p>
           </div>
 
-          {/* Heading */}
-          <h1 className="font-mono text-xl font-bold text-white tracking-tight mb-1">
-            {isSignup ? 'REQUEST CLEARANCE' : 'SECURE ACCESS'}
-          </h1>
-          <p className="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-6">
-            {isSignup ? 'Register for demo access' : 'Authorized operators only'}
-          </p>
+          <div className="w-full h-px bg-slate-800/60 my-8" />
 
-          {/* Error alert */}
-          {error && (
-            <div className="mb-5 px-4 py-3 rounded-lg border border-rose-500/40 bg-rose-950/30
-                            shadow-[0_0_12px_rgba(239,68,68,0.15)] flex gap-2 items-start">
-              <span className="text-rose-500 font-mono text-sm mt-0.5 shrink-0">⚠</span>
-              <p className="font-mono text-[10px] text-rose-400 tracking-wide leading-relaxed">
-                {error}
-              </p>
-            </div>
-          )}
-
-          {/* Success notice */}
-          {notice && (
-            <div className="mb-5 px-4 py-3 rounded-lg border border-cyan-500/40 bg-cyan-950/20
-                            shadow-[0_0_12px_rgba(6,182,212,0.15)] flex gap-2 items-start">
-              <span className="text-cyan-400 font-mono text-sm mt-0.5 shrink-0">◈</span>
-              <p className="font-mono text-[10px] text-cyan-300/80 tracking-wide leading-relaxed">
-                {notice}
-              </p>
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-            {isSignup && (
-              <TacticalInput
-                label="Full Name"
-                type="text"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                placeholder="Agent full name"
-                autoComplete="name"
-              />
-            )}
-
-            <TacticalInput
-              label="Email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="badge@lapd.gov"
-              autoComplete="email"
-            />
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-mono text-[10px] text-slate-500 tracking-widest uppercase">
-                {isSignup ? 'Set Access Key' : 'Access Key'}
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 font-mono text-xs select-none">›</span>
-                <input
-                  type={showPwd ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  autoComplete={isSignup ? 'new-password' : 'current-password'}
-                  required
-                  className="w-full bg-slate-900/40 border border-slate-800 focus:border-cyan-500/50
-                             rounded-lg text-slate-200 font-mono text-sm placeholder-slate-600
-                             focus:ring-0 focus:outline-none transition-all duration-200
-                             px-4 py-3 pl-7 pr-14 hover:border-slate-700"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd(v => !v)}
-                  tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px]
-                             text-slate-600 hover:text-slate-400 tracking-wider transition-colors"
-                >
-                  {showPwd ? 'HIDE' : 'SHOW'}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-1 bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-900 disabled:cursor-wait
-                         text-slate-950 font-bold tracking-wider text-xs uppercase py-3 rounded-lg
-                         shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_28px_rgba(6,182,212,0.55)]
-                         transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="inline-block w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  {isSignup ? 'SUBMITTING REQUEST...' : 'AUTHENTICATING...'}
-                </>
-              ) : (
-                isSignup ? 'SUBMIT ACCESS REQUEST' : 'INITIATE SESSION'
-              )}
-            </button>
-          </form>
-
-          {/* Demo / Guest divider */}
-          <div className="flex items-center gap-3 mt-5 mb-4">
-            <div className="flex-1 h-px bg-slate-800/80" />
-            <span className="font-mono text-[9px] text-slate-700 tracking-[0.25em]">OR</span>
-            <div className="flex-1 h-px bg-slate-800/80" />
-          </div>
-
-          {/* Demo / Guest button */}
+          {/* ENTER SYSTEM button */}
           <button
-            type="button"
-            onClick={handleGuestAccess}
-            disabled={guestLoading}
-            className="w-full font-mono text-[10px] tracking-widest uppercase py-3 rounded-lg
-                       border border-amber-500/30 bg-amber-950/20 text-amber-400
-                       hover:border-amber-400/60 hover:bg-amber-950/40 hover:text-amber-300
-                       disabled:opacity-50 disabled:cursor-wait
-                       shadow-[0_0_12px_rgba(245,158,11,0.08)] hover:shadow-[0_0_22px_rgba(245,158,11,0.25)]
-                       transition-all duration-200 flex items-center justify-center gap-2"
+            onClick={handleEnter}
+            disabled={entering}
+            className="w-full py-4 rounded-lg font-mono text-sm font-bold tracking-[0.25em] uppercase
+                       border border-cyan-500/40 bg-cyan-950/20 text-cyan-300
+                       hover:border-cyan-400/70 hover:bg-cyan-950/40 hover:text-cyan-200
+                       disabled:opacity-60 disabled:cursor-wait
+                       shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:shadow-[0_0_35px_rgba(6,182,212,0.28)]
+                       transition-all duration-300 flex items-center justify-center gap-3
+                       relative overflow-hidden group"
           >
-            {guestLoading ? (
+            {/* Animated inner border glow */}
+            <span className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{ boxShadow: 'inset 0 0 20px rgba(6,182,212,0.1)' }} />
+
+            {entering ? (
               <>
-                <span className="inline-block w-3 h-3 border-2 border-amber-500/40 border-t-amber-400 rounded-full animate-spin" />
-                AUTHENTICATING GUEST INTERFACE...
+                <span className="inline-block w-3.5 h-3.5 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin" />
+                INITIALIZING ACCESS...
               </>
             ) : (
               <>
-                <span className="text-amber-500 text-sm leading-none">⚡</span>
-                BYPASS SYSTEM // ACCESS DEMO MODE
+                <span className="text-cyan-500 text-base leading-none">▶</span>
+                ENTER SYSTEM
               </>
             )}
           </button>
 
-          {/* Status row */}
-          <div className="flex items-center gap-2 mt-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="font-mono text-[10px] text-slate-600 tracking-widest">
-              OSIRIS UPLINK ACTIVE // NODE-7 CONNECTED
-            </span>
+          {/* Console micro-texts */}
+          <div className="mt-4 flex flex-col gap-1.5">
+            <p className="font-mono text-[9px] text-slate-700 tracking-widest">
+              › SYSTEM STANDBY... UPLINK ACTIVE (NODE-DEMO-A)
+            </p>
+            <p className="font-mono text-[9px] text-slate-700 tracking-widest">
+              › UNRESTRICTED VIEW // ACTIVE
+            </p>
+            <p className="font-mono text-[9px] text-slate-700 tracking-widest">
+              › CREDENTIALS: NONE REQUIRED
+            </p>
           </div>
         </div>
 
         {/* Footer */}
         <div className="flex flex-col gap-2 mt-8 pt-6 border-t border-slate-900">
-          <p className="font-mono text-[10px] text-rose-500/70 tracking-tight leading-snug">
-            SECURE CONNECTION // AUTHORIZED PERSONNEL ONLY.
-            ALL ACTIVITIES ARE LOGGED UNDER LAPD SECURITY PROTOCOL.
-          </p>
-          <p className="font-mono text-[9px] text-slate-700 tracking-widest">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="font-mono text-[10px] text-slate-600 tracking-widest">
+              L.A.I.S.S. UPLINK ACTIVE // NODE-DEMO-A CONNECTED
+            </span>
+          </div>
+          <p className="font-mono text-[9px] text-slate-700 tracking-widest mt-1">
             v4.2.1 // 2024 LAPD CRIMINAL INTELLIGENCE DIV.
           </p>
         </div>
@@ -395,10 +189,12 @@ export default function LoginPage() {
               LAPD // BUREAU OF INVESTIGATION
             </p>
             <h2 className="font-mono text-3xl font-bold text-white/80 tracking-tight leading-tight mb-4">
-              OPERATION<br />
-              <span className="text-cyan-400/90">OSIRIS</span>
+              <span className="text-cyan-400/90">L.A.I.S.S.</span>
             </h2>
-            <p className="font-mono text-xs text-slate-500 tracking-widest leading-relaxed">
+            <p className="font-mono text-sm text-white/40 tracking-widest mb-2">
+              LOS ANGELES INTELLIGENT<br />SECURITY SYSTEM
+            </p>
+            <p className="font-mono text-xs text-slate-500 tracking-widest leading-relaxed mt-4">
               REAL-TIME CRIMINAL INTELLIGENCE<br />
               LOS ANGELES METROPOLITAN AREA<br />
               1,004,894 INCIDENTS · 2020–2024

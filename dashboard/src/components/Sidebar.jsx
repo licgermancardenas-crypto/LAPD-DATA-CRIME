@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 const MAIN_NAV = [
   {
@@ -102,7 +103,9 @@ const C = {
 
 export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser]           = useState(null);
   const pathname = usePathname();
+  const router   = useRouter();
 
   const isHome     = pathname === '/' || pathname === '';
   const isGeo      = pathname === '/geo';
@@ -110,6 +113,20 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const isCompare  = pathname === '/compare';
   const isInsights = pathname === '/insights';
   const isGlossary = pathname === '/glossary';
+
+  // Load current user + subscribe to auth changes
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push('/login');
+  }
 
   // Auto-collapse on narrow screens
   useEffect(()=>{
@@ -282,6 +299,75 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
         ))}
 
       </div>
+
+      {/* ── Operator / Logout ── */}
+      {user && (
+        <div style={{ borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
+          {!collapsed ? (
+            <div style={{ padding: '10px 14px 10px 18px' }}>
+              {/* Label row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+                <span style={{
+                  fontSize: 9, fontWeight: 800, color: C.accent,
+                  letterSpacing: '.14em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+                }}>◈ OPERADOR</span>
+                <span style={{ flex: 1, height: 1, background: C.border }} />
+              </div>
+              {/* Email */}
+              <div style={{
+                fontSize: 11, color: '#b0b7d0', fontFamily: 'monospace',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                marginBottom: 8,
+              }} title={user.email}>
+                {user.email}
+              </div>
+              {/* Logout button */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%', padding: '5px 0', borderRadius: 5,
+                  border: '1px solid rgba(239,68,68,.28)',
+                  background: 'rgba(239,68,68,.07)',
+                  color: '#f87171', fontSize: 10, fontWeight: 700,
+                  letterSpacing: '.1em', textTransform: 'uppercase',
+                  cursor: 'pointer', fontFamily: 'monospace',
+                  transition: 'all .15s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(239,68,68,.14)';
+                  e.currentTarget.style.borderColor = 'rgba(239,68,68,.5)';
+                  e.currentTarget.style.color = '#fca5a5';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(239,68,68,.07)';
+                  e.currentTarget.style.borderColor = 'rgba(239,68,68,.28)';
+                  e.currentTarget.style.color = '#f87171';
+                }}
+              >
+                CERRAR SESIÓN
+              </button>
+            </div>
+          ) : (
+            <div style={{ padding: '8px 0', display: 'flex', justifyContent: 'center' }}>
+              <button
+                onClick={handleLogout}
+                title="Cerrar sesión"
+                style={{
+                  width: 28, height: 28, borderRadius: 6,
+                  border: '1px solid rgba(239,68,68,.22)',
+                  background: 'rgba(239,68,68,.07)',
+                  color: '#f87171', fontSize: 14,
+                  cursor: 'pointer', fontFamily: 'monospace',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all .15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background='rgba(239,68,68,.14)'; e.currentTarget.style.borderColor='rgba(239,68,68,.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='rgba(239,68,68,.07)'; e.currentTarget.style.borderColor='rgba(239,68,68,.22)'; }}
+              >⏻</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Footer ── */}
       <div style={{ borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>

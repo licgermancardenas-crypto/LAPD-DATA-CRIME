@@ -1,0 +1,33 @@
+# Raw datasets — too large for Vercel upload
+/datasets/
+/data/
+
+# Python pipeline sources (root-level only)
+/src/
+/scripts/
+/notebooks/
+
+# Loose GeoJSON / Parquet / CSV at repo root
+/*.geojson
+/*.parquet
+/*.csv
+
+# Screenshot / audit artifacts at repo root
+/*.png
+/audit_*.json
+/verify_*.py
+/_audit.py
+/_find_overflow*.py
+/check_bundle.py
+/set_vercel_env.py
+
+# Local Python and misc
+__pycache__/
+*.pyc
+.env*.local
+
+# Build artifacts inside dashboard/ (Vercel installs fresh)
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+dashboard/.vercel/

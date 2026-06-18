@@ -131,6 +131,7 @@ export default function Home() {
   const [showOnboarding,  setShowOnboarding]  = useState(false);
   const [filters,         setFilters]         = useState({
     area: null, category: null, ageGroup: null, timeSlot: null, years: [], months: [],
+    shift: null, dayType: null,
   });
   const [isFiltering, setIsFiltering] = useState(false);
   const filtersReady = useRef(false);
@@ -354,6 +355,8 @@ export default function Home() {
           setFilters={setFilters}
           categories={data.categories}
           divisions={data.division}
+          filteredCount={computedSummary?.total_crimes}
+          totalCount={baseSummary.total_crimes}
         />
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -408,6 +411,25 @@ export default function Home() {
             Para comparaciones interanuales confiables usar <strong style={{ color: '#fbbf24' }}>2020–2023</strong>.
           </span>
         </div>
+
+        {/* Zero-results banner */}
+        {computedSummary !== null && computedSummary.total_crimes === 0 && (
+          <div style={{
+            marginBottom: 24, padding: '20px 24px', borderRadius: 10,
+            background: 'rgba(224,82,82,.05)', border: '1px solid rgba(224,82,82,.25)',
+            display: 'flex', alignItems: 'center', gap: 16,
+          }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>◈</span>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, color: '#e05252', fontFamily: 'monospace', letterSpacing: '.1em', marginBottom: 4 }}>
+                NO INCIDENTS DETECTED FOR THESE SEARCH PARAMETERS
+              </p>
+              <p style={{ fontSize: 11, color: '#7b82a0' }}>
+                Try broadening the filter selection or click <strong style={{ color: '#e05252' }}>RESET ALL FILTERS</strong> in the left panel.
+              </p>
+            </div>
+          </div>
+        )}
 
         {(() => {
           const byYear = computedByYear || summary.by_year;

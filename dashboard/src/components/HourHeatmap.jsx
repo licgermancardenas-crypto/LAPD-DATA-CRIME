@@ -49,7 +49,22 @@ export default function HourHeatmap({ data, filters, onFilter }) {
   const intervalRef = useRef(null);
 
   const activeSlot   = filters?.timeSlot ?? null;
+  const shiftFilter  = filters?.shift   ?? null;
+  const dayTypeFilter= filters?.dayType ?? null;
   const hasGeoFilter = filters?.area || filters?.category || filters?.years?.length || filters?.months?.length;
+
+  const isHourDimmedByShift = (h) => {
+    if (!shiftFilter) return false;
+    return shiftFilter === 'day'   ? (h < 6 || h >= 18)  // dim non-day hours
+         : shiftFilter === 'night' ? (h >= 6 && h < 18)  // dim non-night hours
+         : false;
+  };
+  const isDowDimmedByType = (dow) => {
+    if (!dayTypeFilter) return false;
+    return dayTypeFilter === 'weekday' ? dow >= 5   // dim Sat+Sun
+         : dayTypeFilter === 'weekend' ? dow < 5    // dim Mon-Fri
+         : false;
+  };
 
   // Build lookup: dow -> hour -> row
   const lookup = {};
@@ -227,6 +242,7 @@ export default function HourHeatmap({ data, filters, onFilter }) {
                   const isActive = activeHour === h;
                   const isSlotActive = activeSlot?.dow === dow && activeSlot?.hour === h;
                   const isSlotDimmed = activeSlot && !isSlotActive;
+                  const isTacticalDimmed = isHourDimmedByShift(h) || isDowDimmedByType(dow);
                   return (
                     <div
                       key={h}
@@ -247,8 +263,8 @@ export default function HourHeatmap({ data, filters, onFilter }) {
                         transition: 'filter .12s, transform .12s',
                         filter: activeHour !== null
                           ? (isActive ? 'brightness(1.6) saturate(1.3)' : 'brightness(0.35)')
-                          : isSlotDimmed
-                            ? 'brightness(0.3)'
+                          : (isSlotDimmed || isTacticalDimmed)
+                            ? 'brightness(0.18) saturate(0.3)'
                             : 'none',
                         transform: (isActive || isSlotActive) ? 'scaleY(1.12)' : 'scaleY(1)',
                         transformOrigin: 'bottom',

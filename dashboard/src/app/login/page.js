@@ -56,7 +56,7 @@ export default function LoginPage() {
 
   function handleEnter() {
     setEntering(true);
-    setTimeout(() => router.push('/'), 600);
+    setTimeout(() => router.push('/dashboard'), 600);
   }
 
   return (

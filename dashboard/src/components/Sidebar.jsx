@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const MAIN_NAV = [
   {
     id: 'dashboard',
     label: 'Dashboard',
     icon: '⊞',
-    href: '/',
+    href: '/dashboard',
     sub: [
-      { id: 'overview',   label: 'Overview',    href: '/#overview' },
-      { id: 'geographic', label: 'Geography',   href: '/#geographic' },
-      { id: 'temporal',   label: 'Temporal',    href: '/#temporal' },
-      { id: 'categories', label: 'Categories',  href: '/#categories' },
-      { id: 'victims',    label: 'Victims',     href: '/#victims' },
-      { id: 'arrests',    label: 'Arrests',     href: '/#arrests' },
-      { id: 'external',   label: 'Context',     href: '/#external' },
+      { id: 'overview',   label: 'Overview',    href: '/dashboard#overview' },
+      { id: 'geographic', label: 'Geography',   href: '/dashboard#geographic' },
+      { id: 'temporal',   label: 'Temporal',    href: '/dashboard#temporal' },
+      { id: 'categories', label: 'Categories',  href: '/dashboard#categories' },
+      { id: 'victims',    label: 'Victims',     href: '/dashboard#victims' },
+      { id: 'arrests',    label: 'Arrests',     href: '/dashboard#arrests' },
+      { id: 'external',   label: 'Context',     href: '/dashboard#external' },
     ],
   },
   {
@@ -104,8 +104,9 @@ const C = {
 export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router   = useRouter();
 
-  const isHome     = pathname === '/' || pathname === '';
+  const isHome     = pathname === '/dashboard';
   const isGeo      = pathname === '/geo';
   const isOsiris   = pathname === '/osiris';
   const isCompare  = pathname === '/compare';
@@ -306,9 +307,34 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
             }}>
               UNRESTRICTED VIEW
             </div>
+            {/* Disconnect button */}
+            <button
+              onClick={() => router.push('/login')}
+              style={{
+                marginTop: 8, width: '100%', padding: '5px 0', borderRadius: 5,
+                border: '1px solid rgba(100,116,139,.25)',
+                background: 'rgba(100,116,139,.06)',
+                color: '#64748b', fontSize: 10, fontWeight: 700,
+                letterSpacing: '.1em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'monospace',
+                transition: 'all .15s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(100,116,139,.14)';
+                e.currentTarget.style.borderColor = 'rgba(100,116,139,.5)';
+                e.currentTarget.style.color = '#94a3b8';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(100,116,139,.06)';
+                e.currentTarget.style.borderColor = 'rgba(100,116,139,.25)';
+                e.currentTarget.style.color = '#64748b';
+              }}
+            >
+              ⏻ DISCONNECT
+            </button>
           </div>
         ) : (
-          <div style={{ padding: '10px 0', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ padding: '10px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
             <div style={{
               width: 28, height: 28, borderRadius: 6,
               border: `1px solid rgba(79,142,247,.22)`,
@@ -317,6 +343,21 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'monospace', fontWeight: 800,
             }} title="OPERADOR: DEMO-GUEST">D</div>
+            <button
+              onClick={() => router.push('/login')}
+              title="Disconnect"
+              style={{
+                width: 28, height: 28, borderRadius: 6,
+                border: '1px solid rgba(100,116,139,.22)',
+                background: 'rgba(100,116,139,.06)',
+                color: '#64748b', fontSize: 14,
+                cursor: 'pointer', fontFamily: 'monospace',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background='rgba(100,116,139,.14)'; e.currentTarget.style.borderColor='rgba(100,116,139,.4)'; e.currentTarget.style.color='#94a3b8'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='rgba(100,116,139,.06)'; e.currentTarget.style.borderColor='rgba(100,116,139,.22)'; e.currentTarget.style.color='#64748b'; }}
+            >⏻</button>
           </div>
         )}
       </div>

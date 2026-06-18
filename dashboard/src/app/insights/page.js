@@ -20,7 +20,8 @@ const CHAPTERS = [
   {id:'temporal',      n:'05', label:'Temporal Patterns'},
   {id:'victims',       n:'06', label:'Who Bears the Burden'},
   {id:'neighborhoods', n:'07', label:'Neighborhood Risk'},
-  {id:'findings',      n:'08', label:'Key Findings'},
+  {id:'arrests',       n:'08', label:'Arrest Patterns'},
+  {id:'findings',      n:'09', label:'Key Findings'},
 ];
 
 
@@ -272,8 +273,13 @@ export default function InsightsPage(){
       fetch('/data/victims.json').then(r=>r.json()),
       fetch('/data/hourly_dow.json').then(r=>r.json()),
       fetch('/data/monthly.json').then(r=>r.json()),
-    ]).then(([summary,division,categories,victims,hourly,monthly])=>{
-      setData({summary,division,categories,victims,hourly,monthly});
+      fetch('/data/arrests_summary.json').then(r=>r.json()).catch(()=>null),
+      fetch('/data/arrests_demographics.json').then(r=>r.json()).catch(()=>null),
+      fetch('/data/arrests_categories.json').then(r=>r.json()).catch(()=>null),
+      fetch('/data/arrests_division.json').then(r=>r.json()).catch(()=>null),
+    ]).then(([summary,division,categories,victims,hourly,monthly,arrSum,arrDemo,arrCats,arrDiv])=>{
+      const arrests = arrSum ? {summary:arrSum,demographics:arrDemo,categories:arrCats,division:arrDiv} : null;
+      setData({summary,division,categories,victims,hourly,monthly,arrests});
     }).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
@@ -342,6 +348,22 @@ export default function InsightsPage(){
     if(!hoods) return null;
     return[...hoods].filter(h=>h.population>1000).sort((a,b)=>a.crimes_per_1000-b.crimes_per_1000).slice(0,6);
   },[hoods]);
+
+  const arrestsCalc = useMemo(()=>{
+    if(!data?.arrests) return null;
+    const {summary:as, demographics:ad, categories:ac, division:adiv} = data.arrests;
+    if(!as) return null;
+    const bySex        = ad?.by_sex          ?? [];
+    const byDescent    = ad?.by_descent_group ?? [];
+    const byAge        = ad?.by_age_group     ?? [];
+    const male         = bySex.find(s=>s.label==='Male');
+    const female       = bySex.find(s=>s.label==='Female');
+    const malePct      = male&&female ? (male.arrests/(male.arrests+female.arrests)*100).toFixed(1) : null;
+    const topDiv       = [...(adiv??[])].sort((a,b)=>b.arrests-a.arrests)[0];
+    const descentMax   = byDescent.length ? Math.max(...byDescent.map(d=>d.arrests)) : 1;
+    const ageMax       = byAge.length      ? Math.max(...byAge.map(a=>a.arrests))     : 1;
+    return {as, byDescent, byAge, ac, malePct, topDiv, descentMax, ageMax};
+  },[data]);
 
   const ok=!!(data&&calc);
 
@@ -703,9 +725,93 @@ export default function InsightsPage(){
 
             <Sep/>
 
-            {/* CH 08 */}
+            {/* CH 08 — ARRESTS */}
+            <div style={SP} id="arrests">
+              <ChapterBanner n="08" title="Who Gets Arrested"
+                thesis="342,733 arrests between 2020 and mid-2025 — felony charges dominate, and demographic concentration is stark. Arrest patterns reflect both crime geography and enforcement deployment decisions."/>
+              {arrestsCalc ? (()=>{
+                const {as, byDescent, byAge, ac, malePct, topDiv, descentMax, ageMax} = arrestsCalc;
+                return (
+                  <>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:14,marginBottom:28}}>
+                      <BigStat value={as.total_arrests.toLocaleString()} label="Total Arrests 2020–2025" sub="LAPD arrest records" color={C.cyan}/>
+                      <BigStat value={`${as.felony_pct}%`} label="Felony Charges" sub={`vs. ${as.misdemeanor_pct}% misdemeanor`} color={C.red}/>
+                      <BigStat value={`${as.yoy_pct>0?'+':''}${as.yoy_pct}%`} label={`${as.latest_full_year-1}→${as.latest_full_year} YoY`} sub="Year-over-year change" color={as.yoy_pct>0?C.red:C.green}/>
+                      {malePct&&<BigStat value={`${malePct}%`} label="Male Arrestees" sub="of all arrests by gender" color={C.purple}/>}
+                      {topDiv&&<BigStat value={topDiv.name} label="Top Division" sub={`${topDiv.arrests.toLocaleString()} arrests`} color={C.yellow}/>}
+                    </div>
+
+                    {as.ytd_year&&(
+                      <div style={{marginBottom:20,padding:'8px 14px',borderRadius:8,
+                        background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',
+                        fontSize:11,color:'#a07820',display:'flex',gap:8,alignItems:'flex-start'}}>
+                        <span>⚠</span>
+                        <span><strong style={{color:C.yellow}}>{as.ytd_year} partial</strong> — data through month {as.ytd_through_month} ({as.ytd_arrests.toLocaleString()} arrests). Excluded from YoY comparison to avoid partial-year distortion.</span>
+                      </div>
+                    )}
+
+                    {ac?.length>0&&(
+                      <div style={{marginBottom:24}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.dim,letterSpacing:'.12em',marginBottom:12,textTransform:'uppercase'}}>Top 10 Arrest Categories</div>
+                        <DataTable
+                          headers={['Category','Arrests','Share %']}
+                          rows={ac.slice(0,10).map((c,i)=>[
+                            {v:c.category, color:i===0?C.red:C.text},
+                            {v:c.arrests.toLocaleString(), color:i<3?'#fff':C.text},
+                            {v:`${c.share_pct}%`, color:C.muted},
+                          ])}
+                        />
+                      </div>
+                    )}
+
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:24}}>
+                      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:'20px 22px'}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.dim,letterSpacing:'.12em',marginBottom:16,textTransform:'uppercase'}}>Arrestees by Ethnicity</div>
+                        {byDescent.map(d=>(
+                          <div key={d.label} style={{marginBottom:14}}>
+                            <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                              <span style={{fontSize:13,color:'#fff',fontWeight:600}}>{d.label}</span>
+                              <span style={{fontSize:11,color:C.muted}}>{d.arrests.toLocaleString()} · {d.share_pct?.toFixed(1)}%</span>
+                            </div>
+                            <HBar pct={(d.arrests/descentMax)*100} color={d.label==='Hispanic/Latino'?C.yellow:d.label==='Black'?C.red:C.accent} h={5}/>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:'20px 22px'}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.dim,letterSpacing:'.12em',marginBottom:16,textTransform:'uppercase'}}>By Age Group</div>
+                        {byAge.map(a=>(
+                          <div key={a.label} style={{marginBottom:14}}>
+                            <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                              <span style={{fontSize:12,color:'#fff',fontWeight:600}}>{a.label}</span>
+                              <span style={{fontSize:11,color:C.muted}}>{a.arrests.toLocaleString()} · {a.share_pct?.toFixed(1)}%</span>
+                            </div>
+                            <HBar pct={(a.arrests/ageMax)*100} color={C.cyan} h={5}/>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                      <Prose accent>Of {as.total_arrests.toLocaleString()} total arrests, <strong style={{color:'#fff'}}>{as.felony_pct}% carry felony charges</strong> — signaling enforcement focused on serious crime rather than minor infractions. The {as.yoy_pct>0?`+${as.yoy_pct}%`:as.yoy_pct+'%'} year-over-year change reflects shifting patrol priorities and crime volume trends.</Prose>
+                      {byDescent[0]&&<Prose><strong style={{color:'#fff'}}>{byDescent[0].label}</strong> accounts for {byDescent[0].share_pct?.toFixed(1)}% of all arrests — a concentration that mirrors both geographic distribution and the divisions where LAPD enforcement is most concentrated. Cross-referencing with crime victim data reveals divergent patterns by neighborhood.</Prose>}
+                    </div>
+
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                      <Finding text={`At ${as.felony_pct}% felony rate, LAPD arrests skew toward serious charges — but the ${as.misdemeanor_pct}% misdemeanor share still represents ${Math.round(as.total_arrests*as.misdemeanor_pct/100).toLocaleString()} arrests for lower-level offenses over five years.`} color={C.cyan}/>
+                      {byDescent[0]&&byDescent[1]&&<Finding text={`${byDescent[0].label} (${byDescent[0].share_pct?.toFixed(0)}%) and ${byDescent[1].label} (${byDescent[1].share_pct?.toFixed(0)}%) together account for the majority of arrests — structural concentration that requires longitudinal analysis to distinguish crime-volume effect from enforcement bias.`} color={C.yellow}/>}
+                    </div>
+                  </>
+                );
+              })() : (
+                <div style={{padding:'32px',textAlign:'center',color:C.dim,fontSize:13}}>Loading arrest data…</div>
+              )}
+            </div>
+
+            <Sep/>
+
+            {/* CH 09 */}
             <div style={{...SP,paddingBottom:60}} id="findings">
-              <ChapterBanner n="08" title="Key Findings"
+              <ChapterBanner n="09" title="Key Findings"
                 thesis="Eight concrete, data-backed conclusions from 1,004,894 incidents — ranked by operational and policy significance."/>
               <div style={{display:'flex',flexDirection:'column',gap:10}}>
                 {[

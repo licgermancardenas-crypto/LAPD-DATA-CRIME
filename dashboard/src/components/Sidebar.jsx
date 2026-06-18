@@ -64,6 +64,7 @@ const MAIN_NAV = [
       { id: 'temporal',      label: 'Temporal Patterns',    href: '/insights#temporal'     },
       { id: 'victims',       label: 'Victim Demographics',  href: '/insights#victims'      },
       { id: 'neighborhoods', label: 'Neighborhood Risk',    href: '/insights#neighborhoods'},
+      { id: 'arrests',       label: 'Arrest Patterns',      href: '/insights#arrests'      },
       { id: 'findings',      label: 'Key Findings',         href: '/insights#findings'     },
     ],
   },

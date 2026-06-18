@@ -86,9 +86,10 @@ export default function LoginPage() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd]   = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [notice, setNotice]     = useState('');
+  const [loading, setLoading]       = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [error, setError]         = useState('');
+  const [notice, setNotice]       = useState('');
 
   function switchMode(next) {
     setMode(next);
@@ -97,6 +98,30 @@ export default function LoginPage() {
     setFullName('');
     setEmail('');
     setPassword('');
+  }
+
+  async function handleGuestAccess() {
+    setGuestLoading(true);
+    setError('');
+    setNotice('');
+    const demoEmail = process.env.NEXT_PUBLIC_DEMO_EMAIL;
+    const demoPass  = process.env.NEXT_PUBLIC_DEMO_PASSWORD;
+    if (!demoEmail || !demoPass) {
+      setError('DEMO MODE UNAVAILABLE — CONTACT SYSTEM ADMINISTRATOR.');
+      setGuestLoading(false);
+      return;
+    }
+    try {
+      const { data, error: err } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPass,
+      });
+      if (err) throw err;
+      if (data.session) router.push('/');
+    } catch (err) {
+      setError('GUEST ACCESS DENIED — ' + (err.message?.toUpperCase() ?? 'SYSTEM UNAVAILABLE'));
+      setGuestLoading(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -285,6 +310,38 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Demo / Guest divider */}
+          <div className="flex items-center gap-3 mt-5 mb-4">
+            <div className="flex-1 h-px bg-slate-800/80" />
+            <span className="font-mono text-[9px] text-slate-700 tracking-[0.25em]">OR</span>
+            <div className="flex-1 h-px bg-slate-800/80" />
+          </div>
+
+          {/* Demo / Guest button */}
+          <button
+            type="button"
+            onClick={handleGuestAccess}
+            disabled={guestLoading}
+            className="w-full font-mono text-[10px] tracking-widest uppercase py-3 rounded-lg
+                       border border-amber-500/30 bg-amber-950/20 text-amber-400
+                       hover:border-amber-400/60 hover:bg-amber-950/40 hover:text-amber-300
+                       disabled:opacity-50 disabled:cursor-wait
+                       shadow-[0_0_12px_rgba(245,158,11,0.08)] hover:shadow-[0_0_22px_rgba(245,158,11,0.25)]
+                       transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            {guestLoading ? (
+              <>
+                <span className="inline-block w-3 h-3 border-2 border-amber-500/40 border-t-amber-400 rounded-full animate-spin" />
+                AUTHENTICATING GUEST INTERFACE...
+              </>
+            ) : (
+              <>
+                <span className="text-amber-500 text-sm leading-none">⚡</span>
+                BYPASS SYSTEM // ACCESS DEMO MODE
+              </>
+            )}
+          </button>
 
           {/* Status row */}
           <div className="flex items-center gap-2 mt-5">

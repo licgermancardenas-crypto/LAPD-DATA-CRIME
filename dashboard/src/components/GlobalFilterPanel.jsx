@@ -9,16 +9,16 @@ const YEARS  = [2020, 2021, 2022, 2023, 2024];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const THEFT_CATS = [
-  { key: 'VEHICLE - STOLEN',      label: 'Vehicle Theft' },
-  { key: 'BURGLARY FROM VEHICLE', label: 'Bur. Vehicle'  },
-  { key: 'BURGLARY',              label: 'Burglary'      },
-  { key: 'ROBBERY',               label: 'Robbery'       },
+  { key: 'VEHICLE - STOLEN',      label: 'Robo Vehículo' },
+  { key: 'BURGLARY FROM VEHICLE', label: 'Ingr. Vehicular' },
+  { key: 'BURGLARY',              label: 'Allanamiento'  },
+  { key: 'ROBBERY',               label: 'Asalto c/Robo' },
 ];
 
 const PART_OPTIONS = [
-  { v: 'all', label: 'All Crimes'       },
-  { v: 'p1',  label: 'Part 1 — Serious' },
-  { v: 'p2',  label: 'Part 2 — Minor'   },
+  { v: 'all', label: 'Todos los Delitos'  },
+  { v: 'p1',  label: 'Parte 1 — Grave'   },
+  { v: 'p2',  label: 'Parte 2 — Menor'   },
 ];
 
 const FILTER_META = {
@@ -200,7 +200,7 @@ export default function GlobalFilterPanel({
   }
 
   return (
-    <aside style={{
+    <aside className="tac-panel" style={{
       width: 264, flexShrink: 0, backgroundColor: '#08091a',
       borderRight: '1px solid rgba(255,255,255,0.03)',
       display: 'flex', flexDirection: 'column',
@@ -262,10 +262,10 @@ export default function GlobalFilterPanel({
       {/* Scrollable filters */}
       <div style={{ flex: 1, padding: '14px 14px 10px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-        {/* ── YEAR ─────────────────────────────────────── */}
+        {/* ── AÑO ─────────────────────────────────────── */}
         <span style={LABEL}>
           <Calendar size={11} color="#6b7590" strokeWidth={2} />
-          Year
+          Año
         </span>
         <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
           {YEARS.map(y => (
@@ -279,15 +279,15 @@ export default function GlobalFilterPanel({
           }}
             onMouseEnter={e => (e.currentTarget.style.color = '#e05252')}
             onMouseLeave={e => (e.currentTarget.style.color = '#4a5070')}
-          >✕ CLEAR YEARS</button>
+          >✕ BORRAR AÑOS</button>
         )}
 
         <Divider />
 
-        {/* ── MONTH ────────────────────────────────────── */}
+        {/* ── MES ──────────────────────────────────────── */}
         <span style={LABEL}>
           <Calendar size={11} color="#6b7590" strokeWidth={2} />
-          Month
+          Mes
         </span>
         <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           {MONTHS.map((m, i) => (
@@ -301,16 +301,16 @@ export default function GlobalFilterPanel({
           }}
             onMouseEnter={e => (e.currentTarget.style.color = '#e05252')}
             onMouseLeave={e => (e.currentTarget.style.color = '#4a5070')}
-          >✕ CLEAR MONTHS</button>
+          >✕ BORRAR MESES</button>
         )}
 
         <Divider />
 
-        {/* ── SHIFT (DAY / NIGHT) ───────────────────────── */}
+        {/* ── TURNO (DIURNO / NOCTURNO) ─────────────────── */}
         <span style={{ ...LABEL, marginBottom: 6 }}>
           <Clock size={11} color="#6b7590" strokeWidth={2} />
-          Shift
-          <span style={{ fontSize: 9, color: '#3a4060', fontFamily: 'monospace', letterSpacing: '.04em' }}>→ Heatmap</span>
+          Turno
+          <span style={{ fontSize: 9, color: '#3a4060', fontFamily: 'monospace', letterSpacing: '.04em' }}>→ Mapa Cal.</span>
         </span>
         <ToggleBlock
           options={[
@@ -324,13 +324,13 @@ export default function GlobalFilterPanel({
 
         <div style={{ marginTop: 8 }}>
           <span style={{ ...LABEL, marginBottom: 6 }}>
-            Day Type
-            <span style={{ fontSize: 9, color: '#3a4060', fontFamily: 'monospace', letterSpacing: '.04em' }}>→ Heatmap</span>
+            Tipo de Día
+            <span style={{ fontSize: 9, color: '#3a4060', fontFamily: 'monospace', letterSpacing: '.04em' }}>→ Mapa Cal.</span>
           </span>
           <ToggleBlock
             options={[
-              { key: 'weekday', label: '▪ WEEKDAY' },
-              { key: 'weekend', label: '▪ WEEKEND' },
+              { key: 'weekday', label: '▪ LABORAL'    },
+              { key: 'weekend', label: '▪ FIN DE SEM.' },
             ]}
             active={filters.dayType}
             onToggle={toggleDayType}
@@ -340,12 +340,12 @@ export default function GlobalFilterPanel({
 
         <Divider />
 
-        {/* ── CRIME SEVERITY ───────────────────────────── */}
+        {/* ── SEVERIDAD ────────────────────────────────── */}
         <span style={{ ...LABEL, marginBottom: 6 }}>
           <LayoutGrid size={11} color="#6b7590" strokeWidth={2} />
-          Severity
+          Severidad
           <InfoTooltip
-            text="Part 1 — Serious crimes: homicide, robbery, aggravated assault, rape, auto theft. Part 2 — Minor offenses: vandalism, fraud, drugs, etc."
+            text="Parte 1 — Delitos graves: homicidio, asalto, agresión, violación, robo de auto. Parte 2 — Delitos menores: vandalismo, fraude, drogas, etc."
             width={240}
           />
         </span>
@@ -378,10 +378,10 @@ export default function GlobalFilterPanel({
 
         <Divider />
 
-        {/* ── THEFT QUICK-SELECT ───────────────────────── */}
+        {/* ── TIPO DE ROBO ─────────────────────────────── */}
         <span style={LABEL}>
           <FolderOpen size={11} color="#6b7590" strokeWidth={2} />
-          Theft Type
+          Tipo de Robo
         </span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, marginBottom: 10 }}>
           {THEFT_CATS.map(({ key, label }) => {
@@ -403,9 +403,9 @@ export default function GlobalFilterPanel({
           })}
         </div>
 
-        {/* Crime category dropdown (full list) */}
+        {/* Categoría dropdown (lista completa) */}
         <span style={{ ...LABEL, marginBottom: 6, fontSize: 10, color: '#5a637a' }}>
-          — or all categories —
+          — o todas las categorías —
         </span>
         <select
           value={filters.category ?? ''}
@@ -420,7 +420,7 @@ export default function GlobalFilterPanel({
             fontSize: 11, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', transition: 'all .15s',
           }}
         >
-          <option value="">All categories</option>
+          <option value="">Todas las categorías</option>
           {categories?.map(c => (
             <option key={c.category} value={c.category}>{c.category}</option>
           ))}
@@ -429,10 +429,10 @@ export default function GlobalFilterPanel({
 
         <Divider />
 
-        {/* ── POLICE DIVISION ──────────────────────────── */}
+        {/* ── DIVISIÓN POLICIAL ─────────────────────────── */}
         <span style={LABEL}>
           <MapPin size={11} color="#6b7590" strokeWidth={2} />
-          Police Division
+          División Policial
         </span>
         <select
           value={filters.area ?? ''}
@@ -447,18 +447,18 @@ export default function GlobalFilterPanel({
             fontSize: 11, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', transition: 'all .15s',
           }}
         >
-          <option value="">All divisions</option>
+          <option value="">Todas las divisiones</option>
           {divisions?.map(d => (
             <option key={d.name} value={d.name}>{d.name}</option>
           ))}
         </select>
         <ScopeBadges keys={SCOPE.area} />
 
-        {/* ── FROM CHARTS ──────────────────────────────── */}
+        {/* ── DESDE GRÁFICOS ────────────────────────────── */}
         {interactiveKeys.length > 0 && (
           <>
             <Divider />
-            <span style={LABEL}>From Charts</span>
+            <span style={LABEL}>Desde Gráficos</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {interactiveKeys.map(k => (
                 <ActiveChip key={k} filterKey={k} value={filters[k]} onClear={clearOne} />

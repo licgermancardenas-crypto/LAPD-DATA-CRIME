@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, LabelList,
@@ -21,7 +22,7 @@ function PremTip({ active, payload }) {
   );
 }
 
-export default function PremiseChart({ data, activePart = 'all', filters }) {
+export default memo(function PremiseChart({ data, activePart = 'all', filters }) {
   if (!data?.length) return null;
 
   const chartData = data.map(d => ({
@@ -74,4 +75,4 @@ export default function PremiseChart({ data, activePart = 'all', filters }) {
       </ResponsiveContainer>
     </div>
   );
-}
+})

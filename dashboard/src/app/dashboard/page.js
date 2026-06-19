@@ -62,7 +62,7 @@ function LoadingScreen() {
         <p style={{ fontSize: 11, color: '#4f8ef7', fontWeight: 700, letterSpacing: '.12em', marginBottom: 8 }}>
           LOS ANGELES POLICE DEPARTMENT
         </p>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#e8eaf0', marginBottom: 4 }}>Crime Analysis Dashboard</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#e8eaf0', marginBottom: 4 }}>Panel de Análisis Criminal</h1>
         <p style={{ fontSize: 13, color: '#7b82a0' }}>2020 – 2024</p>
       </div>
       <div style={{ width: 200, height: 3, background: '#1a1d27', borderRadius: 2, overflow: 'hidden' }}>
@@ -308,10 +308,10 @@ export default function Home() {
       }}>
         <div>
           <p style={{ fontSize: 11, color: '#4f8ef7', fontWeight: 700, letterSpacing: '.1em', marginBottom: 5 }}>
-            CRIME ANALYTICS · LOS ANGELES
+            ANÁLISIS CRIMINAL · LOS ÁNGELES
           </p>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
-            Analysis Dashboard <span style={{ color: '#4f8ef7' }}>2020–2024</span>
+            Panel de Análisis <span style={{ color: '#4f8ef7' }}>2020–2024</span>
           </h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -320,7 +320,7 @@ export default function Home() {
             { label: `${summary.violent_pct}%`,             sub: 'Violentos',      color: '#e05252' },
             { label: `${summary.clearance_rate}%`,          sub: 'Esclarecidos',   color: clrColor  },
           ].map(s => (
-            <div key={s.sub} style={{
+            <div key={s.sub} className="tac-kpi" style={{
               background: '#1a1d27', border: '1px solid #2a2d3a', borderRadius: 10,
               padding: '8px 16px', textAlign: 'center', minWidth: 90,
             }}>
@@ -412,7 +412,7 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Zero-results banner */}
+        {/* Banner sin resultados */}
         {computedSummary !== null && computedSummary.total_crimes === 0 && (
           <div style={{
             marginBottom: 24, padding: '20px 24px', borderRadius: 10,
@@ -422,10 +422,10 @@ export default function Home() {
             <span style={{ fontSize: 22, flexShrink: 0 }}>◈</span>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, color: '#e05252', fontFamily: 'monospace', letterSpacing: '.1em', marginBottom: 4 }}>
-                NO INCIDENTS DETECTED FOR THESE SEARCH PARAMETERS
+                SIN INCIDENTES DETECTADOS PARA ESTOS PARÁMETROS
               </p>
               <p style={{ fontSize: 11, color: '#7b82a0' }}>
-                Try broadening the filter selection or click <strong style={{ color: '#e05252' }}>RESET ALL FILTERS</strong> in the left panel.
+                Ampliá la selección de filtros o hacé clic en <strong style={{ color: '#e05252' }}>RESTABLECER TODOS LOS FILTROS</strong> en el panel izquierdo.
               </p>
             </div>
           </div>

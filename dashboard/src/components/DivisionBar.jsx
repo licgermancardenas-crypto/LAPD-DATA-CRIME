@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Cell, ResponsiveContainer,
@@ -31,7 +32,7 @@ const CustomTooltip = ({ active, payload, activePart, hasFilter }) => {
   );
 };
 
-export default function DivisionBar({ data, activePart = 'all', filters, onFilter }) {
+export default memo(function DivisionBar({ data, activePart = 'all', filters, onFilter }) {
   if (!data?.length) return null;
 
   const activeArea   = filters?.area ?? null;
@@ -103,4 +104,4 @@ export default function DivisionBar({ data, activePart = 'all', filters, onFilte
       </ResponsiveContainer>
     </div>
   );
-}
+})

@@ -101,6 +101,69 @@ select:focus, input:focus {
 .osiris-scroll::-webkit-scrollbar-track { background:transparent }
 .osiris-scroll::-webkit-scrollbar-thumb { background:#2a3060;border-radius:2px }
 
+/* ── GPU-accelerated tactical glow (zero reflow — opacity + transform only) */
+@keyframes tac-border-pulse   { 0%,100%{opacity:.18} 50%{opacity:.6} }
+@keyframes tac-scanline-sweep { 0%{transform:translateY(-100%);opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{transform:translateY(1800%);opacity:0} }
+
+/* Filter panel right-border pulse: animates opacity of a pseudo-element */
+.tac-panel { position:relative }
+.tac-panel::before {
+  content:'';
+  position:absolute; inset:0;
+  border-right:1px solid rgba(0,243,255,.38);
+  opacity:.18;
+  animation:tac-border-pulse 4s ease-in-out infinite;
+  will-change:opacity;
+  pointer-events:none;
+  z-index:1;
+}
+
+/* Card hover glow — ::after so it layers above card content */
+.card::after {
+  content:'';
+  position:absolute; inset:0;
+  border-radius:inherit;
+  border:1px solid rgba(0,243,255,.22);
+  opacity:0;
+  transition:opacity .18s ease;
+  pointer-events:none;
+  will-change:opacity;
+}
+.card:hover::after { opacity:1 }
+
+/* Top-bar KPI chip hover lift (transform — GPU) */
+.tac-kpi {
+  position:relative;
+  transition:transform .15s ease;
+}
+.tac-kpi::after {
+  content:'';
+  position:absolute; inset:0;
+  border-radius:inherit;
+  border:1px solid rgba(0,243,255,.3);
+  opacity:0;
+  transition:opacity .15s ease;
+  pointer-events:none;
+  will-change:opacity;
+}
+.tac-kpi:hover { transform:translateY(-2px) }
+.tac-kpi:hover::after { opacity:1 }
+
+/* Scanline sweep element inside ChartSkeleton */
+.tac-scanline {
+  position:absolute; left:0; right:0; top:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,243,255,.55) 50%,transparent 100%);
+  animation:tac-scanline-sweep 2.4s linear infinite;
+  will-change:transform;
+  pointer-events:none;
+  z-index:11;
+}
+
+/* Crosshair cursor for map iframe wrapper */
+.tac-crosshair,
+.tac-crosshair iframe { cursor:crosshair !important }
+
 /* ── Insights print styles ─────────────────────────────────────────────── */
 @media print {
   body { background:#fff !important; color:#111 !important; }

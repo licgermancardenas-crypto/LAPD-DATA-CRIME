@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import {
   ComposedChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell, LabelList,
@@ -119,7 +120,7 @@ function RankBar({ title, sub, data, labelMap, height = 200 }) {
   );
 }
 
-export default function ArrestChart({ data }) {
+export default memo(function ArrestChart({ data }) {
   if (!data) return null;
   const { summary, monthly, division, demographics, categories } = data;
   if (!summary) return null;
@@ -286,4 +287,4 @@ export default function ArrestChart({ data }) {
 
     </div>
   );
-}
+})

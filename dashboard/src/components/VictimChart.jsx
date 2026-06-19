@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell, LabelList,
@@ -86,7 +87,7 @@ function KpiMini({ label, value, sub, color, border }) {
   );
 }
 
-export default function VictimChart({ data, filters, onFilter }) {
+export default memo(function VictimChart({ data, filters, onFilter }) {
   if (!data) return null;
   const { by_sex, by_age, by_descent, by_cat_sex,
           no_victim_count, no_victim_pct, victim_count,
@@ -293,13 +294,13 @@ export default function VictimChart({ data, filters, onFilter }) {
           ))}
         </div>
         <p style={{
-          fontSize: 11, color: '#4a5480', lineHeight: 1.65, marginTop: 12,
+          fontSize: 11, color: '#6b7590', lineHeight: 1.65, marginTop: 12,
           fontFamily: 'Inter,system-ui,sans-serif', fontStyle: 'italic',
         }}>
-          Nota: registros con vict_sex &ldquo;Unknown&rdquo; excluidos · edad ≤ 0 excluida en preprocesamiento
+          Nota: registros con sexo &ldquo;Desconocido&rdquo; excluidos · edad ≤ 0 excluida en preprocesamiento
         </p>
       </div>
 
     </div>
   );
-}
+})

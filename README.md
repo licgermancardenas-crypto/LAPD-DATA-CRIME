@@ -78,7 +78,7 @@ npm install
 npm run dev   # http://localhost:3000
 ```
 
-Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. See `dashboard/README.md` for frontend-specific details.
 
 ## Data Source
 

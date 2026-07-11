@@ -60,8 +60,6 @@ LAPD-DATA-CRIME/
     └── POWERBI_GUIDE.md
 ```
 
-> **Nota:** varios GeoJSON de referencia (Census tracts, LAPD divisions, transit, etc.) viven sueltos en la raíz del repo en vez de `data/external/` — pendiente de reorganizar.
-
 ## Setup
 
 ```bash

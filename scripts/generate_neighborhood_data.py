@@ -29,9 +29,9 @@ OUT  = ROOT / "dashboard/public/data/neighborhood_crimes.geojson"
 # ── 1. Load sources ────────────────────────────────────────────────────────
 print("Loading layers...")
 tracts = gpd.read_file(ROOT / "dashboard/public/data/vulnerability_tracts.geojson")
-nb     = gpd.read_file(ROOT / "LA_Times_Neighborhood_Boundaries.geojson")
-divs   = gpd.read_file(ROOT / "LAPD_Division_-8371726096393184647.geojson")
-stns   = gpd.read_file(ROOT / "LAPD_Police_Stations_1065107508733256029.geojson")
+nb     = gpd.read_file(ROOT / "data/external/LA_Times_Neighborhood_Boundaries.geojson")
+divs   = gpd.read_file(ROOT / "data/external/LAPD_Division_-8371726096393184647.geojson")
+stns   = gpd.read_file(ROOT / "data/external/LAPD_Police_Stations_1065107508733256029.geojson")
 
 for gdf, name in [(tracts,'tracts'),(nb,'neighborhoods'),(divs,'divisions'),(stns,'stations')]:
     if gdf.crs is None or gdf.crs.to_epsg() != 4326:

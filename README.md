@@ -68,7 +68,7 @@ git clone https://github.com/licgermancardenas-crypto/LAPD-DATA-CRIME.git
 cd LAPD-DATA-CRIME
 
 # Python pipeline
-pip install pandas geopandas scikit-learn xgboost prophet matplotlib seaborn folium plotly
+pip install -r requirements.txt
 # Add raw data (not in git — download from data.lacity.org)
 # Place CSV at: data/raw/Crime_Data_from_2020_to_2024.csv
 
@@ -90,10 +90,9 @@ Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PU
 
 | Layer | Tools |
 |---|---|
-| Data prep | Python · pandas · geopandas |
-| Visualization | matplotlib · seaborn · folium · plotly |
-| Geospatial | geopandas · contextily · osmnx |
-| ML | scikit-learn · xgboost · prophet |
+| Data prep | Python · pandas · geopandas · shapely |
+| Visualization | matplotlib · seaborn |
+| ML | scikit-learn · xgboost · prophet · statsmodels · shap |
 | Dashboard | Next.js 14 · React 18 · Tailwind CSS · Recharts · Google Maps API |
 | Auth | Supabase (`@supabase/ssr`) |
 | Deploy | Vercel |

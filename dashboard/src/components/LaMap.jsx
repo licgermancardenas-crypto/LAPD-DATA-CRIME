@@ -5,10 +5,10 @@ import { useEffect, useRef } from 'react';
 export default function LaMap({ category }) {
   const iframeRef   = useRef(null);
   const categoryRef = useRef(category);
-  categoryRef.current = category;
 
   // Sync category to iframe on every change
   useEffect(() => {
+    categoryRef.current = category;
     iframeRef.current?.contentWindow?.postMessage(
       { type: 'SET_CATEGORY', category: category ?? null },
       '*'

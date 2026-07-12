@@ -705,7 +705,12 @@ export default function OsintPage(){
   const [vulnDrawer, setVulnDrawer] = useState(false);
 
   const iframeRef = useRef(null);
-  const seedRef   = useRef(Math.floor(Math.random()*50000));
+  const seedRef   = useRef(0);
+
+  // ── Seed the feed's pseudo-random ticker once on mount
+  useEffect(()=>{
+    seedRef.current = Math.floor(Math.random()*50000);
+  },[]);
 
   // ── Mobile detection — collapse panels on small screens
   useEffect(()=>{
@@ -757,6 +762,7 @@ export default function OsintPage(){
       const e=makeFeedEntry(seed,data.division,data.categories,filterPart,simHour);
       if(e) entries.push(e);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- feedLog is a stateful accumulator also appended to by the ticker effect below, not a pure derivation; must reset here when inputs change
     setFeedLog(entries);
   },[simHour,data,filterPart]);
 

@@ -49,7 +49,7 @@ LAPD-DATA-CRIME/
 │   └── 06_ml_classifier.ipynb
 ├── src/                  ← Numbered pipeline modules, imported by notebooks/ (e.g. `from src.prepare_data import ...`)
 ├── scripts/              ← Standalone generators, run ad hoc — write straight to dashboard/public/data/, not wired into notebooks/
-├── dashboard/            ← Next.js 14 web app (deployed to Vercel)
+├── dashboard/            ← Next.js 16 web app (deployed to Vercel)
 │   ├── src/app/            ← Routes: login, dashboard, osiris, insights, geo, compare, glossary
 │   └── public/data/         ← Static GeoJSON/JSON consumed by the frontend
 ├── outputs/
@@ -93,7 +93,7 @@ Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PU
 | Data prep | Python · pandas · geopandas · shapely |
 | Visualization | matplotlib · seaborn |
 | ML | scikit-learn · xgboost · prophet · statsmodels · shap |
-| Dashboard | Next.js 14 · React 18 · Tailwind CSS · Recharts · Google Maps API |
+| Dashboard | Next.js 16 · React 19 · Tailwind CSS · Recharts · Google Maps API |
 | Auth | Supabase (`@supabase/ssr`) |
 | Deploy | Vercel |
 | Formats | Parquet · GeoJSON · JSON |

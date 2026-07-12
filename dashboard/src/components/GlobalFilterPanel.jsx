@@ -150,6 +150,7 @@ export default function GlobalFilterPanel({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial collapse state depends on window, unavailable during SSR; must be set post-mount to avoid hydration mismatch
     if (window.innerWidth < 1024) setCollapsed(true);
     const handler = () => { if (window.innerWidth < 1024 && !collapsed) setCollapsed(true); };
     window.addEventListener('resize', handler);

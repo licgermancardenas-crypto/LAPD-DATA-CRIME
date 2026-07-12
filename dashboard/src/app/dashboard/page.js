@@ -138,6 +138,7 @@ export default function Home() {
 
   // Show onboarding on first visit
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is unavailable during SSR; onboarding visibility must be decided post-mount
     if (!localStorage.getItem('lapd_onboarding_v1')) setShowOnboarding(true);
   }, []);
   const closeOnboarding = () => {

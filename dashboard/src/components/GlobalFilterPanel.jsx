@@ -154,6 +154,7 @@ export default function GlobalFilterPanel({
     const handler = () => { if (window.innerWidth < 1024 && !collapsed) setCollapsed(true); };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run-once auto-collapse; the stale `collapsed` closure only guards a redundant setState, no behavioral bug
   }, []);
 
   /* Active filter detection */

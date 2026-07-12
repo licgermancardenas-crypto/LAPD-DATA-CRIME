@@ -485,7 +485,7 @@ export default function InsightsPage(){
                     <div style={{fontSize:10,color:C.dim,marginTop:6,fontStyle:'italic'}}>* 2024 partial year.</div>
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                    <Prose accent>The LAPD's solve rate went from <strong style={{color:'#fff'}}>24.0% in 2020 to 12.1% in 2024</strong> — a 50% reduction in just four years. If this trend continues linearly, fewer than 1 in 10 crimes will be resolved by 2026.</Prose>
+                    <Prose accent>The LAPD&apos;s solve rate went from <strong style={{color:'#fff'}}>24.0% in 2020 to 12.1% in 2024</strong> — a 50% reduction in just four years. If this trend continues linearly, fewer than 1 in 10 crimes will be resolved by 2026.</Prose>
                     <Prose>Of the 803,916 cases that went unsolved over five years, each represents a victim with no legal recourse, no offender held accountable, and no deterrence signal sent. Property crime clearance hovers under 10% — making vehicle theft, burglary, and vandalism virtually risk-free for perpetrators.</Prose>
                   </div>
                   <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
@@ -566,7 +566,7 @@ export default function InsightsPage(){
                     />
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                    <Prose accent>Vehicle crime — spanning theft of vehicles, parts, and accessories — is LA's defining criminal challenge. With <strong style={{color:'#fff'}}>19.3% of all incidents and a 4.4% clearance rate</strong>, it represents the worst possible combination: maximum volume, minimal accountability. Stealing a car in LA carries almost no risk of arrest.</Prose>
+                    <Prose accent>Vehicle crime — spanning theft of vehicles, parts, and accessories — is LA&apos;s defining criminal challenge. With <strong style={{color:'#fff'}}>19.3% of all incidents and a 4.4% clearance rate</strong>, it represents the worst possible combination: maximum volume, minimal accountability. Stealing a car in LA carries almost no risk of arrest.</Prose>
                     <Prose><strong style={{color:'#fff'}}>{calc.highestClrCat.category}</strong> closes at {calc.highestClrCat.clearance_rate}% — driven by witness availability, forensic evidence, and investigative priority. The lesson: clearance rates reflect investigative investment as much as criminal difficulty.</Prose>
                   </div>
                   <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
@@ -671,7 +671,7 @@ export default function InsightsPage(){
                     </div>
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                    <Prose accent>Hispanic and Latino residents account for <strong style={{color:'#fff'}}>39.6% of all victims</strong>. More acute is the situation for Black residents: representing roughly 9% of LA's population, they account for 18.3% of victims, and <strong style={{color:'#fff'}}>42.3% of their incidents are violent</strong> — the highest rate across all major groups tracked.</Prose>
+                    <Prose accent>Hispanic and Latino residents account for <strong style={{color:'#fff'}}>39.6% of all victims</strong>. More acute is the situation for Black residents: representing roughly 9% of LA&apos;s population, they account for 18.3% of victims, and <strong style={{color:'#fff'}}>42.3% of their incidents are violent</strong> — the highest rate across all major groups tracked.</Prose>
                     <Prose><strong style={{color:'#fff'}}>Female victims face violent crime at {calc.femaleViolentPct}% — {(calc.femaleViolentPct-calc.maleViolentPct).toFixed(1)} percentage points higher than male victims</strong>. This gap is driven by domestic violence and sex offenses where women are the disproportionate targets.</Prose>
                   </div>
                 </>

@@ -27,6 +27,5 @@ jobs:
           cache-dependency-path: dashboard/package-lock.json
 
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
-      # lint is skipped: `npm run lint` isn't configured in this repo yet
-      # (no .eslintrc — `next lint` prompts interactively, which hangs in CI)

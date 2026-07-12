@@ -6,9 +6,10 @@ Next.js 16 (App Router) frontend for the [LAPD Crime Data Analysis](../README.md
 
 ```bash
 npm install
-npm run dev     # http://localhost:3000
-npm run build   # production build
+npm run dev         # http://localhost:3000
+npm run build       # production build
 npm run lint
+npm run test:smoke  # Playwright: all 7 routes load with no console errors
 ```
 
 ## Environment variables
@@ -26,6 +27,10 @@ Copy `.env.example` to `.env.local` and fill in the values. Also set in the Verc
 This app has **no backend API** — all analytics data is static JSON/GeoJSON under `public/data/` (34 files), generated offline by the Python pipeline in `../src/` and `../scripts/`. To refresh a layer: run the relevant generator script from the repo root, then commit the updated file(s) in `public/data/`.
 
 Auth (Supabase) is the only runtime external dependency; `src/proxy.js` (Next.js 16 renamed `middleware` → `proxy`) handles route protection, but it's currently a no-op (`matcher: []`) — the app ships as an open-access demo (guest login).
+
+## Testing
+
+`tests/smoke.spec.js` (Playwright) navigates to `/login`, `/dashboard`, `/osiris`, `/insights`, `/geo`, `/compare`, `/glossary` against a production build and fails on a non-2xx response or any browser console error. `npm run test:smoke` starts its own server (`playwright.config.js` `webServer`), so run `npm run build` first. Runs in CI after lint + build.
 
 ## Structure
 

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:smoke": "playwright test"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",
@@ -20,6 +21,7 @@
     "simpleheat": "^0.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.2.10",

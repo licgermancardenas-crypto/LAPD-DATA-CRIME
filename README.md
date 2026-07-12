@@ -47,8 +47,8 @@ LAPD-DATA-CRIME/
 │   ├── 04_ml_hotspot.ipynb
 │   ├── 05_ml_forecast.ipynb
 │   └── 06_ml_classifier.ipynb
-├── src/                  ← Data pipeline (prepare_data, prepare_arrest_data, json_export, ml_*, powerbi_export)
-├── scripts/              ← One-off utilities (address density, CD mapping, per-layer data generators)
+├── src/                  ← Numbered pipeline modules, imported by notebooks/ (e.g. `from src.prepare_data import ...`)
+├── scripts/              ← Standalone generators, run ad hoc — write straight to dashboard/public/data/, not wired into notebooks/
 ├── dashboard/            ← Next.js 14 web app (deployed to Vercel)
 │   ├── src/app/            ← Routes: login, dashboard, osiris, insights, geo, compare, glossary
 │   └── public/data/         ← Static GeoJSON/JSON consumed by the frontend

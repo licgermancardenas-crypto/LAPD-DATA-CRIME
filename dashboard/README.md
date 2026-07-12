@@ -13,7 +13,7 @@ npm run lint
 
 ## Environment variables
 
-Set in `.env.local` (dev) and in the Vercel project (production):
+Copy `.env.example` to `.env.local` and fill in the values. Also set in the Vercel project for production.
 
 | Variable | Used for |
 |---|---|

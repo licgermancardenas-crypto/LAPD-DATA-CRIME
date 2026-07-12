@@ -84,7 +84,7 @@ Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PU
 
 - **LAPD Open Data Portal:** [data.lacity.org](https://data.lacity.org/Public-Safety/Crime-Data-from-2020-to-Present/2nrs-mtv8)
 - **Reporting Standard:** FBI Uniform Crime Reporting (UCR)
-- **License:** City of Los Angeles Open Data
+- **Data license:** City of Los Angeles Open Data
 
 ## Tech Stack
 
@@ -97,6 +97,10 @@ Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PU
 | Auth | Supabase (`@supabase/ssr`) |
 | Deploy | Vercel |
 | Formats | Parquet · GeoJSON · JSON |
+
+## License
+
+Code: [MIT](LICENSE). Underlying crime data: City of Los Angeles Open Data (see [Data Source](#data-source)).
 
 ---
 

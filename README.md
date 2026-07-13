@@ -88,12 +88,15 @@ Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PU
 
 ### Enrichment sources (predictive model)
 
-Added 2026-07-12 to feed the crime model — "broken windows" disorder proxy + infrastructure signal, both joined to LAPD divisions:
+Added 2026-07-12/13 to feed the crime model — disorder proxy, lighting, alcohol outlet density, housing tenure, and land use, all joined to LAPD divisions or Census tracts by name/GEOID (no fuzzy matching or geocoding needed anywhere):
 
 | Source | Script | Output |
 |---|---|---|
 | [MyLA311 Service Request Data](https://data.lacity.org/City-Infrastructure-Service-Requests/) 2020–2024 (Socrata, `rq3b-xjk8`…`b7dx-7gc3`) — monthly counts by division for bulky items, graffiti, illegal dumping, homeless encampments, dead animals, streetlight outages | `scripts/fetch_311_data.py` | `data/external/311_monthly_by_precinct.csv`, `dashboard/public/data/disorder_monthly.json` |
 | [Bureau of Street Lighting](https://maps.lacity.org/lahub/rest/services/Bureau_of_Street_Lighting/MapServer/0) — 222k streetlight points citywide (the Socrata mirror `9ei6-svt8` returns empty records; this hits the ArcGIS FeatureServer directly) | `scripts/fetch_streetlights.py` → `scripts/generate_disorder_streetlight_data.py` | `data/external/streetlights_la.geojson`, `dashboard/public/data/streetlight_density.geojson` |
+| [California ABC](https://www.abc.ca.gov/licensing/licensing-reports/) daily license export — 23k active LA County alcohol licenses, off-sale/on-sale split, already tract-tagged (no geocoding needed) | `scripts/fetch_abc_licenses.py` → `scripts/generate_alcohol_zoning_data.py` | `data/external/abc_licenses_by_tract.csv`, `dashboard/public/data/alcohol_density.geojson` |
+| [ACS Housing Occupancy & Tenure](https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/ACS_Housing_Occupancy_and_Tenure_Unit_Value_Boundaries/FeatureServer) (Esri Living Atlas mirror — the Census ACS API itself is unreachable from this environment) — owner-occupancy rate by tract | `scripts/fetch_housing_tenure.py` | `data/external/housing_tenure_la.csv`, merged into `lapd_enriched.parquet`'s `owner_occ_rate` |
+| [LA Zoning](https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Zoning/FeatureServer/15) — 58.9k parcels, land-use category mix (Residential/Commercial/Manufacturing/…) per LAPD division via spatial overlay | `scripts/fetch_zoning.py` → `scripts/generate_alcohol_zoning_data.py` | `data/external/zoning_la.geojson` (234 MB, gitignored — regenerate locally), `dashboard/public/data/zoning_by_division.json` |
 
 `policeprecinct` (311) and `area name` (LAPD divisions) match 1:1 by name — no fuzzy join needed.
 

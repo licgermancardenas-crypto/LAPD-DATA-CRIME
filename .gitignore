@@ -2,6 +2,7 @@
 data/raw/
 data/processed/
 data/external/*.csv
+data/external/zoning_la.geojson
 data/external/*.shp
 data/external/*.dbf
 data/external/*.prj
@@ -9,6 +10,8 @@ data/external/*.shx
 data/external/*.zip
 *.csv
 !data/external/311_monthly_by_precinct.csv
+!data/external/abc_licenses_by_tract.csv
+!data/external/housing_tenure_la.csv
 *.parquet
 !datasets/*.parquet
 *.feather

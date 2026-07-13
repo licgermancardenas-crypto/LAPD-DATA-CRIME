@@ -34,6 +34,32 @@ End-to-end data science project analyzing 1 million+ crime incidents reported to
 | `/compare` | Side-by-side comparison view |
 | `/glossary` | Data dictionary / methodology reference (EN) |
 
+## Screenshots
+
+**Dashboard** — KPIs and Arrests chapter
+
+| Overview | Arrests — by division (density-normalized) | Arrests — demographics & charges |
+|---|---|---|
+| ![Dashboard overview](docs/screenshots/dashboard-overview.png) | ![Arrests by division](docs/screenshots/dashboard-arrests-division.png) | ![Arrests demographics](docs/screenshots/dashboard-arrests-demographics.png) |
+
+**OSIRIS** — geo intelligence, 8 switchable map layers over the same LA basemap
+
+| Tactical / CIA overlay | Choropleth | Cluster |
+|---|---|---|
+| ![OSIRIS tactical layer](docs/screenshots/osiris-cia-tactical.png) | ![OSIRIS choropleth layer](docs/screenshots/osiris-choro-choropleth.png) | ![OSIRIS cluster layer](docs/screenshots/osiris-clust-cluster.png) |
+
+| Business density | Neighborhood vulnerability | Mobility corridors |
+|---|---|---|
+| ![OSIRIS business layer](docs/screenshots/osiris-neg-business.png) | ![OSIRIS vulnerability layer](docs/screenshots/osiris-bar-vulnerability.png) | ![OSIRIS mobility layer](docs/screenshots/osiris-mob-corridors.png) |
+
+| Education safety — detail | Education safety — citywide | Divisions + radio log |
+|---|---|---|
+| ![OSIRIS education detail](docs/screenshots/osiris-edu-detail.png) | ![OSIRIS education citywide](docs/screenshots/osiris-edu-citywide.png) | ![OSIRIS divisions layer](docs/screenshots/osiris-div-radiolog.png) |
+
+**Insights** — data storytelling chapters
+
+![Insights — Scope & Scale chapter](docs/screenshots/insights-scope-scale.png)
+
 ## Repository Structure
 
 ```

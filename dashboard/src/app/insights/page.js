@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Shell from '@/components/Shell';
 import ForecastChart from '@/components/ForecastChart';
 import ClearanceChart from '@/components/ClearanceChart';
+import HotspotChart from '@/components/HotspotChart';
 
 const C = {
   bg:'#07080f', surface:'#0d1020', card:'#111525', border:'#1e2235',
@@ -25,7 +26,8 @@ const CHAPTERS = [
   {id:'arrests',       n:'08', label:'Arrest Patterns'},
   {id:'forecast',      n:'09', label:'Crime Forecast'},
   {id:'clearance-ml',  n:'10', label:'Predicting Clearance'},
-  {id:'findings',      n:'11', label:'Key Findings'},
+  {id:'hotspot-ml',    n:'11', label:'Predicting Hotspots'},
+  {id:'findings',      n:'12', label:'Key Findings'},
 ];
 
 
@@ -269,6 +271,7 @@ export default function InsightsPage(){
   const [hoods, setHoods]     = useState(null);
   const [forecast, setForecast] = useState(null);
   const [clearanceModel, setClearanceModel] = useState(null);
+  const [hotspotModel, setHotspotModel] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -289,6 +292,7 @@ export default function InsightsPage(){
     }).catch(console.error);
     fetch('/data/crime_forecast.json').then(r=>r.json()).then(setForecast).catch(console.error);
     fetch('/data/clearance_model.json').then(r=>r.json()).then(setClearanceModel).catch(console.error);
+    fetch('/data/hotspot_model.json').then(r=>r.json()).then(setHotspotModel).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -921,8 +925,48 @@ export default function InsightsPage(){
             <Sep/>
 
             {/* CH 11 */}
+            <div style={SP} id="hotspot-ml">
+              <ChapterBanner n="11" title="Predicting Hotspots"
+                thesis="Can neighborhood context — poverty, alcohol outlets, homeownership — predict where crime concentrates next, beyond just knowing where it concentrated before? We built the model and let the answer be honest, even when it isn't the one the enrichment work hoped for."/>
+              {hotspotModel ? (()=>{
+                const m = hotspotModel.metrics;
+                const lift = ((m.model_hit_rate/m.baseline_persistence_hit_rate - 1)*100);
+                const topFeature = hotspotModel.feature_importance[0];
+                const secondFeature = hotspotModel.feature_importance[1];
+                return(
+                  <>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:14,marginBottom:28}}>
+                      <BigStat value={m.r2.toFixed(2)} label="R² (Predicted vs Actual)" sub={`MAE ${m.mae_monthly_crimes} crimes/month/tract`} color={C.accent}/>
+                      <BigStat value={`${(m.model_hit_rate*100).toFixed(1)}%`} label="Model Hit Rate" sub={`top ${(m.top_k_pct*100).toFixed(0)}% of tracts by predicted risk`} color={C.cyan}/>
+                      <BigStat value={`${(m.baseline_persistence_hit_rate*100).toFixed(1)}%`} label="Baseline-Only Hit Rate" sub="ranking by 2020-22 history alone" color={C.green}/>
+                      <BigStat value={`${lift>=0?'+':''}${lift.toFixed(1)}%`} label="Model Lift vs Persistence" sub={lift < 3 ? 'essentially no improvement' : 'real improvement'} color={Math.abs(lift)<3?C.yellow:C.red}/>
+                    </div>
+
+                    <div style={{marginBottom:24}}>
+                      <HotspotChart model={hotspotModel}/>
+                    </div>
+
+                    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                      <Prose accent>The honest result: a model using each tract&rsquo;s 2020-22 crime history plus Census poverty/income/homeownership and ABC alcohol outlet density predicts {(m.model_hit_rate*100).toFixed(1)}% of {hotspotModel.target_period} crime inside its top-{(m.top_k_pct*100).toFixed(0)}% riskiest tracts — <strong style={{color:'#fff'}}>statistically tied</strong> with simply ranking tracts by their own historical rate ({(m.baseline_persistence_hit_rate*100).toFixed(1)}%). Both crush a random tract selection ({(m.random_hit_rate*100).toFixed(1)}%), so crime concentration is real and highly persistent — geography doesn&rsquo;t reshuffle much year to year — but the neighborhood-context data that clearly sharpened Chapter 10&rsquo;s clearance model doesn&rsquo;t add ranking power here.</Prose>
+                      <Prose>Feature importance explains why: <strong style={{color:'#fff'}}>{topFeature.feature}</strong> carries roughly {(topFeature.importance/secondFeature.importance).toFixed(0)}x the weight of the next-best predictor ({secondFeature.feature}). Poverty, alcohol density, and homeownership do correlate with where crime happens — that&rsquo;s exactly why they end up baked into a tract&rsquo;s own historical rate already. Once you know a place&rsquo;s past, its socioeconomic profile adds little the history hasn&rsquo;t already told you.</Prose>
+                    </div>
+
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                      <Finding text={`R²=${m.r2.toFixed(2)} is a strong fit for raw crime-count prediction, but the hit-rate comparison is the metric that actually matters for deployment — a model that just memorizes "where crime already was" would score nearly the same, so this doesn't justify claiming the enrichment data adds hotspot-prediction value.`} color={C.yellow}/>
+                      <Finding text="Not every dataset improves every model. The same Census/alcohol/zoning features ranked #4 in the clearance model (Chapter 10) and barely move the needle here — a useful reminder that feature value is task-specific, not universal." color={C.cyan}/>
+                    </div>
+                  </>
+                );
+              })() : (
+                <div style={{padding:'32px',textAlign:'center',color:C.dim,fontSize:13}}>Loading hotspot model…</div>
+              )}
+            </div>
+
+            <Sep/>
+
+            {/* CH 12 */}
             <div style={{...SP,paddingBottom:60}} id="findings">
-              <ChapterBanner n="11" title="Key Findings"
+              <ChapterBanner n="12" title="Key Findings"
                 thesis="Eight concrete, data-backed conclusions from 1,004,894 incidents — ranked by operational and policy significance."/>
               <div style={{display:'flex',flexDirection:'column',gap:10}}>
                 {[

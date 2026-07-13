@@ -184,6 +184,33 @@ def train_and_evaluate(panel: pd.DataFrame):
     return model, metrics, test_df
 
 
+def export_dashboard_json(model, metrics: dict, panel: pd.DataFrame):
+    """dashboard/public/data/hotspot_model.json"""
+    imp = model.feature_importances_
+    order = np.argsort(imp)[::-1]
+    feature_importance = [
+        {"feature": FEAT_LABELS.get(FEATURES[i], FEATURES[i]), "importance": round(float(imp[i] / imp[order[0]]), 4)}
+        for i in order
+    ]
+
+    payload = {
+        "baseline_period": f"{BASELINE_START.strftime('%Y-%m')} to {BASELINE_END.strftime('%Y-%m')}",
+        "target_period": f"{TARGET_START.strftime('%Y-%m')} to {RELIABLE_CUTOFF.strftime('%Y-%m')}",
+        "n_tracts": len(panel),
+        "metrics": metrics,
+        "feature_importance": feature_importance,
+        "hit_rate_comparison": [
+            {"method": "Model (baseline + neighborhood context)", "hit_rate": metrics["model_hit_rate"]},
+            {"method": "Baseline persistence only", "hit_rate": metrics["baseline_persistence_hit_rate"]},
+            {"method": "Random", "hit_rate": metrics["random_hit_rate"]},
+        ],
+    }
+
+    out = ROOT / "dashboard" / "public" / "data" / "hotspot_model.json"
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    print(f"  Saved {out.relative_to(ROOT)}")
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 3. FIGURES
 # ══════════════════════════════════════════════════════════════════════════════
@@ -250,6 +277,9 @@ def main():
 
     joblib.dump(model, MODDIR / "hotspot_xgb.joblib")
     print("  Saved hotspot_xgb.joblib")
+
+    print("\n[Exporting dashboard JSON...]")
+    export_dashboard_json(model, metrics, panel)
 
     print("\n" + "=" * 60)
     lift = metrics["model_hit_rate"] / metrics["baseline_persistence_hit_rate"] - 1

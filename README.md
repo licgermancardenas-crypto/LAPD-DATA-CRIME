@@ -1,5 +1,4 @@
 # L.A.I.S.S. — LAPD Crime Data Analysis 2020–2024
-![Uploading image.png…]()
 
 End-to-end data science project analyzing 1 million+ crime incidents reported to the **Los Angeles Police Department (LAPD)** between January 2020 and December 2024. Ships as **L.A.I.S.S.** (Los Angeles Intelligence & Safety System), an interactive open-access web dashboard.
 

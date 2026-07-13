@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Shell from '@/components/Shell';
+import ForecastChart from '@/components/ForecastChart';
 
 const C = {
   bg:'#07080f', surface:'#0d1020', card:'#111525', border:'#1e2235',
@@ -21,7 +22,8 @@ const CHAPTERS = [
   {id:'victims',       n:'06', label:'Who Bears the Burden'},
   {id:'neighborhoods', n:'07', label:'Neighborhood Risk'},
   {id:'arrests',       n:'08', label:'Arrest Patterns'},
-  {id:'findings',      n:'09', label:'Key Findings'},
+  {id:'forecast',      n:'09', label:'Crime Forecast'},
+  {id:'findings',      n:'10', label:'Key Findings'},
 ];
 
 
@@ -263,6 +265,7 @@ const SP={padding:'52px 40px'};
 export default function InsightsPage(){
   const [data, setData]       = useState(null);
   const [hoods, setHoods]     = useState(null);
+  const [forecast, setForecast] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -281,6 +284,7 @@ export default function InsightsPage(){
       const arrests = arrSum ? {summary:arrSum,demographics:arrDemo,categories:arrCats,division:arrDiv} : null;
       setData({summary,division,categories,victims,hourly,monthly,arrests});
     }).catch(console.error);
+    fetch('/data/crime_forecast.json').then(r=>r.json()).then(setForecast).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -810,8 +814,46 @@ export default function InsightsPage(){
             <Sep/>
 
             {/* CH 09 */}
+            <div style={SP} id="forecast">
+              <ChapterBanner n="09" title="Crime Forecast"
+                thesis="Predicting next year's crime volume required first fixing a data trap: months close to the extract date look like crime is collapsing, when really they're just missing late-arriving reports."/>
+              {forecast ? (()=>{
+                const xgbM = forecast.backtest_metrics.find(m=>m.model==='XGBoost');
+                const prophetM = forecast.backtest_metrics.find(m=>m.model==='Prophet');
+                return(
+                  <>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:14,marginBottom:28}}>
+                      <BigStat value={`${xgbM.mape}%`} label="XGBoost MAPE" sub={`vs ${prophetM.mape}% Prophet — backtest, last 12mo`} color={C.green}/>
+                      <BigStat value={forecast.reliable_cutoff} label="Reliable Data Ends" sub="9 months excluded (reporting lag)" color={C.yellow}/>
+                      <BigStat value="51" label="Months Used to Train" sub="2020-01 through cutoff" color={C.accent}/>
+                      <BigStat value="77%" label="Fake Collapse Avoided" sub="raw Dec-2024 undercounts by this much" color={C.red}/>
+                    </div>
+
+                    <div style={{marginBottom:24}}>
+                      <ForecastChart forecast={forecast}/>
+                    </div>
+
+                    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                      <Prose accent>The raw monthly series is stable at 15,000-20,500 crimes every single month from January 2020 through March 2024 — then collapses to <strong style={{color:'#fff'}}>4,697 by December 2024</strong>, a 77% drop with no real-world cause. The extract&rsquo;s report dates top out in March 2025, so recent months simply haven&rsquo;t finished accumulating late-arriving denuncias yet. Training on that tail teaches a model a fake crash — the previous version of this forecast went negative by May 2025.</Prose>
+                      <Prose>Excluding the unreliable tail and backtesting on the last 12 reliable months, <strong style={{color:'#fff'}}>XGBoost</strong> (lag features + rolling averages + weather/unemployment/311 disorder counts as exogenous regressors) beat <strong style={{color:'#fff'}}>Prophet</strong> on every metric. Both models agree the next 12 months stay in the historical 16,700-20,900 range — no crash, no spike.</Prose>
+                    </div>
+
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                      <Finding text={`XGBoost's ${xgbM.mape}% MAPE means the model is typically off by less than 1,000 crimes out of ~19,000/month — tight enough to inform staffing and resource planning a year out.`} color={C.green}/>
+                      <Finding text="Any analysis touching the last few months of date_occ in this dataset should apply the same reporting-lag exclusion — the undercounting artifact isn't specific to forecasting, it affects every recent-month metric." color={C.yellow}/>
+                    </div>
+                  </>
+                );
+              })() : (
+                <div style={{padding:'32px',textAlign:'center',color:C.dim,fontSize:13}}>Loading forecast…</div>
+              )}
+            </div>
+
+            <Sep/>
+
+            {/* CH 10 */}
             <div style={{...SP,paddingBottom:60}} id="findings">
-              <ChapterBanner n="09" title="Key Findings"
+              <ChapterBanner n="10" title="Key Findings"
                 thesis="Eight concrete, data-backed conclusions from 1,004,894 incidents — ranked by operational and policy significance."/>
               <div style={{display:'flex',flexDirection:'column',gap:10}}>
                 {[

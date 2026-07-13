@@ -41,6 +41,8 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore")
 
+import json
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -279,6 +281,57 @@ def plot_forecast(panel: pd.DataFrame, backtest_xgb_df: pd.DataFrame, backtest_p
     print("  Saved p5b_01_forecast_overall.png")
 
 
+def export_dashboard_json(panel: pd.DataFrame, xgb_test: pd.DataFrame, prophet_test: pd.DataFrame,
+                           fwd_xgb: pd.DataFrame, fwd_prophet: pd.DataFrame,
+                           xgb_metrics: dict, prophet_metrics: dict):
+    """dashboard/public/data/crime_forecast.json -- one row per month, history + forecast."""
+    rows = []
+    for _, r in panel.iterrows():
+        rows.append({
+            "month": r["ds"].strftime("%Y-%m"),
+            "actual": int(r["y"]),
+            "reliable": bool(r["ds"] <= RELIABLE_CUTOFF),
+        })
+    by_month = {r["month"]: r for r in rows}
+
+    for _, r in xgb_test.iterrows():
+        by_month[r["ds"].strftime("%Y-%m")]["xgb_backtest"] = round(float(r["yhat"]))
+    for _, r in prophet_test.iterrows():
+        by_month[r["ds"].strftime("%Y-%m")]["prophet_backtest"] = round(float(r["yhat"]))
+
+    def upsert(month: str, fields: dict):
+        if month in by_month:
+            by_month[month].update(fields)
+        else:
+            row = {"month": month, **fields}
+            rows.append(row)
+            by_month[month] = row
+
+    for _, r in fwd_xgb.iterrows():
+        upsert(r["ds"].strftime("%Y-%m"), {"xgb_forecast": round(float(r["yhat"]))})
+    for _, r in fwd_prophet.iterrows():
+        upsert(r["ds"].strftime("%Y-%m"), {
+            "prophet_forecast": round(float(r["yhat"])),
+            "prophet_ci_lower": round(float(r["yhat_lower"])),
+            "prophet_ci_upper": round(float(r["yhat_upper"])),
+        })
+    rows.sort(key=lambda r: r["month"])
+
+    payload = {
+        "reliable_cutoff": RELIABLE_CUTOFF.strftime("%Y-%m"),
+        "excluded_reason": "Months after the reliable cutoff are undercounted due to reporting lag "
+                            "(the source extract's date_rptd tops out at 2025-03-28, so recent "
+                            "date_occ months haven't finished accumulating late-arriving reports) "
+                            "-- not a real drop in crime. Excluded from both training and evaluation.",
+        "backtest_metrics": [xgb_metrics, prophet_metrics],
+        "series": rows,
+    }
+
+    out = ROOT / "dashboard" / "public" / "data" / "crime_forecast.json"
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    print(f"  Saved {out.relative_to(ROOT)}")
+
+
 def plot_components(prophet_model):
     fig = prophet_model.plot_components(prophet_model.predict(prophet_model.history))
     fig.set_facecolor(BG)
@@ -354,6 +407,9 @@ def main():
 
     joblib.dump(xgb_final, MODDIR / "forecast_xgb.joblib")
     print(f"  Saved forecast_xgb.joblib")
+
+    print("\n[6] Exporting dashboard JSON...")
+    export_dashboard_json(panel, xgb_test, prophet_test, fwd_xgb, fwd_prophet, xgb_metrics, prophet_metrics)
 
     print("\n" + "=" * 60)
     winner = "XGBoost" if xgb_metrics["mape"] < prophet_metrics["mape"] else "Prophet"

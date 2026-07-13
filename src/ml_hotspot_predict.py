@@ -184,6 +184,41 @@ def train_and_evaluate(panel: pd.DataFrame):
     return model, metrics, test_df
 
 
+def export_map_geojson(model, panel: pd.DataFrame):
+    """
+    dashboard/public/data/hotspot_risk_tracts.geojson -- predicted risk for
+    ALL 1,241 tracts (not just the 20% test split used for evaluation), for
+    the OSIRIS map layer. Scoring every tract with the already-fit model is
+    standard practice for a display map; it isn't a second evaluation, so
+    reusing train-set tracts here doesn't overstate accuracy anywhere else.
+    """
+    X_all = panel[FEATURES].apply(pd.to_numeric, errors="coerce")
+    panel = panel.copy()
+    panel["predicted_rate"] = np.clip(model.predict(X_all), 0, None)
+
+    def tier(series):
+        q1, q2, q3 = series.quantile([0.5, 0.8, 0.95])
+        return pd.cut(series, bins=[-1, q1, q2, q3, series.max() + 1],
+                      labels=["Low", "Moderate", "High", "Very High"])
+
+    panel["risk_tier"] = tier(panel["predicted_rate"])
+    panel["baseline_tier"] = tier(panel["baseline_rate"])
+    panel["model_vs_baseline_gap"] = (panel["predicted_rate"] - panel["baseline_rate"]).round(2)
+
+    tracts = gpd.read_file(EXT / "census_tracts_la.geojson")[["GEOID", "geometry"]]
+    out_gdf = tracts.merge(
+        panel[["GEOID", "baseline_rate", "target_rate", "predicted_rate",
+               "risk_tier", "baseline_tier", "model_vs_baseline_gap", "pop_total"]],
+        on="GEOID", how="inner",
+    )
+    for col in ["baseline_rate", "target_rate", "predicted_rate", "model_vs_baseline_gap"]:
+        out_gdf[col] = out_gdf[col].round(2)
+
+    out = DASH / "hotspot_risk_tracts.geojson"
+    out_gdf.to_file(out, driver="GeoJSON")
+    print(f"  Saved {len(out_gdf)} tracts -> {out.relative_to(ROOT)}")
+
+
 def export_dashboard_json(model, metrics: dict, panel: pd.DataFrame):
     """dashboard/public/data/hotspot_model.json"""
     imp = model.feature_importances_
@@ -280,6 +315,7 @@ def main():
 
     print("\n[Exporting dashboard JSON...]")
     export_dashboard_json(model, metrics, panel)
+    export_map_geojson(model, panel)
 
     print("\n" + "=" * 60)
     lift = metrics["model_hit_rate"] / metrics["baseline_persistence_hit_rate"] - 1

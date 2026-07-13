@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="/js/lapd-stations.js"></script>
+<style>
+  :root{--bg:#0a0c12;--surface:rgba(10,12,18,.92);--surface-s:#1e2230;--border:#2e334d;--text:#e4e6f0;--muted:#7b82a0;--popup-bg:#1e2230;--outline:#0a0c12}
+  .lm{--bg:#eef0f4;--surface:rgba(255,255,255,.95);--surface-s:#fff;--border:#d4d8e2;--text:#1a1d27;--muted:#6b7280;--popup-bg:rgba(255,255,255,.98);--outline:#c8ccd6}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--text);transition:background .25s}
+  #map{position:absolute;top:0;left:0;right:0;bottom:0}
+
+  .leaflet-control-zoom a{background:var(--surface-s)!important;color:var(--text)!important;border-color:var(--border)!important}
+  .leaflet-bar{border:1px solid var(--border)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.2)!important}
+  .leaflet-control-attribution{background:var(--surface)!important;color:var(--muted)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:#4f8ef7!important}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;border:1px solid #2e334d!important;border-radius:8px!important;box-shadow:0 8px 32px rgba(0,0,0,.45)!important;color:#e4e6f0!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important}
+  .leaflet-popup-close-button{color:var(--muted)!important;font-size:18px!important;padding:6px 8px!important}
+  .leaflet-popup-content{margin:14px 16px!important;min-width:230px}
+
+  .p-title{font-weight:700;font-size:14px;margin-bottom:10px;color:var(--text)}
+  .p-badge{display:inline-block;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;margin-bottom:10px}
+  .p-section{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;margin:10px 0 5px;text-transform:uppercase}
+  .p-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
+  .p-label{font-size:11px;color:var(--muted)}
+  .p-val{font-size:12px;font-weight:600;color:var(--text)}
+  .p-sep{height:1px;background:var(--border);margin:8px 0}
+  .p-bar-bg{height:4px;border-radius:2px;background:var(--surface-s);overflow:hidden;margin-top:2px}
+  .p-bar-fill{height:100%;border-radius:2px}
+  .p-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:10px}
+
+  #toolbar{position:fixed;top:12px;left:12px;z-index:1000;display:flex;gap:6px;flex-wrap:wrap;max-width:340px}
+  .metric-btn{padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .metric-btn.active{border-color:rgba(79,142,247,.5);background:rgba(79,142,247,.12);color:#4f8ef7;font-weight:600}
+  .metric-btn:hover:not(.active){border-color:rgba(76,201,240,.45);box-shadow:0 0 0 1px rgba(76,201,240,.2);color:var(--text)}
+  .metric-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
+
+  #banner{position:fixed;top:56px;left:12px;z-index:1000;max-width:300px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:10.5px;color:var(--muted);line-height:1.5}
+
+  #tt{position:fixed;top:12px;right:12px;z-index:1000;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  #tt:hover{border-color:rgba(76,201,240,.45);box-shadow:0 0 0 1px rgba(76,201,240,.2)}
+  #tt:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
+
+  #legend{position:fixed;bottom:36px;right:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;z-index:1000;min-width:160px}
+  #leg-title{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:5px}
+  #leg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden}
+  #leg-labs{display:flex;justify-content:space-between;margin-top:3px}
+  #leg-labs span{font-size:9px;color:var(--muted)}
+
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2000}
+  #loading p{color:var(--muted);font-size:13px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#4f8ef7;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .leaflet-tooltip.nb-tip{
+    background:rgba(10,12,18,.93)!important;border:1px solid rgba(79,142,247,.35)!important;
+    border-radius:8px!important;padding:6px 12px!important;color:#e8eaf0!important;
+    font-size:12px!important;font-weight:600!important;line-height:1.4;
+    box-shadow:0 4px 14px rgba(0,0,0,.35)!important;pointer-events:none!important;white-space:nowrap
+  }
+  .lm .leaflet-tooltip.nb-tip{
+    background:rgba(255,255,255,.97)!important;border-color:rgba(26,86,219,.3)!important;color:#1a1d27!important
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="loading"><div class="spinner"></div><p>Loading hotspot model...</p></div>
+
+<div id="toolbar">
+  <button class="metric-btn" data-metric="predicted_rate">Predicted Risk</button>
+  <button class="metric-btn" data-metric="baseline_rate">2020-22 History</button>
+  <button class="metric-btn" data-metric="model_vs_baseline_gap">Model vs History</button>
+</div>
+<div id="banner">XGBoost tract-level model, trained on 2020-22 history + Census/alcohol context, predicting 2023–Q1 2024 crime rate. Model and pure-history ranking are statistically tied (see Insights Ch. 11) — toggle the last button to see where they actually disagree.</div>
+
+<button id="tt" title="Toggle dark / light mode">🌙</button>
+
+<div id="legend">
+  <div id="leg-title">PREDICTED RISK</div>
+  <div id="leg-bar"></div>
+  <div id="leg-labs"><span>Low</span><span>Very High</span></div>
+</div>
+
+<script>
+var SCALE_RISK = [[40,200,120],[79,207,142],[224,200,90],[224,120,50],[200,50,50]];
+var SCALE_GAP  = [[60,110,224],[80,140,230],[30,34,46],[224,140,60],[224,60,60]];
+
+function lerp(stops, t) {
+  t = Math.max(0, Math.min(1, t));
+  var n = stops.length - 1, s = t * n, i = Math.min(Math.floor(s), n - 1), f = s - i;
+  var a = stops[i], b = stops[i + 1] || stops[n];
+  return 'rgb(' + Math.round(a[0]+f*(b[0]-a[0])) + ',' + Math.round(a[1]+f*(b[1]-a[1])) + ',' + Math.round(a[2]+f*(b[2]-a[2])) + ')';
+}
+
+var METRICS = {
+  predicted_rate: { label: 'PREDICTED RISK (CRIMES/MO)', scale: SCALE_RISK, diverging: false },
+  baseline_rate:  { label: '2020-22 HISTORICAL RATE (CRIMES/MO)', scale: SCALE_RISK, diverging: false },
+  model_vs_baseline_gap: { label: 'MODEL − HISTORY (CRIMES/MO)', scale: SCALE_GAP, diverging: true }
+};
+
+var metric = 'predicted_rate';
+var dark = true;
+var geoLayer, geoData;
+var caps = {};
+
+var map = L.map('map', {center:[34.02,-118.35], zoom:10, zoomControl:false, attributionControl:true});
+setTimeout(function(){ map.invalidateSize(); }, 100);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+var tOpts = {subdomains:'abcd', maxZoom:19, attribution:'<a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>'};
+var tDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', tOpts);
+var tLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', tOpts);
+tDark.addTo(map);
+
+function buildLegend(m) {
+  var cfg = METRICS[m];
+  var lb = document.getElementById('leg-bar');
+  lb.innerHTML = '';
+  for (var k = 0; k < 28; k++) {
+    var d = document.createElement('div');
+    d.style.flex = '1';
+    d.style.background = lerp(cfg.scale, k / 27);
+    lb.appendChild(d);
+  }
+  document.getElementById('leg-title').textContent = cfg.label;
+  var labs = document.getElementById('leg-labs');
+  if (cfg.diverging) { labs.children[0].textContent = 'Model < History'; labs.children[1].textContent = 'Model > History'; }
+  else { labs.children[0].textContent = 'Low'; labs.children[1].textContent = 'Very High'; }
+}
+buildLegend(metric);
+
+var ZOOM_CHOROPLETH = [[15,.2,.58],[14,.3,.62],[13,.4,.66],[12,.5,.70],[11,.7,.72],[0,1.0,.78]];
+var zoomW = 0.7, zoomFO = 0.72;
+function applyZoomStyle() {
+  var z = map.getZoom();
+  for (var i = 0; i < ZOOM_CHOROPLETH.length; i++) {
+    if (z >= ZOOM_CHOROPLETH[i][0]) { zoomW = ZOOM_CHOROPLETH[i][1]; zoomFO = ZOOM_CHOROPLETH[i][2]; break; }
+  }
+  if (geoLayer) geoLayer.setStyle(fStyle);
+}
+map.on('zoomend', applyZoomStyle);
+
+function fStyle(f) {
+  var p = f.properties, cfg = METRICS[metric];
+  var val = p[metric] || 0;
+  var t;
+  if (cfg.diverging) {
+    var cap = caps[metric] || 1;
+    t = Math.max(0, Math.min(1, (val + cap) / (2 * cap)));
+  } else {
+    var cap2 = caps[metric] || 1;
+    t = cap2 > 0 ? Math.min(val / cap2, 1) : 0;
+  }
+  return {
+    fillColor: lerp(cfg.scale, t),
+    fillOpacity: zoomFO,
+    color: dark ? '#0a0c12' : '#c8ccd6',
+    weight: zoomW,
+    opacity: 0.8
+  };
+}
+
+var TIER_COLORS = {Low:'#28c77a', Moderate:'#e0c044', High:'#e07830', 'Very High':'#e04040'};
+
+function fmtNum(v, decimals) { return Number(v).toFixed(decimals !== undefined ? decimals : 1); }
+function miniBar(pct, color) {
+  return '<div class="p-bar-bg"><div class="p-bar-fill" style="width:' + Math.min(Math.max(pct,0), 100) + '%;background:' + color + '"></div></div>';
+}
+
+function buildPopup(p) {
+  var tc = TIER_COLORS[p.risk_tier] || '#7b82a0';
+  var predColor = lerp(SCALE_RISK, caps.predicted_rate > 0 ? Math.min(p.predicted_rate / caps.predicted_rate, 1) : 0);
+  var baseColor = lerp(SCALE_RISK, caps.baseline_rate > 0 ? Math.min(p.baseline_rate / caps.baseline_rate, 1) : 0);
+  var gap = p.model_vs_baseline_gap || 0;
+  var gapColor = gap >= 0 ? '#e07830' : '#4f8ef7';
+
+  return (
+    '<div class="p-title">Census Tract ' + (p.GEOID ? p.GEOID.slice(-6) : '—') + '</div>' +
+    '<span class="p-badge" style="background:' + tc + '22;color:' + tc + ';border:1px solid ' + tc + '44">' +
+      p.risk_tier + ' Predicted Risk</span>' +
+
+    '<div class="p-section">Model Prediction</div>' +
+    '<div class="p-row"><span class="p-label">Predicted (2023–Q1 2024)</span>' +
+      '<span class="p-val" style="color:' + predColor + '">' + fmtNum(p.predicted_rate) + '/mo</span></div>' +
+    miniBar(caps.predicted_rate > 0 ? p.predicted_rate / caps.predicted_rate * 100 : 0, predColor) +
+    '<div class="p-row" style="margin-top:6px"><span class="p-label">Actual (2023–Q1 2024)</span>' +
+      '<span class="p-val">' + fmtNum(p.target_rate) + '/mo</span></div>' +
+
+    '<div class="p-sep"></div>' +
+    '<div class="p-section">Historical Baseline</div>' +
+    '<div class="p-row"><span class="p-label">2020-22 avg rate</span>' +
+      '<span class="p-val" style="color:' + baseColor + '">' + fmtNum(p.baseline_rate) + '/mo</span></div>' +
+    miniBar(caps.baseline_rate > 0 ? p.baseline_rate / caps.baseline_rate * 100 : 0, baseColor) +
+    '<div class="p-row" style="margin-top:6px"><span class="p-label">Model − History</span>' +
+      '<span class="p-val" style="color:' + gapColor + '">' + (gap>=0?'+':'') + fmtNum(gap) + '</span></div>' +
+
+    '<div class="p-sep"></div>' +
+    '<div class="p-row"><span class="p-label">Population</span><span class="p-val">' + Number(p.pop_total || 0).toLocaleString() + '</span></div>' +
+    '<p class="p-note">Model and pure-history ranking are statistically tied citywide (44.3% vs 44.7% hit rate) — this tract may still be a case where they diverge.</p>'
+  );
+}
+
+document.querySelectorAll('.metric-btn').forEach(function(btn) {
+  if (btn.dataset.metric === metric) btn.classList.add('active');
+  btn.addEventListener('click', function() {
+    metric = this.dataset.metric;
+    document.querySelectorAll('.metric-btn').forEach(function(b){ b.classList.remove('active'); });
+    this.classList.add('active');
+    buildLegend(metric);
+    if (geoLayer) geoLayer.setStyle(fStyle);
+  });
+});
+
+document.getElementById('tt').addEventListener('click', function() {
+  dark = !dark;
+  document.body.classList.toggle('lm', !dark);
+  this.textContent = dark ? '🌙' : '☀️';
+  if (dark) { map.removeLayer(tLight); tDark.addTo(map); }
+  else { map.removeLayer(tDark); tLight.addTo(map); }
+  if (geoLayer) geoLayer.setStyle(fStyle);
+});
+
+fetch('/data/hotspot_risk_tracts.geojson')
+  .then(function(r) {
+    if (!r.ok) throw new Error('Data not found - run src/ml_hotspot_predict.py');
+    return r.json();
+  })
+  .then(function(gj) {
+    geoData = gj;
+    document.getElementById('loading').style.display = 'none';
+
+    ['predicted_rate','baseline_rate'].forEach(function(key){
+      var vals = gj.features.map(function(f){ return f.properties[key] || 0; })
+        .filter(function(v){ return v > 0; }).sort(function(a,b){ return a - b; });
+      caps[key] = vals[Math.floor(vals.length * 0.98)] || 1;
+    });
+    var gapVals = gj.features.map(function(f){ return Math.abs(f.properties.model_vs_baseline_gap || 0); })
+      .sort(function(a,b){ return a - b; });
+    caps.model_vs_baseline_gap = gapVals[Math.floor(gapVals.length * 0.98)] || 1;
+
+    geoLayer = L.geoJSON(gj, {
+      style: fStyle,
+      onEachFeature: function(feat, layer) {
+        var p = feat.properties;
+        layer.bindPopup(buildPopup(p), {maxWidth: 300, closeButton: true});
+        layer.bindTooltip(
+          '<b>Tract ' + (p.GEOID ? p.GEOID.slice(-6) : '—') + '</b><br><span style="font-size:11px;opacity:.75">' +
+          (p.risk_tier || '') + ' Risk</span>',
+          {sticky:true, direction:'top', className:'nb-tip', opacity:1}
+        );
+        layer.on({
+          mouseover: function(e) {
+            e.target.setStyle({fillOpacity: 0.90, weight: 1.5, color: '#4f8ef7'});
+            e.target.bringToFront();
+          },
+          mouseout: function(e) { geoLayer.resetStyle(e.target); },
+          click: function(){window.parent.postMessage({type:'OSINT_CLICK_INFO',mapId:'hotspot',clickType:'hotspot_tract',tract:p.GEOID||'—',risk_tier:p.risk_tier||'—',predicted_rate:p.predicted_rate||0,baseline_rate:p.baseline_rate||0,population:p.pop_total||0},'*');}
+        });
+      }
+    }).addTo(map);
+    applyZoomStyle();
+  })
+  .catch(function(e) {
+    document.getElementById('loading').innerHTML =
+      '<p style="color:#e05252;text-align:center;padding:24px">' + e.message + '</p>';
+  });
+
+fetch('/data/lapd_divisions_crimes.geojson')
+  .then(function(r) { return r.json(); })
+  .then(function(gj) {
+    L.geoJSON(gj, {
+      style: function() { return { fillOpacity: 0, color: '#4f8ef7', weight: 0.8, opacity: 0.25 }; },
+      interactive: false,
+      onEachFeature: function(feat, layer) {
+        layer.bindTooltip('<b>' + feat.properties.name + ' Division</b>', { sticky: true, direction: 'top', className: 'nb-tip', opacity: 1 });
+      },
+    }).addTo(map);
+  })
+  .catch(function() {});
+addPoliceStations(map);
+</script>
+</body>
+</html>

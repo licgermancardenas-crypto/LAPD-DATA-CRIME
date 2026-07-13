@@ -8,6 +8,7 @@ data/external/*.prj
 data/external/*.shx
 data/external/*.zip
 *.csv
+!data/external/311_monthly_by_precinct.csv
 *.parquet
 !datasets/*.parquet
 *.feather

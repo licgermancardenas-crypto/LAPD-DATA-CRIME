@@ -86,6 +86,17 @@ Dashboard env vars (Vercel / `.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PU
 - **Reporting Standard:** FBI Uniform Crime Reporting (UCR)
 - **Data license:** City of Los Angeles Open Data
 
+### Enrichment sources (predictive model)
+
+Added 2026-07-12 to feed the crime model — "broken windows" disorder proxy + infrastructure signal, both joined to LAPD divisions:
+
+| Source | Script | Output |
+|---|---|---|
+| [MyLA311 Service Request Data](https://data.lacity.org/City-Infrastructure-Service-Requests/) 2020–2024 (Socrata, `rq3b-xjk8`…`b7dx-7gc3`) — monthly counts by division for bulky items, graffiti, illegal dumping, homeless encampments, dead animals, streetlight outages | `scripts/fetch_311_data.py` | `data/external/311_monthly_by_precinct.csv`, `dashboard/public/data/disorder_monthly.json` |
+| [Bureau of Street Lighting](https://maps.lacity.org/lahub/rest/services/Bureau_of_Street_Lighting/MapServer/0) — 222k streetlight points citywide (the Socrata mirror `9ei6-svt8` returns empty records; this hits the ArcGIS FeatureServer directly) | `scripts/fetch_streetlights.py` → `scripts/generate_disorder_streetlight_data.py` | `data/external/streetlights_la.geojson`, `dashboard/public/data/streetlight_density.geojson` |
+
+`policeprecinct` (311) and `area name` (LAPD divisions) match 1:1 by name — no fuzzy join needed.
+
 ## Tech Stack
 
 | Layer | Tools |

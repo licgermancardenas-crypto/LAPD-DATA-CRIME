@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore")
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 ROOT    = Path(__file__).parent.parent
-RAW_CSV = Path(r"C:\Users\corra\Desktop\POWER BI Proyectos\Crime_Data_from_2020_to_2024.csv")
+RAW_CSV = ROOT / "data" / "raw" / "Crime_Data_from_2020_to_2024.csv"
 OUT_DIR = ROOT / "data" / "processed"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 

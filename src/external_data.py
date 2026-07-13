@@ -4,7 +4,7 @@ Downloads, processes and merges 4 external datasets with the clean crime parquet
 
 Sources:
   1. LAPD Division boundaries    -- LA City GeoHub (GeoJSON)
-  2. LA County Census tracts     -- Census Bureau TIGER + ACS 5-year 2021
+  2. LA County Census tracts     -- Census Bureau TIGER boundaries + SRR demographics (local file)
   3. Historical weather           -- Open-Meteo archive API (no key required)
   4. Monthly unemployment         -- FRED (CALOSA5URN series, no key required)
 
@@ -144,71 +144,45 @@ def download_lapd_divisions(crime: pd.DataFrame = None) -> gpd.GeoDataFrame:
 # 2. CENSUS TRACT BOUNDARIES + ACS DEMOGRAPHICS
 # ══════════════════════════════════════════════════════════════════════════════
 
-CENSUS_VARS = {
-    "B01003_001E": "pop_total",
-    "B19013_001E": "median_hh_income",
-    "B17001_001E": "poverty_universe",
-    "B17001_002E": "poverty_below",
-    "B25003_001E": "housing_units",
-    "B25003_002E": "owner_occupied",
-    "B23025_005E": "unemployed",
-    "B23025_002E": "labor_force",
+SRR_FILE = EXT_DIR / "Census_2020_SRR_and_Demographic_Charcateristics.geojson"
+
+SRR_VARS = {
+    "CT20":         "tract6",
+    "Pop_20":       "pop_total",
+    "Med_HH_Incm":  "median_hh_income",
+    "Pov100Rate20": "poverty_rate",
 }
 
 
-def _fetch_acs(state: str = "06", county: str = "037") -> pd.DataFrame:
-    """Fetch ACS 5-year 2021 variables for LA County tracts."""
-    print("  Fetching ACS demographic data...")
+def _fetch_acs() -> pd.DataFrame:
+    """
+    Census tract demographics for LA County, sourced from the local SRR
+    (Census Response Rate) GeoJSON rather than the ACS 5-year API.
 
-    # Try multiple URL formats — Census API is finicky about 'in' parameter encoding
-    attempts = [
-        # Format 1: space-separated in single 'in' param
-        f"https://api.census.gov/data/2021/acs/acs5?get=NAME,{','.join(CENSUS_VARS.keys())}&for=tract:*&in=state:{state} county:{county}",
-        # Format 2: + separator
-        f"https://api.census.gov/data/2021/acs/acs5?get=NAME,{','.join(CENSUS_VARS.keys())}&for=tract:*&in=state:{state}+county:{county}",
-        # Format 3: county subdivision level (simpler, more reliable)
-        f"https://api.census.gov/data/2021/acs/acs5?get=NAME,{','.join(CENSUS_VARS.keys())}&for=tract:*&in=state:{state}&in=county:{county}",
-    ]
+    The ACS API (api.census.gov/data/2021/acs/acs5) fails silently in this
+    environment across all known URL parameter formats -- download_census_tracts()
+    used to swallow that failure and cache a boundaries-only file with pop_total
+    /median_hh_income/poverty_rate/owner_occ_rate/unemployment_rate_ct all NaN,
+    which then propagated into lapd_enriched.parquet as 5 fully-empty columns.
 
-    data = None
-    for url in attempts:
-        try:
-            r = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
-            r.raise_for_status()
-            text = r.text.strip()
-            if not text or text.startswith("<"):
-                raise ValueError(f"Non-JSON response: {text[:80]}")
-            data = r.json()
-            if isinstance(data, list) and len(data) > 1:
-                print(f"    ACS data fetched: {len(data)-1} tracts")
-                break
-            else:
-                raise ValueError(f"Unexpected response: {str(data)[:80]}")
-        except Exception as e:
-            print(f"    URL attempt failed: {e}")
+    SRR covers population, median household income, and poverty rate (same
+    source scripts/generate_vulnerability_data.py already uses successfully).
+    It has no housing-occupancy or tract-level unemployment variables, so
+    owner_occ_rate and unemployment_rate_ct are dropped rather than shipped
+    as fake empty columns -- unemp_rate_pct (city-level, monthly) already
+    covers unemployment elsewhere in this dataset.
+    """
+    print("  Reading Census SRR demographic data (local file)...")
+    if not SRR_FILE.exists():
+        raise FileNotFoundError(f"{SRR_FILE} not found")
 
-    if data is None:
-        raise ValueError("All Census ACS API URL formats failed")
+    srr = gpd.read_file(SRR_FILE)[list(SRR_VARS.keys())].rename(columns=SRR_VARS)
+    srr["GEOID"] = "06037" + srr["tract6"].astype(str).str.zfill(6)
+    for col in ["pop_total", "median_hh_income", "poverty_rate"]:
+        srr[col] = pd.to_numeric(srr[col], errors="coerce")
 
-    cols = data[0]
-    rows = data[1:]
-    df = pd.DataFrame(rows, columns=cols)
-
-    # Rename to readable names
-    df = df.rename(columns=CENSUS_VARS)
-    df["GEOID"] = df["state"] + df["county"] + df["tract"]
-
-    # Convert to numeric, replace -666666666 (Census sentinel for N/A) with NaN
-    for col in CENSUS_VARS.values():
-        df[col] = pd.to_numeric(df[col], errors="coerce").replace(-666666666, np.nan)
-
-    # Derived rates
-    df["poverty_rate"]        = df["poverty_below"]   / df["poverty_universe"]
-    df["owner_occ_rate"]      = df["owner_occupied"]  / df["housing_units"]
-    df["unemployment_rate_ct"]= df["unemployed"]      / df["labor_force"]
-
-    return df[["GEOID", "NAME", "pop_total", "median_hh_income",
-               "poverty_rate", "owner_occ_rate", "unemployment_rate_ct"]]
+    print(f"    SRR data loaded: {len(srr)} tracts")
+    return srr[["GEOID", "pop_total", "median_hh_income", "poverty_rate"]]
 
 
 def _fetch_tract_boundaries(state: str = "06", county: str = "037") -> gpd.GeoDataFrame:
@@ -245,10 +219,9 @@ def download_census_tracts() -> gpd.GeoDataFrame:
         acs = _fetch_acs()
         gdf = boundaries.merge(acs, on="GEOID", how="left")
     except Exception as e:
-        print(f"  ACS demographics unavailable ({e}). Saving boundaries only.")
+        print(f"  Census demographics unavailable ({e}). Saving boundaries only.")
         gdf = boundaries.copy()
-        for col in ["pop_total", "median_hh_income", "poverty_rate",
-                    "owner_occ_rate", "unemployment_rate_ct"]:
+        for col in ["pop_total", "median_hh_income", "poverty_rate"]:
             gdf[col] = np.nan
 
     gdf.to_file(out, driver="GeoJSON")
@@ -425,8 +398,7 @@ def enrich_crime_data(
         joined = gpd.sjoin(
             gdf_crime,
             tracts[["GEOID", "pop_total", "median_hh_income",
-                    "poverty_rate", "owner_occ_rate", "unemployment_rate_ct",
-                    "geometry"]],
+                    "poverty_rate", "geometry"]],
             how="left",
             predicate="within"
         )
@@ -434,8 +406,7 @@ def enrich_crime_data(
         # sjoin may produce duplicates if point falls on boundary — keep first
         joined = joined.drop_duplicates(subset="DR_NO").set_index("DR_NO")
 
-        census_cols = ["GEOID", "pop_total", "median_hh_income",
-                       "poverty_rate", "owner_occ_rate", "unemployment_rate_ct"]
+        census_cols = ["GEOID", "pop_total", "median_hh_income", "poverty_rate"]
         crime = crime.merge(
             joined[census_cols],
             left_on="DR_NO", right_index=True, how="left"
@@ -444,8 +415,7 @@ def enrich_crime_data(
         print(f"    Census tracts matched: {matched:,} / {valid_mask.sum():,} valid coords")
     else:
         print("  Skipping census spatial join (no tract data available).")
-        for col in ["GEOID", "pop_total", "median_hh_income",
-                    "poverty_rate", "owner_occ_rate", "unemployment_rate_ct"]:
+        for col in ["GEOID", "pop_total", "median_hh_income", "poverty_rate"]:
             crime[col] = np.nan
 
     # ── 5D. Crime rate per 100k (where population known) ───────────────────

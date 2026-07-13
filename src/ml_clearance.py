@@ -257,6 +257,44 @@ def plot_confusion(res: dict):
     print("  Saved p5d_03_confusion_matrix.png")
 
 
+def export_dashboard_json(df: pd.DataFrame, res: dict):
+    """dashboard/public/data/clearance_model.json"""
+    clf = res["clf"]
+    imp = clf.feature_importances_
+    order = np.argsort(imp)[::-1]
+    feature_importance = [
+        {"feature": FEAT_LABELS.get(FEATURES[i], FEATURES[i]), "importance": round(float(imp[i] / imp[order[0]]), 4)}
+        for i in order[:12]
+    ]
+
+    cm = res["cm"]
+    confusion_matrix_pct = {
+        "true_not_cleared_pred_not_cleared": round(float(cm[0, 0]), 4),
+        "true_not_cleared_pred_cleared": round(float(cm[0, 1]), 4),
+        "true_cleared_pred_not_cleared": round(float(cm[1, 0]), 4),
+        "true_cleared_pred_cleared": round(float(cm[1, 1]), 4),
+    }
+
+    payload = {
+        "reliable_cutoff": RELIABLE_CUTOFF.strftime("%Y-%m-%d"),
+        "train_end": TRAIN_END.strftime("%Y-%m-%d"),
+        "n_train": int((df["date_occ"] <= TRAIN_END).sum()),
+        "n_test": int(((df["date_occ"] > TRAIN_END) & (df["date_occ"] <= RELIABLE_CUTOFF)).sum()),
+        "excluded_reason": "Cases after the reliable cutoff haven't had time to be investigated and "
+                            "cleared yet -- clearance status is right-censored, not a real drop in "
+                            "case-solving. Monthly clearance rate falls from ~24% (2020) to ~18% "
+                            "(early 2024, a real trend), then collapses to 2.5% by Dec 2024 purely "
+                            "because those cases haven't matured. Excluded from training and evaluation.",
+        "metrics": res["metrics"],
+        "feature_importance": feature_importance,
+        "confusion_matrix": confusion_matrix_pct,
+    }
+
+    out = ROOT / "dashboard" / "public" / "data" / "clearance_model.json"
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    print(f"  Saved {out.relative_to(ROOT)}")
+
+
 def plot_shap(res: dict):
     print("  Computing SHAP values...")
     import shap
@@ -308,6 +346,9 @@ def main():
 
     joblib.dump(res["clf"], MODDIR / "clearance_xgb.joblib")
     print("  Saved clearance_xgb.joblib")
+
+    print("\n[Exporting dashboard JSON...]")
+    export_dashboard_json(df, res)
 
     print("\n" + "=" * 60)
     print(f"  Phase 5D complete — AUC={res['metrics']['roc_auc']}%  "

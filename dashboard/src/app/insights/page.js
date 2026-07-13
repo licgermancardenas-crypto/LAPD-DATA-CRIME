@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Shell from '@/components/Shell';
 import ForecastChart from '@/components/ForecastChart';
+import ClearanceChart from '@/components/ClearanceChart';
 
 const C = {
   bg:'#07080f', surface:'#0d1020', card:'#111525', border:'#1e2235',
@@ -23,7 +24,8 @@ const CHAPTERS = [
   {id:'neighborhoods', n:'07', label:'Neighborhood Risk'},
   {id:'arrests',       n:'08', label:'Arrest Patterns'},
   {id:'forecast',      n:'09', label:'Crime Forecast'},
-  {id:'findings',      n:'10', label:'Key Findings'},
+  {id:'clearance-ml',  n:'10', label:'Predicting Clearance'},
+  {id:'findings',      n:'11', label:'Key Findings'},
 ];
 
 
@@ -266,6 +268,7 @@ export default function InsightsPage(){
   const [data, setData]       = useState(null);
   const [hoods, setHoods]     = useState(null);
   const [forecast, setForecast] = useState(null);
+  const [clearanceModel, setClearanceModel] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -285,6 +288,7 @@ export default function InsightsPage(){
       setData({summary,division,categories,victims,hourly,monthly,arrests});
     }).catch(console.error);
     fetch('/data/crime_forecast.json').then(r=>r.json()).then(setForecast).catch(console.error);
+    fetch('/data/clearance_model.json').then(r=>r.json()).then(setClearanceModel).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -852,8 +856,73 @@ export default function InsightsPage(){
             <Sep/>
 
             {/* CH 10 */}
+            <div style={SP} id="clearance-ml">
+              <ChapterBanner n="10" title="Predicting Clearance"
+                thesis="Chapter 02 showed the clearance rate collapsing to single digits in late 2024 — that's not police performance failing, it's cases that haven't had time to be investigated yet. Once that's corrected for, can we predict which cases get solved?"/>
+              {clearanceModel ? (()=>{
+                const m = clearanceModel.metrics;
+                const topFeature = clearanceModel.feature_importance[0];
+                const cm = clearanceModel.confusion_matrix;
+                return(
+                  <>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:14,marginBottom:28}}>
+                      <BigStat value={`${m.roc_auc}%`} label="ROC-AUC" sub={`vs ${m.baseline_majority_class_acc}% majority-class baseline`} color={C.green}/>
+                      <BigStat value={`${m.precision}%`} label="Precision" sub={`Recall ${m.recall}% · F1 ${m.f1}%`} color={C.accent}/>
+                      <BigStat value={topFeature.feature} label="Top Predictor" sub={`importance ${topFeature.importance.toFixed(2)}`} color={C.yellow}/>
+                      <BigStat value={`${(clearanceModel.n_train/1000).toFixed(0)}k / ${(clearanceModel.n_test/1000).toFixed(0)}k`} label="Train / Test Rows" sub={`through ${clearanceModel.reliable_cutoff}`} color={C.purple}/>
+                    </div>
+
+                    <div style={{marginBottom:8,padding:'8px 14px',borderRadius:8,
+                      background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',
+                      fontSize:11,color:'#a07820',display:'flex',gap:8,alignItems:'flex-start'}}>
+                      <span>⚠</span>
+                      <span>Trained only on cases through <strong style={{color:C.yellow}}>{clearanceModel.reliable_cutoff}</strong> — {clearanceModel.excluded_reason}</span>
+                    </div>
+
+                    <div style={{marginBottom:24}}>
+                      <ClearanceChart model={clearanceModel}/>
+                    </div>
+
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:24}}>
+                      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:'20px 22px'}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.dim,letterSpacing:'.12em',marginBottom:16,textTransform:'uppercase'}}>Confusion Matrix (row-normalized)</div>
+                        <div style={{display:'grid',gridTemplateColumns:'auto 1fr 1fr',gap:1,fontSize:12}}>
+                          <div/><div style={{textAlign:'center',color:C.dim,fontSize:10,paddingBottom:6}}>PRED NOT CLEARED</div><div style={{textAlign:'center',color:C.dim,fontSize:10,paddingBottom:6}}>PRED CLEARED</div>
+                          <div style={{color:C.dim,fontSize:10,paddingRight:8,display:'flex',alignItems:'center'}}>ACTUAL NOT CLEARED</div>
+                          <div style={{background:'rgba(52,211,153,.12)',padding:'14px',textAlign:'center',color:C.green,fontWeight:700}}>{(cm.true_not_cleared_pred_not_cleared*100).toFixed(1)}%</div>
+                          <div style={{background:'rgba(248,113,113,.08)',padding:'14px',textAlign:'center',color:C.red}}>{(cm.true_not_cleared_pred_cleared*100).toFixed(1)}%</div>
+                          <div style={{color:C.dim,fontSize:10,paddingRight:8,display:'flex',alignItems:'center'}}>ACTUAL CLEARED</div>
+                          <div style={{background:'rgba(248,113,113,.08)',padding:'14px',textAlign:'center',color:C.red}}>{(cm.true_cleared_pred_not_cleared*100).toFixed(1)}%</div>
+                          <div style={{background:'rgba(52,211,153,.12)',padding:'14px',textAlign:'center',color:C.green,fontWeight:700}}>{(cm.true_cleared_pred_cleared*100).toFixed(1)}%</div>
+                        </div>
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column',gap:8,justifyContent:'center'}}>
+                        <Prose accent>The model correctly flags {(cm.true_cleared_pred_cleared*100).toFixed(0)}% of cases that do get cleared, and its false-alarm rate on unsolved cases is just {(cm.true_not_cleared_pred_cleared*100).toFixed(1)}% — when it predicts a case will clear, it&rsquo;s usually right.</Prose>
+                        <Prose>Recall of {m.recall}% means it still misses a majority of solvable cases — clearance genuinely depends on factors this dataset can&rsquo;t see (witness cooperation, physical evidence, investigator caseload).</Prose>
+                      </div>
+                    </div>
+
+                    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                      <Prose accent>Chapter 02&rsquo;s clearance-rate collapse to single digits by late 2024 is a data artifact, not a police-performance story: cases need time to be investigated, and the most recent months in this extract simply haven&rsquo;t had it yet. This model trains and evaluates only on cases through {clearanceModel.reliable_cutoff} — old enough that their outcome is settled — to avoid learning &ldquo;recent = unsolved&rdquo; as a fake predictor.</Prose>
+                      <Prose>With that fixed, <strong style={{color:'#fff'}}>{topFeature.feature}</strong> is the single strongest predictor of whether a case clears — unsurprising, since some crime types are inherently easier to solve (a fight with a known assailant) than others (a burglary with no witnesses). More interesting: neighborhood context — Census tract poverty and income, ABC alcohol outlet density, land-use zoning mix — measurably improves the model, confirming that where a crime happens carries real signal about whether it gets solved, independent of what the crime is.</Prose>
+                    </div>
+
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                      <Finding text={`ROC-AUC of ${m.roc_auc}% (vs a ${m.baseline_majority_class_acc}% majority-class baseline) means the model has real, if imperfect, discriminative power — useful for triage, not for closing cases automatically.`} color={C.green}/>
+                      <Finding text="Percent of a division's land zoned commercial ranks above days-to-report and MO-code count in predictive power — a genuinely new finding this analysis surfaced, not something visible in the raw crime data alone." color={C.yellow}/>
+                    </div>
+                  </>
+                );
+              })() : (
+                <div style={{padding:'32px',textAlign:'center',color:C.dim,fontSize:13}}>Loading clearance model…</div>
+              )}
+            </div>
+
+            <Sep/>
+
+            {/* CH 11 */}
             <div style={{...SP,paddingBottom:60}} id="findings">
-              <ChapterBanner n="10" title="Key Findings"
+              <ChapterBanner n="11" title="Key Findings"
                 thesis="Eight concrete, data-backed conclusions from 1,004,894 incidents — ranked by operational and policy significance."/>
               <div style={{display:'flex',flexDirection:'column',gap:10}}>
                 {[

@@ -4,6 +4,8 @@ End-to-end data science project analyzing 1 million+ crime incidents reported to
 
 **Live:** https://lapd-data-crime.vercel.app/
 
+![L.A.I.S.S. login screen](docs/screenshots/laiss-login.png)
+
 ## Project Overview
 
 | Item | Detail |

@@ -44,6 +44,13 @@ const MAIN_NAV = [
     sub: [],
   },
   {
+    id: 'twin',
+    label: '3D City Twin',
+    icon: '▦',
+    href: '/twin',
+    sub: [],
+  },
+  {
     id: 'compare',
     label: 'Compare',
     icon: '⊜',
@@ -109,6 +116,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
   const isHome     = pathname === '/dashboard';
   const isGeo      = pathname === '/geo';
   const isOsiris   = pathname === '/osiris';
+  const isTwin     = pathname === '/twin';
   const isCompare  = pathname === '/compare';
   const isInsights = pathname === '/insights';
   const isGlossary = pathname === '/glossary';
@@ -212,6 +220,7 @@ export default function Sidebar({ activeSection = null, geoActiveTab = null }) {
           const active = item.id === 'dashboard' ? isHome
                        : item.id === 'geo'       ? isGeo
                        : item.id === 'osiris'    ? isOsiris
+                       : item.id === 'twin'      ? isTwin
                        : item.id === 'compare'   ? isCompare
                        : item.id === 'insights'  ? isInsights
                        : item.id === 'glossary'  ? isGlossary

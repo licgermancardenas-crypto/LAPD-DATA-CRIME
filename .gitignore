@@ -81,3 +81,4 @@ outputs/figures/*.pdf
 outputs/reports/*.html
 !outputs/reports/.gitkeep
 .vercel
+.env*

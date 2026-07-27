@@ -49,6 +49,7 @@ const MAPS = [
   { id:'density',         label:'CRIME DENSITY',  short:'DEN',  src:'/maps/crime-density.html',      group:'osint', icon:'📊' },
   { id:'hotspot',         label:'HOTSPOT ML',     short:'ML',   src:'/maps/hotspot-risk-choropleth.html', group:'lapd', icon:'🎯' },
   { id:'hotspot_temporal', label:'HOTSPOT TEMPORAL', short:'TIME', src:'/maps/hotspot-temporal-choropleth.html', group:'lapd', icon:'🕐' },
+  { id:'hotspot_neighborhood', label:'HOTSPOT BARRIOS', short:'NBHD', src:'/maps/hotspot-neighborhood-choropleth.html', group:'lapd', icon:'🏘' },
 ];
 
 const CD_DENSITY_RANKING = [
@@ -88,6 +89,7 @@ const MAP_LABELS = {
   density:'CRIME DENSITY · CD',
   hotspot:'PREDICTIVE HOTSPOT (ML)',
   hotspot_temporal:'TEMPORAL HOTSPOT (ML)',
+  hotspot_neighborhood:'NEIGHBORHOOD HOTSPOT (ML)',
 };
 
 const CLICK_WHAT_IS = {
@@ -100,6 +102,7 @@ const CLICK_WHAT_IS = {
   vulnerability_tract:'Radio censal clasificado por un índice de vulnerabilidad socioeconómica que combina tasa de pobreza, ingreso mediano y concentración de crimen.',
   hotspot_tract:      'Radio censal clasificado por riesgo de crimen predicho (XGBoost, 2020-22 + censo + alcohol) para 2023–Q1 2024. El modelo empata estadísticamente con una predicción ingenua basada solo en el historial del tract (ver Insights Cap. 11) — la utilidad principal es confirmar persistencia, no detectar focos nuevos.',
   hotspot_temporal_tract: 'Radio censal con riesgo predicho por tipo de crimen (violento/vehicular/propiedad) y franja horaria (día de semana/fin de semana × 4 bloques de 6h). Partir por franja mejora sobre el hotspot estático en los tres tipos; el contexto de barrio (alcohol, censo) además agrega mejora real y consistente solo para Vehicle Crime — ver Insights Cap. 11.',
+  hotspot_neighborhood_area: 'Mismo modelo que HOTSPOT TEMPORAL pero corrido sobre 114 barrios con nombre en vez de 1.241 radios censales. El objetivo queda mucho menos ruidoso (R²=0.95 vs 0.66) y la franja horaria pesa más a esta escala, pero el modelo sigue sin superar a la persistencia por franja — y la precisión total baja respecto al radio censal. Ver Insights Cap. 11.',
   business:           'Distrito analizado por densidad de negocios vs. concentración de crimen. Muestra la relación entre actividad comercial y delitos en la zona.',
   edu_school:         'Institución educativa de Los Ángeles clasificada por nivel de cobertura policial. La distancia a la estación más cercana determina si está en zona Segura (<1km), Alerta (1-3km) o Vulnerable (>3km). Los datos de crimen corresponden a incidentes en radio 300m durante horarios de entrada (7-9h) y salida (14-16h).',
   edu_station:        'Estación de seguridad pública con cobertura sobre establecimientos educativos cercanos. El número de escuelas asignadas indica la carga jurisdiccional de la estación en el análisis de cobertura escolar.',
@@ -197,6 +200,12 @@ function generateInsights(info){
     bullets.push(`${info.crime_type||'Crimen'} · ${info.day_type==='weekend'?'Fin de semana':'Día de semana'} · ${info.time_of_day||'—'}: ${pred.toFixed(2)} crím/día predicho vs. ${hist.toFixed(2)} crím/día histórico en esta franja específica.`);
     bullets.push(Math.abs(gap)<0.05 ? 'El modelo coincide casi exactamente con la historia de esta franja y tipo de crimen — acá la mejora real ya la dio partir por franja horaria, no el modelo en sí.' : `Diferencia de ${gap>=0?'+':''}${gap.toFixed(2)} crím/día vs. la historia de esta franja — para Vehicle Crime el contexto de barrio sí mueve la aguja de forma consistente (ver Insights Cap. 11).`);
     bullets.push('Probá otro tipo de crimen o franja horaria en el mismo tract: los patrones difieren bastante entre violento, vehicular y propiedad.');
+  } else if(info.clickType==='hotspot_neighborhood_area'){
+    const pred=parseFloat(info.predicted_rate)||0, hist=parseFloat(info.slot_history_rate)||0;
+    const gap=pred-hist;
+    bullets.push(`${info.name||'Este barrio'} · ${info.day_type==='weekend'?'Fin de semana':'Día de semana'} · ${info.time_of_day||'—'}: ${pred.toFixed(2)} crím/día predicho vs. ${hist.toFixed(2)} crím/día histórico.`);
+    bullets.push('A esta escala el objetivo es mucho menos ruidoso que por radio censal (R²=0.95 vs 0.66) y la franja horaria pesa más — pero el modelo sigue empatando con la persistencia por franja, no la supera.');
+    bullets.push('Comparación directa: el mismo barrio en HOTSPOT TEMPORAL (por radio censal) da más precisión total, aunque con un objetivo más ruidoso.');
   } else if(info.clickType==='business'){
     const cpb=parseFloat(info.crimes_per_biz)||0;
     bullets.push(`${cpb.toFixed(2)} crímenes por negocio — ${cpb>2?'ratio elevado: la actividad comercial atrae delitos oportunistas':'ratio bajo, baja exposición comercial a la criminalidad'}.`);
@@ -465,6 +474,13 @@ function ClickIntelPanel({info,data,onDismiss}){
   } else if(info.clickType==='hotspot_temporal_tract'){
     if(info.tract)           rows.push(['Tract',info.tract.slice(-6)]);
     if(info.crime_type)      rows.push(['Tipo de crimen',info.crime_type]);
+    if(info.day_type)        rows.push(['Tipo de día',info.day_type==='weekend'?'Fin de semana':'Día de semana']);
+    if(info.time_of_day)     rows.push(['Franja horaria',info.time_of_day]);
+    if(info.predicted_rate!=null) rows.push(['Predicho (crím/día)',parseFloat(info.predicted_rate).toFixed(2)]);
+    if(info.slot_history_rate!=null) rows.push(['Histórico franja (crím/día)',parseFloat(info.slot_history_rate).toFixed(2)]);
+    if(info.population)      rows.push(['Población',Number(info.population).toLocaleString()]);
+  } else if(info.clickType==='hotspot_neighborhood_area'){
+    if(info.name)            rows.push(['Barrio',info.name]);
     if(info.day_type)        rows.push(['Tipo de día',info.day_type==='weekend'?'Fin de semana':'Día de semana']);
     if(info.time_of_day)     rows.push(['Franja horaria',info.time_of_day]);
     if(info.predicted_rate!=null) rows.push(['Predicho (crím/día)',parseFloat(info.predicted_rate).toFixed(2)]);

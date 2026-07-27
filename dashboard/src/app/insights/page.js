@@ -274,6 +274,7 @@ export default function InsightsPage(){
   const [hotspotModel, setHotspotModel] = useState(null);
   const [hotspotTemporal, setHotspotTemporal] = useState(null);
   const [hotspotCrimetype, setHotspotCrimetype] = useState(null);
+  const [hotspotNeighborhood, setHotspotNeighborhood] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -297,6 +298,7 @@ export default function InsightsPage(){
     fetch('/data/hotspot_model.json').then(r=>r.json()).then(setHotspotModel).catch(console.error);
     fetch('/data/hotspot_temporal_model.json').then(r=>r.json()).then(setHotspotTemporal).catch(console.error);
     fetch('/data/hotspot_crimetype_model.json').then(r=>r.json()).then(setHotspotCrimetype).catch(console.error);
+    fetch('/data/hotspot_neighborhood_model.json').then(r=>r.json()).then(setHotspotNeighborhood).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -1028,6 +1030,34 @@ export default function InsightsPage(){
                           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
                             <Finding text={`Vehicle Crime is the one type worth actually deploying the ML layer for over simple slot-history — it's also the highest-volume, lowest-clearance category in the whole dataset, so this is where a context-aware hotspot map has the most realistic shot at operational value.`} color={C.green}/>
                             <Finding text="For Violent and Property crime, don't oversell the model: slot-aware persistence alone already captures nearly everything it captures. That's still a real, actionable upgrade over Chapter 11's flat baseline — it just doesn't need XGBoost to get there." color={C.yellow}/>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {hotspotTemporal && hotspotNeighborhood && (()=>{
+                      const nm = hotspotNeighborhood.metrics;
+                      const tm = hotspotTemporal.metrics;
+                      const liftSlotNb  = ((nm.model_hit_rate/nm.slot_persistence_hit_rate - 1)*100);
+                      const liftAreaNb  = ((nm.model_hit_rate/nm.area_persistence_hit_rate - 1)*100);
+                      const timeGainTract = ((tm.slot_persistence_hit_rate/tm.tract_persistence_hit_rate - 1)*100);
+                      const timeGainNb    = ((nm.slot_persistence_hit_rate/nm.area_persistence_hit_rate - 1)*100);
+                      return(
+                        <div style={{marginTop:28,paddingTop:24,borderTop:`1px dashed ${C.border}`}}>
+                          <div style={{fontSize:11,fontWeight:800,letterSpacing:'.1em',textTransform:'uppercase',color:C.accent,marginBottom:6}}>Follow-up 3 · Is the Census Tract Too Small a Unit?</div>
+                          <Prose>One more standard suspect for a null result like this: the Modifiable Areal Unit Problem. A census tract split 8 ways can be so sparse — many tracts see close to zero incidents in a given slot across three years — that there&rsquo;s nothing left for context to explain beyond noise. We re-ran the exact same design on {nm.n_areas} named LA neighborhoods (~11 tracts each) instead of {hotspotTemporal.n_tracts ? hotspotTemporal.n_tracts.toLocaleString() : '1,241'} tracts.</Prose>
+
+                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14,margin:'16px 0'}}>
+                            <BigStat value={`${(nm.model_hit_rate*100).toFixed(1)}%`} label="Neighborhood Model Hit Rate" sub={`vs. ${(tm.model_hit_rate*100).toFixed(1)}% at tract level`} color={C.purple}/>
+                            <BigStat value={`${liftSlotNb>=0?'+':''}${liftSlotNb.toFixed(1)}%`} label="Model Lift vs. Slot History" sub="essentially zero, same as tract level" color={C.dim}/>
+                            <BigStat value={`${liftAreaNb>=0?'+':''}${liftAreaNb.toFixed(1)}%`} label="Lift From Adding Time" sub={`vs. ${timeGainTract>=0?'+':''}${timeGainTract.toFixed(1)}% at tract level`} color={C.green}/>
+                          </div>
+
+                          <Prose accent>Going coarser fixes the noise problem — R² jumps from {tm.r2.toFixed(2)} at tract level to {nm.r2.toFixed(2)} at neighborhood level, a genuinely cleaner target — but it does <strong style={{color:'#fff'}}>not</strong> change the answer: the model still adds only {liftSlotNb>=0?'+':''}{liftSlotNb.toFixed(1)}% over knowing a neighborhood&rsquo;s own history for that time slot. If anything, time-of-day matters <strong style={{color:'#fff'}}>more</strong> at this scale ({timeGainNb>=0?'+':''}{timeGainNb.toFixed(1)}% vs. {timeGainTract>=0?'+':''}{timeGainTract.toFixed(1)}% at tract level) — larger areas mix more activity types across a day, so the daily rhythm shows up more clearly. What doesn&rsquo;t show up more clearly, at either scale, is Census/alcohol context earning its keep beyond persistence. And the trade going coarser isn&rsquo;t free: top-20% precision is actually a bit worse ({(nm.model_hit_rate*100).toFixed(1)}% vs. {(tm.model_hit_rate*100).toFixed(1)}%) — a neighborhood can&rsquo;t point to a specific block the way a tract can.</Prose>
+
+                          <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                            <Finding text="MAUP wasn't the explanation — the null result on neighborhood context is robust across two very different geographic scales, which makes it a stronger finding, not a weaker one. This dataset's hotspot signal really is dominated by time-aware persistence, not neighborhood socioeconomics." color={C.cyan}/>
+                            <Finding text="Practical takeaway for deployment: keep the tract-level map for precision, but the neighborhood view is a legitimate lower-noise sanity check — if the two disagree sharply on a spot, that's worth a second look before acting on it." color={C.green}/>
                           </div>
                         </div>
                       );

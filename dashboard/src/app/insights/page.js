@@ -272,6 +272,7 @@ export default function InsightsPage(){
   const [forecast, setForecast] = useState(null);
   const [clearanceModel, setClearanceModel] = useState(null);
   const [hotspotModel, setHotspotModel] = useState(null);
+  const [hotspotTemporal, setHotspotTemporal] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -293,6 +294,7 @@ export default function InsightsPage(){
     fetch('/data/crime_forecast.json').then(r=>r.json()).then(setForecast).catch(console.error);
     fetch('/data/clearance_model.json').then(r=>r.json()).then(setClearanceModel).catch(console.error);
     fetch('/data/hotspot_model.json').then(r=>r.json()).then(setHotspotModel).catch(console.error);
+    fetch('/data/hotspot_temporal_model.json').then(r=>r.json()).then(setHotspotTemporal).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -955,6 +957,33 @@ export default function InsightsPage(){
                       <Finding text={`R²=${m.r2.toFixed(2)} is a strong fit for raw crime-count prediction, but the hit-rate comparison is the metric that actually matters for deployment — a model that just memorizes "where crime already was" would score nearly the same, so this doesn't justify claiming the enrichment data adds hotspot-prediction value.`} color={C.yellow}/>
                       <Finding text="Not every dataset improves every model. The same Census/alcohol/zoning features ranked #4 in the clearance model (Chapter 10) and barely move the needle here — a useful reminder that feature value is task-specific, not universal." color={C.cyan}/>
                     </div>
+
+                    {hotspotTemporal && (()=>{
+                      const tm = hotspotTemporal.metrics;
+                      const liftVsSlot  = ((tm.model_hit_rate/tm.slot_persistence_hit_rate - 1)*100);
+                      const liftVsTract = ((tm.model_hit_rate/tm.tract_persistence_hit_rate - 1)*100);
+                      const topT = hotspotTemporal.feature_importance[0];
+                      const secondT = hotspotTemporal.feature_importance[1];
+                      return(
+                        <div style={{marginTop:28,paddingTop:24,borderTop:`1px dashed ${C.border}`}}>
+                          <div style={{fontSize:11,fontWeight:800,letterSpacing:'.1em',textTransform:'uppercase',color:C.accent,marginBottom:6}}>Follow-up · Adding a Time Axis</div>
+                          <Prose>The tie above raised an obvious question: is neighborhood context genuinely uninformative, or is one crime-rate-per-tract just too coarse a target for anything to beat it? We split each tract into 8 slots — weekday/weekend × 4 time-of-day blocks — and gave the naive baseline the same split.</Prose>
+
+                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:14,margin:'16px 0'}}>
+                            <BigStat value={`${(tm.model_hit_rate*100).toFixed(1)}%`} label="Model Hit Rate" sub="tract × time-slot, top 20%" color={C.cyan}/>
+                            <BigStat value={`${(tm.slot_persistence_hit_rate*100).toFixed(1)}%`} label="Slot-History Hit Rate" sub="this tract, this time slot, no model" color={C.green}/>
+                            <BigStat value={`${(tm.tract_persistence_hit_rate*100).toFixed(1)}%`} label="Flat Tract Hit Rate" sub="Chapter 11's original baseline" color={C.dim}/>
+                            <BigStat value={`${liftVsTract>=0?'+':''}${liftVsTract.toFixed(1)}%`} label="Lift From Adding Time" sub="slot-history alone vs. flat tract" color={C.yellow}/>
+                          </div>
+
+                          <Prose accent>Just splitting persistence by day-type and time-of-day — no model, no census data, nothing but &ldquo;what usually happens in this tract at this hour&rdquo; — jumps the hit rate from {(tm.tract_persistence_hit_rate*100).toFixed(1)}% to {(tm.slot_persistence_hit_rate*100).toFixed(1)}%. The XGBoost model adds only {liftVsSlot>=0?'+':''}{liftVsSlot.toFixed(1)}% on top of that ({(tm.model_hit_rate*100).toFixed(1)}% total) — confirmed by feature importance, where <strong style={{color:'#fff'}}>{topT.feature}</strong> outweighs <strong style={{color:'#fff'}}>{secondT.feature}</strong> by roughly {(topT.importance/secondT.importance).toFixed(1)}×. The signal Chapter 11 was missing wasn&rsquo;t in the census tables — it was in the clock. Explore it tract-by-tract in OSIRIS under <strong style={{color:'#fff'}}>HOTSPOT TEMPORAL</strong>.</Prose>
+
+                          <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                            <Finding text="This is a genuinely actionable upgrade over the flat model: it tells patrol planning not just which tracts run hot, but which specific 6-hour window does — a Friday-evening hotspot and a Tuesday-morning hotspot in the same tract can call for different responses." color={C.green}/>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </>
                 );
               })() : (

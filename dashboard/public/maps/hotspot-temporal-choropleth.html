@@ -40,7 +40,7 @@
   .slot-btn:hover:not(.active){border-color:rgba(76,201,240,.45);box-shadow:0 0 0 1px rgba(76,201,240,.2);color:var(--text)}
   .slot-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(76,201,240,.4)}
 
-  #banner{position:fixed;top:150px;left:12px;z-index:1000;max-width:320px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:10.5px;color:var(--muted);line-height:1.5;pointer-events:none}
+  #banner{position:fixed;top:186px;left:12px;z-index:1000;max-width:320px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:10.5px;color:var(--muted);line-height:1.5;pointer-events:none}
 
   #tt{position:fixed;top:12px;right:12px;z-index:1000;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface-s);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
   #tt:hover{border-color:rgba(76,201,240,.45);box-shadow:0 0 0 1px rgba(76,201,240,.2)}
@@ -73,6 +73,12 @@
 <div id="loading"><div class="spinner"></div><p>Loading temporal hotspot model...</p></div>
 
 <div id="toolbar">
+  <div class="btn-row" id="row-crimetype">
+    <button class="slot-btn" data-crimetype="all">All Crime</button>
+    <button class="slot-btn" data-crimetype="violent">Violent</button>
+    <button class="slot-btn" data-crimetype="vehicle">Vehicle</button>
+    <button class="slot-btn" data-crimetype="property">Property</button>
+  </div>
   <div class="btn-row" id="row-daytype">
     <button class="slot-btn" data-daytype="weekday">Weekday</button>
     <button class="slot-btn" data-daytype="weekend">Weekend</button>
@@ -89,7 +95,7 @@
     <button class="slot-btn" data-view="gap">Model vs History</button>
   </div>
 </div>
-<div id="banner">XGBoost tract x time-slot model. Splitting by day-type + time-of-day beats ignoring time entirely (46.9% vs 44.7% hit rate @ top 20%) — the model itself adds only a little more on top (47.2%). See Insights Ch. 11.</div>
+<div id="banner">XGBoost tract x time-slot model, run separately per crime type. Neighborhood context (alcohol, census) barely helps for Violent or Property, but genuinely lifts Vehicle Crime (+15% over ignoring time, +6% over time alone) — see Insights Ch. 11.</div>
 
 <button id="tt" title="Toggle dark / light mode">🌙</button>
 
@@ -112,15 +118,17 @@ function lerp(stops, t) {
 
 var TOD_LABELS = {latenight:'Late Night (00-05)', morning:'Morning (06-11)', afternoon:'Afternoon (12-17)', evening:'Evening (18-23)'};
 var VIEW_LABELS = {pred:'PREDICTED RISK (CRIMES/DAY)', hist:'SLOT HISTORY 2020-22 (CRIMES/DAY)', gap:'MODEL − HISTORY (CRIMES/DAY)'};
+var CRIMETYPE_LABELS = {all:'All Crime', violent:'Violent', vehicle:'Vehicle', property:'Property'};
 
-var dayType = 'weekday', tod = 'evening', view = 'pred';
+var dayType = 'weekday', tod = 'evening', view = 'pred', crimeType = 'all';
 var dark = true;
 var geoLayer, geoData;
 var caps = {};
 
 function slotKey() { return dayType + '_' + tod; }
+function propKey(prefix) { return prefix + '_' + crimeType + '_' + slotKey(); }
 function valueOf(p) {
-  var pred = p['pred_' + slotKey()] || 0, hist = p['hist_' + slotKey()] || 0;
+  var pred = p[propKey('pred')] || 0, hist = p[propKey('hist')] || 0;
   if (view === 'pred') return pred;
   if (view === 'hist') return hist;
   return pred - hist;
@@ -191,7 +199,7 @@ function fStyle(f) {
   };
 }
 
-var TIER_COLORS = {Low:'#28c77a', Moderate:'#e0c044', High:'#e07830', 'Very High':'#e04040'};
+var CRIMETYPE_COLORS = {all:'#4f8ef7', violent:'#e04040', vehicle:'#e0c044', property:'#4f8ef7'};
 
 function fmtNum(v, decimals) { return Number(v).toFixed(decimals !== undefined ? decimals : 2); }
 function miniBar(pct, color) {
@@ -199,8 +207,8 @@ function miniBar(pct, color) {
 }
 
 function buildPopup(p) {
-  var tc = TIER_COLORS[p.risk_tier] || '#7b82a0';
-  var pred = p['pred_' + slotKey()] || 0, hist = p['hist_' + slotKey()] || 0;
+  var tc = CRIMETYPE_COLORS[crimeType] || '#7b82a0';
+  var pred = p[propKey('pred')] || 0, hist = p[propKey('hist')] || 0;
   var gap = pred - hist;
   var predColor = lerp(SCALE_RISK, caps.abs > 0 ? Math.min(pred / caps.abs, 1) : 0);
   var histColor = lerp(SCALE_RISK, caps.abs > 0 ? Math.min(hist / caps.abs, 1) : 0);
@@ -210,7 +218,7 @@ function buildPopup(p) {
   return (
     '<div class="p-title">Census Tract ' + (p.GEOID ? p.GEOID.slice(-6) : '—') + '</div>' +
     '<span class="p-badge" style="background:' + tc + '22;color:' + tc + ';border:1px solid ' + tc + '44">' +
-      p.risk_tier + ' Overall Risk</span>' +
+      CRIMETYPE_LABELS[crimeType] + '</span>' +
 
     '<div class="p-section">' + dayLabel + ' · ' + TOD_LABELS[tod] + '</div>' +
     '<div class="p-row"><span class="p-label">Predicted risk (2023–Q1 2024)</span>' +
@@ -234,6 +242,15 @@ function refresh() {
   if (geoLayer) geoLayer.setStyle(fStyle);
 }
 
+document.querySelectorAll('[data-crimetype]').forEach(function(btn) {
+  if (btn.dataset.crimetype === crimeType) btn.classList.add('active');
+  btn.addEventListener('click', function() {
+    crimeType = this.dataset.crimetype;
+    document.querySelectorAll('[data-crimetype]').forEach(function(b){ b.classList.remove('active'); });
+    this.classList.add('active');
+    refresh();
+  });
+});
 document.querySelectorAll('[data-daytype]').forEach(function(btn) {
   if (btn.dataset.daytype === dayType) btn.classList.add('active');
   btn.addEventListener('click', function() {
@@ -271,12 +288,32 @@ document.getElementById('tt').addEventListener('click', function() {
   if (geoLayer) geoLayer.setStyle(fStyle);
 });
 
-fetch('/data/hotspot_temporal_tracts.geojson')
-  .then(function(r) {
+Promise.all([
+  fetch('/data/hotspot_crimetype_tracts.geojson').then(function(r) {
+    if (!r.ok) throw new Error('Data not found - run src/ml_hotspot_crimetype.py');
+    return r.json();
+  }),
+  fetch('/data/hotspot_temporal_tracts.geojson').then(function(r) {
     if (!r.ok) throw new Error('Data not found - run src/ml_hotspot_temporal.py');
     return r.json();
   })
-  .then(function(gj) {
+])
+  .then(function(results) {
+    var gj = results[0], allGj = results[1];
+
+    // Fold the aggregate ("All Crime") model's unprefixed pred_/hist_<slot> keys into
+    // the crime-type file's pred_all_/hist_all_<slot> namespace so one lookup covers all 4.
+    var allByGEOID = {};
+    allGj.features.forEach(function(f){ allByGEOID[f.properties.GEOID] = f.properties; });
+    gj.features.forEach(function(f){
+      var allProps = allByGEOID[f.properties.GEOID];
+      if (!allProps) return;
+      Object.keys(allProps).forEach(function(k){
+        if (k.indexOf('pred_') === 0) f.properties['pred_all_' + k.slice(5)] = allProps[k];
+        else if (k.indexOf('hist_') === 0) f.properties['hist_all_' + k.slice(5)] = allProps[k];
+      });
+    });
+
     geoData = gj;
     document.getElementById('loading').style.display = 'none';
     computeCaps();
@@ -290,7 +327,7 @@ fetch('/data/hotspot_temporal_tracts.geojson')
         layer.bindTooltip(
           function(){
             return '<b>Tract ' + (p.GEOID ? p.GEOID.slice(-6) : '—') + '</b><br><span style="font-size:11px;opacity:.75">' +
-              fmtNum(valueOf(p)) + ' crimes/day this slot</span>';
+              CRIMETYPE_LABELS[crimeType] + ' · ' + fmtNum(valueOf(p)) + '/day this slot</span>';
           },
           {sticky:true, direction:'top', className:'nb-tip', opacity:1}
         );
@@ -303,8 +340,8 @@ fetch('/data/hotspot_temporal_tracts.geojson')
           click: function(){
             window.parent.postMessage({
               type:'OSINT_CLICK_INFO', mapId:'hotspot_temporal', clickType:'hotspot_temporal_tract',
-              tract:p.GEOID||'—', risk_tier:p.risk_tier||'—', day_type:dayType, time_of_day:TOD_LABELS[tod],
-              predicted_rate:p['pred_'+slotKey()]||0, slot_history_rate:p['hist_'+slotKey()]||0,
+              tract:p.GEOID||'—', crime_type:CRIMETYPE_LABELS[crimeType], day_type:dayType, time_of_day:TOD_LABELS[tod],
+              predicted_rate:p[propKey('pred')]||0, slot_history_rate:p[propKey('hist')]||0,
               population:p.pop_total||0
             },'*');
           }

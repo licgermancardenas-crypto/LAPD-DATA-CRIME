@@ -273,6 +273,7 @@ export default function InsightsPage(){
   const [clearanceModel, setClearanceModel] = useState(null);
   const [hotspotModel, setHotspotModel] = useState(null);
   const [hotspotTemporal, setHotspotTemporal] = useState(null);
+  const [hotspotCrimetype, setHotspotCrimetype] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -295,6 +296,7 @@ export default function InsightsPage(){
     fetch('/data/clearance_model.json').then(r=>r.json()).then(setClearanceModel).catch(console.error);
     fetch('/data/hotspot_model.json').then(r=>r.json()).then(setHotspotModel).catch(console.error);
     fetch('/data/hotspot_temporal_model.json').then(r=>r.json()).then(setHotspotTemporal).catch(console.error);
+    fetch('/data/hotspot_crimetype_model.json').then(r=>r.json()).then(setHotspotCrimetype).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -980,6 +982,52 @@ export default function InsightsPage(){
 
                           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
                             <Finding text="This is a genuinely actionable upgrade over the flat model: it tells patrol planning not just which tracts run hot, but which specific 6-hour window does — a Friday-evening hotspot and a Tuesday-morning hotspot in the same tract can call for different responses." color={C.green}/>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {hotspotCrimetype && (()=>{
+                      const groups = hotspotCrimetype.groups;
+                      const order = ['violent','vehicle','property'];
+                      const groupColor = {violent:C.red, vehicle:C.yellow, property:C.accent};
+                      const standout = groups.vehicle.metrics;
+                      const liftVehicleSlot  = ((standout.model_hit_rate/standout.slot_persistence_hit_rate - 1)*100);
+                      const liftVehicleTract = ((standout.model_hit_rate/standout.tract_persistence_hit_rate - 1)*100);
+                      const NON_CONTEXT = new Set(['2020-22 Rate — This Slot','2020-22 Rate — Whole Tract','Slot Share of Tract Total','Weekend','Time of Day']);
+                      const firstContextFeature = (list)=> list.find(f=>!NON_CONTEXT.has(f.feature)) || list[1];
+                      const vehicleContextFeature = firstContextFeature(groups.vehicle.feature_importance);
+                      return(
+                        <div style={{marginTop:28,paddingTop:24,borderTop:`1px dashed ${C.border}`}}>
+                          <div style={{fontSize:11,fontWeight:800,letterSpacing:'.1em',textTransform:'uppercase',color:C.accent,marginBottom:6}}>Follow-up 2 · Does It Depend on Crime Type?</div>
+                          <Prose>Routine activity theory says violent and property crime shouldn&rsquo;t share one model — violent crime clusters around social/alcohol contact points, property crime follows opportunity and empty guardianship. Pooling them, like every model above did, can cancel out exactly the context effects each type has on its own. We re-ran the tract × time-slot model three times — once each for <strong style={{color:'#fff'}}>Violent</strong>, <strong style={{color:'#fff'}}>Vehicle</strong>, and <strong style={{color:'#fff'}}>Property</strong> crime — sharing one train/test tract split so the comparison is apples-to-apples.</Prose>
+
+                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:14,margin:'16px 0'}}>
+                            {order.map(g=>{
+                              const gm = groups[g].metrics;
+                              const liftSlot  = ((gm.model_hit_rate/gm.slot_persistence_hit_rate - 1)*100);
+                              const liftTract = ((gm.model_hit_rate/gm.tract_persistence_hit_rate - 1)*100);
+                              const top = groups[g].feature_importance[0];
+                              return(
+                                <div key={g} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:'16px 18px',borderTop:`2px solid ${groupColor[g]}`}}>
+                                  <div style={{fontSize:11,fontWeight:800,color:groupColor[g],letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>{groups[g].label}</div>
+                                  <div style={{fontSize:26,fontWeight:900,color:'#fff',lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{(gm.model_hit_rate*100).toFixed(1)}%</div>
+                                  <div style={{fontSize:10,color:C.dim,marginTop:4,marginBottom:10}}>model hit rate @ top 20%</div>
+                                  <div style={{fontSize:11,color:C.muted,lineHeight:1.7}}>
+                                    <div>vs. slot history: <strong style={{color:liftSlot>=1?C.green:C.dim}}>{liftSlot>=0?'+':''}{liftSlot.toFixed(1)}%</strong></div>
+                                    <div>vs. flat tract: <strong style={{color:liftTract>=1?C.green:C.dim}}>{liftTract>=0?'+':''}{liftTract.toFixed(1)}%</strong></div>
+                                    <div style={{marginTop:6}}>top feature: <strong style={{color:'#fff'}}>{top.feature}</strong></div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <Prose accent>The split reveals what the pooled model hid: for <strong style={{color:'#fff'}}>Violent</strong> crime the model just re-derives slot history (+{((groups.violent.metrics.model_hit_rate/groups.violent.metrics.slot_persistence_hit_rate-1)*100).toFixed(1)}%) and for <strong style={{color:'#fff'}}>Property</strong> crime it doesn&rsquo;t even do that — but for <strong style={{color:'#fff'}}>Vehicle Crime</strong>, neighborhood context is genuinely predictive: {liftVehicleSlot>=0?'+':''}{liftVehicleSlot.toFixed(1)}% over slot-history alone, {liftVehicleTract>=0?'+':''}{liftVehicleTract.toFixed(1)}% over ignoring time entirely. Its top context driver beyond history and time is <strong style={{color:'#fff'}}>{vehicleContextFeature.feature}</strong> — plausible given vehicle crime already runs at a 4.4% clearance rate citywide (Key Findings) with essentially no deterrence, so opportunity structure (parking exposure, foot traffic, alcohol-driven nightlife activity) gets to matter more than for crimes with a stronger behavioral/relational driver.</Prose>
+
+                          <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                            <Finding text={`Vehicle Crime is the one type worth actually deploying the ML layer for over simple slot-history — it's also the highest-volume, lowest-clearance category in the whole dataset, so this is where a context-aware hotspot map has the most realistic shot at operational value.`} color={C.green}/>
+                            <Finding text="For Violent and Property crime, don't oversell the model: slot-aware persistence alone already captures nearly everything it captures. That's still a real, actionable upgrade over Chapter 11's flat baseline — it just doesn't need XGBoost to get there." color={C.yellow}/>
                           </div>
                         </div>
                       );

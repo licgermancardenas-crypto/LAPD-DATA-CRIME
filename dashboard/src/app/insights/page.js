@@ -5,6 +5,8 @@ import Shell from '@/components/Shell';
 import ForecastChart from '@/components/ForecastChart';
 import ClearanceChart from '@/components/ClearanceChart';
 import HotspotChart from '@/components/HotspotChart';
+import TemporalSlotHeatmap from '@/components/TemporalSlotHeatmap';
+import GroupedHitrateChart from '@/components/GroupedHitrateChart';
 
 const C = {
   bg:'#07080f', surface:'#0d1020', card:'#111525', border:'#1e2235',
@@ -980,10 +982,17 @@ export default function InsightsPage(){
                             <BigStat value={`${liftVsTract>=0?'+':''}${liftVsTract.toFixed(1)}%`} label="Lift From Adding Time" sub="slot-history alone vs. flat tract" color={C.yellow}/>
                           </div>
 
-                          <Prose accent>Just splitting persistence by day-type and time-of-day — no model, no census data, nothing but &ldquo;what usually happens in this tract at this hour&rdquo; — jumps the hit rate from {(tm.tract_persistence_hit_rate*100).toFixed(1)}% to {(tm.slot_persistence_hit_rate*100).toFixed(1)}%. The XGBoost model adds only {liftVsSlot>=0?'+':''}{liftVsSlot.toFixed(1)}% on top of that ({(tm.model_hit_rate*100).toFixed(1)}% total) — confirmed by feature importance, where <strong style={{color:'#fff'}}>{topT.feature}</strong> outweighs <strong style={{color:'#fff'}}>{secondT.feature}</strong> by roughly {(topT.importance/secondT.importance).toFixed(1)}×. The signal Chapter 11 was missing wasn&rsquo;t in the census tables — it was in the clock. Explore it tract-by-tract in OSIRIS under <strong style={{color:'#fff'}}>HOTSPOT TEMPORAL</strong>.</Prose>
+                          <Prose accent>Just splitting persistence by day-type and time-of-day — no model, no census data, nothing but &ldquo;what usually happens in this tract at this hour&rdquo; — jumps the hit rate from {(tm.tract_persistence_hit_rate*100).toFixed(1)}% to {(tm.slot_persistence_hit_rate*100).toFixed(1)}%. The XGBoost model adds only {liftVsSlot>=0?'+':''}{liftVsSlot.toFixed(1)}% on top of that ({(tm.model_hit_rate*100).toFixed(1)}% total) — confirmed by feature importance, where <strong style={{color:'#fff'}}>{topT.feature}</strong> outweighs <strong style={{color:'#fff'}}>{secondT.feature}</strong> by roughly {(topT.importance/secondT.importance).toFixed(1)}×. The signal Chapter 11 was missing wasn&rsquo;t in the census tables — it was in the clock.</Prose>
+
+                          {hotspotTemporal.slot_summary && (
+                            <div style={{marginTop:16}}>
+                              <TemporalSlotHeatmap slotSummary={hotspotTemporal.slot_summary}/>
+                            </div>
+                          )}
 
                           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
                             <Finding text="This is a genuinely actionable upgrade over the flat model: it tells patrol planning not just which tracts run hot, but which specific 6-hour window does — a Friday-evening hotspot and a Tuesday-morning hotspot in the same tract can call for different responses." color={C.green}/>
+                            <Finding text={`Explore it tract-by-tract in OSIRIS under HOTSPOT TEMPORAL — the citywide pattern above is the average; individual tracts often peak at a different hour than their division does.`} color={C.cyan}/>
                           </div>
                         </div>
                       );
@@ -1004,22 +1013,27 @@ export default function InsightsPage(){
                           <div style={{fontSize:11,fontWeight:800,letterSpacing:'.1em',textTransform:'uppercase',color:C.accent,marginBottom:6}}>Follow-up 2 · Does It Depend on Crime Type?</div>
                           <Prose>Routine activity theory says violent and property crime shouldn&rsquo;t share one model — violent crime clusters around social/alcohol contact points, property crime follows opportunity and empty guardianship. Pooling them, like every model above did, can cancel out exactly the context effects each type has on its own. We re-ran the tract × time-slot model three times — once each for <strong style={{color:'#fff'}}>Violent</strong>, <strong style={{color:'#fff'}}>Vehicle</strong>, and <strong style={{color:'#fff'}}>Property</strong> crime — sharing one train/test tract split so the comparison is apples-to-apples.</Prose>
 
-                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:14,margin:'16px 0'}}>
+                          <div style={{margin:'16px 0'}}>
+                            <GroupedHitrateChart
+                              title="Hit rate @ top 20%, by crime type and method"
+                              subtitle="Same three methods as the chart above the temporal follow-up — flat tract history, slot-aware history, and the full model — now split by what kind of crime it's predicting."
+                              flatLabel="Flat tract (no time)"
+                              slotLabel="Slot history (time, no model)"
+                              data={order.map(g=>({
+                                label: groups[g].label,
+                                flat: groups[g].metrics.tract_persistence_hit_rate*100,
+                                slot: groups[g].metrics.slot_persistence_hit_rate*100,
+                                model: groups[g].metrics.model_hit_rate*100,
+                              }))}
+                            />
+                          </div>
+
+                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,margin:'0 0 16px'}}>
                             {order.map(g=>{
-                              const gm = groups[g].metrics;
-                              const liftSlot  = ((gm.model_hit_rate/gm.slot_persistence_hit_rate - 1)*100);
-                              const liftTract = ((gm.model_hit_rate/gm.tract_persistence_hit_rate - 1)*100);
                               const top = groups[g].feature_importance[0];
                               return(
-                                <div key={g} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:'16px 18px',borderTop:`2px solid ${groupColor[g]}`}}>
-                                  <div style={{fontSize:11,fontWeight:800,color:groupColor[g],letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>{groups[g].label}</div>
-                                  <div style={{fontSize:26,fontWeight:900,color:'#fff',lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{(gm.model_hit_rate*100).toFixed(1)}%</div>
-                                  <div style={{fontSize:10,color:C.dim,marginTop:4,marginBottom:10}}>model hit rate @ top 20%</div>
-                                  <div style={{fontSize:11,color:C.muted,lineHeight:1.7}}>
-                                    <div>vs. slot history: <strong style={{color:liftSlot>=1?C.green:C.dim}}>{liftSlot>=0?'+':''}{liftSlot.toFixed(1)}%</strong></div>
-                                    <div>vs. flat tract: <strong style={{color:liftTract>=1?C.green:C.dim}}>{liftTract>=0?'+':''}{liftTract.toFixed(1)}%</strong></div>
-                                    <div style={{marginTop:6}}>top feature: <strong style={{color:'#fff'}}>{top.feature}</strong></div>
-                                  </div>
+                                <div key={g} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:'10px 14px',borderLeft:`3px solid ${groupColor[g]}`,fontSize:11,color:C.muted}}>
+                                  <strong style={{color:groupColor[g]}}>{groups[g].label}</strong> top feature: <strong style={{color:'#fff'}}>{top.feature}</strong>
                                 </div>
                               );
                             })}
@@ -1047,10 +1061,17 @@ export default function InsightsPage(){
                           <div style={{fontSize:11,fontWeight:800,letterSpacing:'.1em',textTransform:'uppercase',color:C.accent,marginBottom:6}}>Follow-up 3 · Is the Census Tract Too Small a Unit?</div>
                           <Prose>One more standard suspect for a null result like this: the Modifiable Areal Unit Problem. A census tract split 8 ways can be so sparse — many tracts see close to zero incidents in a given slot across three years — that there&rsquo;s nothing left for context to explain beyond noise. We re-ran the exact same design on {nm.n_areas} named LA neighborhoods (~11 tracts each) instead of {hotspotTemporal.n_tracts ? hotspotTemporal.n_tracts.toLocaleString() : '1,241'} tracts.</Prose>
 
-                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14,margin:'16px 0'}}>
-                            <BigStat value={`${(nm.model_hit_rate*100).toFixed(1)}%`} label="Neighborhood Model Hit Rate" sub={`vs. ${(tm.model_hit_rate*100).toFixed(1)}% at tract level`} color={C.purple}/>
-                            <BigStat value={`${liftSlotNb>=0?'+':''}${liftSlotNb.toFixed(1)}%`} label="Model Lift vs. Slot History" sub="essentially zero, same as tract level" color={C.dim}/>
-                            <BigStat value={`${liftAreaNb>=0?'+':''}${liftAreaNb.toFixed(1)}%`} label="Lift From Adding Time" sub={`vs. ${timeGainTract>=0?'+':''}${timeGainTract.toFixed(1)}% at tract level`} color={C.green}/>
+                          <div style={{margin:'16px 0'}}>
+                            <GroupedHitrateChart
+                              title="Hit rate @ top 20%, tract vs. neighborhood"
+                              subtitle={`Same three methods, same "All Crime" target, two geographic scales. R² goes from ${tm.r2.toFixed(2)} (tract) to ${nm.r2.toFixed(2)} (neighborhood) — a much cleaner signal — but look at how little that moves the model bar.`}
+                              flatLabel="Flat area (no time)"
+                              slotLabel="Slot history (time, no model)"
+                              data={[
+                                { label: `Tract (${hotspotTemporal.n_tracts ? hotspotTemporal.n_tracts.toLocaleString() : '1,241'})`, flat: tm.tract_persistence_hit_rate*100, slot: tm.slot_persistence_hit_rate*100, model: tm.model_hit_rate*100 },
+                                { label: `Neighborhood (${nm.n_areas})`, flat: nm.area_persistence_hit_rate*100, slot: nm.slot_persistence_hit_rate*100, model: nm.model_hit_rate*100 },
+                              ]}
+                            />
                           </div>
 
                           <Prose accent>Going coarser fixes the noise problem — R² jumps from {tm.r2.toFixed(2)} at tract level to {nm.r2.toFixed(2)} at neighborhood level, a genuinely cleaner target — but it does <strong style={{color:'#fff'}}>not</strong> change the answer: the model still adds only {liftSlotNb>=0?'+':''}{liftSlotNb.toFixed(1)}% over knowing a neighborhood&rsquo;s own history for that time slot. If anything, time-of-day matters <strong style={{color:'#fff'}}>more</strong> at this scale ({timeGainNb>=0?'+':''}{timeGainNb.toFixed(1)}% vs. {timeGainTract>=0?'+':''}{timeGainTract.toFixed(1)}% at tract level) — larger areas mix more activity types across a day, so the daily rhythm shows up more clearly. What doesn&rsquo;t show up more clearly, at either scale, is Census/alcohol context earning its keep beyond persistence. And the trade going coarser isn&rsquo;t free: top-20% precision is actually a bit worse ({(nm.model_hit_rate*100).toFixed(1)}% vs. {(tm.model_hit_rate*100).toFixed(1)}%) — a neighborhood can&rsquo;t point to a specific block the way a tract can.</Prose>
@@ -1058,6 +1079,49 @@ export default function InsightsPage(){
                           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
                             <Finding text="MAUP wasn't the explanation — the null result on neighborhood context is robust across two very different geographic scales, which makes it a stronger finding, not a weaker one. This dataset's hotspot signal really is dominated by time-aware persistence, not neighborhood socioeconomics." color={C.cyan}/>
                             <Finding text="Practical takeaway for deployment: keep the tract-level map for precision, but the neighborhood view is a legitimate lower-noise sanity check — if the two disagree sharply on a spot, that's worth a second look before acting on it." color={C.green}/>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {hotspotTemporal && hotspotCrimetype && hotspotNeighborhood && (()=>{
+                      const tm = hotspotTemporal.metrics;
+                      const vm = hotspotCrimetype.groups.vehicle.metrics;
+                      const nm = hotspotNeighborhood.metrics;
+                      const timeLift = ((tm.slot_persistence_hit_rate/tm.tract_persistence_hit_rate - 1)*100);
+                      const vehicleLift = ((vm.model_hit_rate/vm.tract_persistence_hit_rate - 1)*100);
+                      const steps = [
+                        { n:'01', label:'Time', color:C.accent, verdict:`${timeLift>=0?'+':''}${timeLift.toFixed(0)}%`, sub:'splitting by hour/day beats the flat model' },
+                        { n:'02', label:'Crime Type', color:C.yellow, verdict:'Vehicle only', sub:`${vehicleLift>=0?'+':''}${vehicleLift.toFixed(0)}% — Violent & Property get nothing extra` },
+                        { n:'03', label:'Geography', color:C.purple, verdict:'Confirms it', sub:'coarser area ≠ context matters more' },
+                      ];
+                      return(
+                        <div style={{marginTop:32,padding:'26px 28px',borderRadius:12,background:'linear-gradient(160deg,rgba(79,142,247,.07),rgba(167,139,250,.05))',border:`1px solid ${C.border}`}}>
+                          <div style={{fontSize:11,fontWeight:800,letterSpacing:'.12em',textTransform:'uppercase',color:C.dim,marginBottom:18}}>Three Follow-ups, One Investigation</div>
+
+                          <div style={{display:'flex',alignItems:'stretch',gap:0,flexWrap:'wrap',marginBottom:22}}>
+                            {steps.map((s,i)=>(
+                              <div key={s.n} style={{display:'flex',alignItems:'center',flex:'1 1 200px'}}>
+                                <div style={{flex:1,textAlign:'center',padding:'0 8px'}}>
+                                  <div style={{fontSize:10,fontWeight:800,color:s.color,letterSpacing:'.1em'}}>{s.n} · {s.label.toUpperCase()}</div>
+                                  <div style={{fontSize:24,fontWeight:900,color:'#fff',margin:'6px 0 4px',fontVariantNumeric:'tabular-nums'}}>{s.verdict}</div>
+                                  <div style={{fontSize:10.5,color:C.muted,lineHeight:1.5}}>{s.sub}</div>
+                                </div>
+                                {i<steps.length-1 && (
+                                  <div style={{fontSize:20,color:C.dim,padding:'0 4px',flexShrink:0}}>→</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:18}}>
+                            <div style={{fontSize:9,fontWeight:800,letterSpacing:'.14em',textTransform:'uppercase',color:C.green,marginBottom:6}}>◈ Verdict</div>
+                            <p style={{fontSize:16,fontWeight:700,color:'#fff',lineHeight:1.5,margin:0,maxWidth:820}}>
+                              This dataset&rsquo;s hotspot signal is a clock, not a census table.
+                            </p>
+                            <p style={{fontSize:13,color:C.muted,lineHeight:1.7,marginTop:8,maxWidth:820}}>
+                              Time-of-day beat neighborhood context at every geography we tried, for every crime type except one. Deploy slot-aware persistence everywhere — it&rsquo;s free and it works. Reserve the XGBoost layer for Vehicle Crime, where alcohol-outlet density and neighborhood opportunity structure genuinely add predictive power on top of it.
+                            </p>
                           </div>
                         </div>
                       );

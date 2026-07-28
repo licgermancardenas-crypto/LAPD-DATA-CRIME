@@ -7,6 +7,7 @@ import ClearanceChart from '@/components/ClearanceChart';
 import HotspotChart from '@/components/HotspotChart';
 import TemporalSlotHeatmap from '@/components/TemporalSlotHeatmap';
 import GroupedHitrateChart from '@/components/GroupedHitrateChart';
+import TransitConcentrationChart from '@/components/TransitConcentrationChart';
 
 const C = {
   bg:'#07080f', surface:'#0d1020', card:'#111525', border:'#1e2235',
@@ -277,6 +278,7 @@ export default function InsightsPage(){
   const [hotspotTemporal, setHotspotTemporal] = useState(null);
   const [hotspotCrimetype, setHotspotCrimetype] = useState(null);
   const [hotspotNeighborhood, setHotspotNeighborhood] = useState(null);
+  const [transitProximity, setTransitProximity] = useState(null);
   const [activeChapter, setAC]= useState('scale');
 
   useEffect(()=>{
@@ -301,6 +303,7 @@ export default function InsightsPage(){
     fetch('/data/hotspot_temporal_model.json').then(r=>r.json()).then(setHotspotTemporal).catch(console.error);
     fetch('/data/hotspot_crimetype_model.json').then(r=>r.json()).then(setHotspotCrimetype).catch(console.error);
     fetch('/data/hotspot_neighborhood_model.json').then(r=>r.json()).then(setHotspotNeighborhood).catch(console.error);
+    fetch('/data/transit_proximity.json').then(r=>r.json()).then(setTransitProximity).catch(console.error);
     fetch('/data/neighborhood_mortality.geojson')
       .then(r=>r.json())
       .then(geo=>setHoods(geo.features.map(f=>f.properties)))
@@ -1122,6 +1125,41 @@ export default function InsightsPage(){
                             <p style={{fontSize:13,color:C.muted,lineHeight:1.7,marginTop:8,maxWidth:820}}>
                               Time-of-day beat neighborhood context at every geography we tried, for every crime type except one. Deploy slot-aware persistence everywhere — it&rsquo;s free and it works. Reserve the XGBoost layer for Vehicle Crime, where alcohol-outlet density and neighborhood opportunity structure genuinely add predictive power on top of it.
                             </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {transitProximity && (()=>{
+                      const tp = transitProximity;
+                      const all = tp.groups.all;
+                      const near = all.bands[0];
+                      const violentNear = tp.groups.violent.bands[0].concentration_ratio;
+                      const vehicleNear = tp.groups.vehicle.bands[0].concentration_ratio;
+                      const propertyNear = tp.groups.property.bands[0].concentration_ratio;
+                      return(
+                        <div style={{marginTop:28,paddingTop:24,borderTop:`1px dashed ${C.border}`}}>
+                          <div style={{fontSize:11,fontWeight:800,letterSpacing:'.1em',textTransform:'uppercase',color:C.accent,marginBottom:6}}>Bonus Investigation · Crime Near Transit</div>
+                          <Prose>A different axis entirely: does crime cluster near LA Metro rail stations? Raw proximity counts would be meaningless on their own — stations get built where people already are, so &ldquo;more crime near stations&rdquo; could just mean &ldquo;more crime where more people live.&rdquo; To isolate the transit effect, we compared where crime actually happens against a <strong style={{color:'#fff'}}>population-weighted null</strong>: {tp.pop_sample_n?.toLocaleString()} points sampled inside every LA Census tract proportional to its population, run through the same distance-to-nearest-station calculation as all {all.n.toLocaleString()} incidents. A concentration ratio of 1.0× means crime exactly tracks population; anything higher is transit-specific over-representation.</Prose>
+
+                          <div style={{margin:'16px 0'}}>
+                            <TransitConcentrationChart groups={tp.groups} bands={tp.bands}/>
+                          </div>
+
+                          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:14,margin:'16px 0'}}>
+                            <BigStat value={`${near.concentration_ratio.toFixed(1)}×`} label="Concentration, 0–250m" sub="all crime vs. population share" color={C.accent}/>
+                            <BigStat value={`${violentNear.toFixed(1)}×`} label="Violent Crime, 0–250m" sub="most over-represented near stations" color={C.red}/>
+                            <BigStat value={`${(all.median_dist_m/1000).toFixed(1)}km`} label="Median Crime Distance" sub="to nearest rail station" color={C.yellow}/>
+                            <BigStat value={`${(tp.median_dist_population_m/1000).toFixed(1)}km`} label="Median Population Distance" sub="where residents actually live" color={C.dim}/>
+                          </div>
+
+                          <Prose accent>Crime within 250m of a station is captured at <strong style={{color:'#fff'}}>{near.concentration_ratio.toFixed(1)}×</strong> its population share — and the effect is stronger for violent crime ({violentNear.toFixed(1)}×) than property ({propertyNear.toFixed(1)}×) or vehicle crime ({vehicleNear.toFixed(1)}×). The half-a-city gap between the two median distances tells the same story from a different angle: the typical crime happens {(all.median_dist_m/1000).toFixed(1)}km from a station, but the typical Angeleno lives {(tp.median_dist_population_m/1000).toFixed(1)}km away — crime runs noticeably closer to rail than people do on average.</Prose>
+
+                          <Prose>Read this as correlation, not a transit-causes-crime claim. LA&rsquo;s {tp.n_stations} rail stations were largely built along already-dense commercial and activity corridors — Downtown, Hollywood, Long Beach — the same kind of high-footfall mixed-use nodes that independently generate more crime opportunity. The population-weighted null controls for <em>where people live</em>, not for <em>where jobs, bars, and retail concentrate</em> — a resident-only baseline probably understates how much of this is really &ldquo;busy urban core,&rdquo; not &ldquo;near a train.&rdquo;</Prose>
+
+                          <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:16}}>
+                            <Finding text="Operationally useful regardless of mechanism: station-adjacent security and lighting investment is targeting real concentration, not a false pattern — the ratio holds at 2×+ even two full bands out (500m–1km)." color={C.green}/>
+                            <Finding text="The station-type breakdown OSIRIS already has (MOBILITY layer, corridor-level) is corridor-wide; this is the point-level view — a corridor being safe on average doesn't mean its stations are, and vice versa." color={C.cyan}/>
                           </div>
                         </div>
                       );

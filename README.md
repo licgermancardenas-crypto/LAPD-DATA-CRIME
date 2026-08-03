@@ -20,7 +20,7 @@ End-to-end data science project analyzing 1 million+ crime incidents reported to
 - **Data pipeline** — cleaning, enrichment (Census, address density, Council District mapping), JSON/GeoJSON export for the web app (`src/`, `scripts/`)
 - **Web Dashboard** (`dashboard/`) — Next.js app deployed to Vercel, open access (Supabase login is a demo flow, not gated)
 - **Power BI Dashboard** — dark-themed desktop report, star schema exported to CSV (`docs/POWERBI_GUIDE.md`)
-- **ML Models** — hotspot prediction · time-series forecasting · crime classifier (`notebooks/`)
+- **ML Models** — hotspot prediction (base, temporal, by crime type, by neighborhood) · clearance prediction · time-series forecasting · crime classifier · transit proximity (`src/`, `notebooks/`)
 
 ## Dashboard modules (`dashboard/src/app/`)
 
@@ -28,11 +28,12 @@ End-to-end data science project analyzing 1 million+ crime incidents reported to
 |---|---|
 | `/login` | Landing + Supabase auth (guest demo access) |
 | `/dashboard` | Main analytics — KPIs, tactical filters (year/month/shift/day type/theft), Arrests chapter |
-| `/osiris` | Geo intelligence — 8 map layers (LAPD divisions, Council Districts, crime density choropleth, income, schools, transit, etc.) |
-| `/insights` | 8-chapter data storytelling (crime trends, demographics, YoY panels) |
+| `/osiris` | Geo intelligence — 17 switchable map layers: OSINT basemaps (heat, clusters, choropleth, mobility, edu-safety, jurisdictions, crime density), LAPD-specific layers (divisions, LAPD heat, per-1k, vulnerability, neighborhoods, business density), 3 ML hotspot layers (risk, temporal, neighborhood), and a tactical/CIA-style overlay |
+| `/insights` | 12-chapter data storytelling: 01 The Scale of the Problem · 02 The Clearance Crisis · 03 The Geography of Crime · 04 What Crimes Are Being Committed · 05 When Crime Strikes · 06 Who Bears the Burden · 07 The Neighborhood Risk Index · 08 Who Gets Arrested · 09 Crime Forecast · 10 Predicting Clearance · 11 Predicting Hotspots · 12 Key Findings |
 | `/geo` | Council District / jurisdiction views |
 | `/compare` | Side-by-side comparison view |
 | `/glossary` | Data dictionary / methodology reference (EN) |
+| `/twin` | 3D City Twin module |
 
 ## Screenshots
 
@@ -42,7 +43,7 @@ End-to-end data science project analyzing 1 million+ crime incidents reported to
 |---|---|---|
 | ![Dashboard overview](docs/screenshots/dashboard-overview.png) | ![Arrests by division](docs/screenshots/dashboard-arrests-division.png) | ![Arrests demographics](docs/screenshots/dashboard-arrests-demographics.png) |
 
-**OSIRIS** — geo intelligence, 8 switchable map layers over the same LA basemap
+**OSIRIS** — geo intelligence, 17 switchable map layers over the same LA basemap
 
 | Tactical / CIA overlay | Choropleth | Cluster |
 |---|---|---|
